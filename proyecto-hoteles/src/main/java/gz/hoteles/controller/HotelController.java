@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import gz.hoteles.entities.Hotel;
@@ -33,6 +34,31 @@ public class HotelController {
     public Hotel get(@PathVariable(name = "id") int id) {
         return hotelRepository.findById(id).get();
     }
+
+    @GetMapping("/filteredByName")
+    public List<Hotel> getHotelByNombre(@RequestParam String nombre) {
+        return hotelRepository.getHotelByNombre(nombre);
+    }
+
+    @GetMapping("/filteredByAddress")
+    public List<Hotel> getHotelByDirecion(@RequestParam String direccion) {
+        return hotelRepository.getHotelByDireccion(direccion);
+    }
+
+    @GetMapping("/filteredByPhoneNumber")
+    public List<Hotel> getHotelByTelefono(@RequestParam String telefono) {
+        return hotelRepository.getHotelByTelefono(telefono);
+    }
+
+    @GetMapping("/filteredByEmail")
+    public List<Hotel> getHotelByEmail(@RequestParam String email) {
+        return hotelRepository.getHotelByEmail(email);
+    }
+
+    @GetMapping("/filteredByWebsite")
+    public List<Hotel> getHotelBySitioWeb(@RequestParam String sitioWeb) {
+        return hotelRepository.getHotelBySitioWeb(sitioWeb);
+    }
     
     @PutMapping("/{id}")
     public ResponseEntity<?> put(@PathVariable(name = "id") int id, @RequestBody Hotel input) {
@@ -49,7 +75,11 @@ public class HotelController {
     }
     
     @PostMapping
-    public ResponseEntity<?> post(@RequestBody Hotel input) {
+    public ResponseEntity<?> post(@RequestBody Hotel input) { //Los campos nombre y direccion seran obligatorios
+        if (input.getNombre() == null || input.getNombre().isEmpty() ||
+                input.getDireccion() == null || input.getDireccion().isEmpty()) {
+            return ResponseEntity.badRequest().body("Los campos 'nombre' y 'direccion' son obligatorios");
+        }
         Hotel save = hotelRepository.save(input);
         return ResponseEntity.ok(save);
     }

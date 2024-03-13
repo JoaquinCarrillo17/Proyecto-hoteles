@@ -12,9 +12,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import gz.hoteles.entities.Habitacion;
+import gz.hoteles.entities.TipoHabitacion;
 import gz.hoteles.repositories.HabitacionRepository;
 
 @RestController
@@ -34,11 +36,25 @@ public class HabitacionController {
         return habitacionRepository.findById(id).get();
     }
 
+    @GetMapping("/filteredByNumber")
+    public List<Habitacion> getHabitacionesByNumero(@RequestParam String numero) {
+        return habitacionRepository.getHabitacionesByNumero(numero);
+    }
+
+    @GetMapping("/filteredByTypeOfRoom")
+    public List<Habitacion> getHabitacionesByTipoHabitacion(@RequestParam TipoHabitacion tipo) {
+        return habitacionRepository.getHabitacionesByTipoHabitacion(tipo);
+    }
+
+    @GetMapping("/filteredByPricePerNight")
+    public List<Habitacion> getHabitacionesByPrecioPorNoche(@RequestParam String precio) {
+        return habitacionRepository.getHabitacionesByPrecioPorNoche(precio);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<?> put(@PathVariable(name = "id") int id, @RequestBody Habitacion input) {
         Habitacion find = habitacionRepository.findById(id).get();   
         if(find != null){     
-            find.setIdHotel(input.getIdHotel()); // TODO cuidado
             find.setNumero(input.getNumero());
             find.setPrecioNoche(input.getPrecioNoche());
             find.setTipoHabitacion(input.getTipoHabitacion());
@@ -49,6 +65,9 @@ public class HabitacionController {
 
     @PostMapping
     public ResponseEntity<?> post(@RequestBody Habitacion input) {
+        if (input.getTipoHabitacion() == null) {
+            return ResponseEntity.badRequest().body("Debes introducir el tipo de habitación");
+        }
         Habitacion save = habitacionRepository.save(input);
         return ResponseEntity.ok(save);
     }

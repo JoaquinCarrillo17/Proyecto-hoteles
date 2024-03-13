@@ -12,8 +12,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import gz.hoteles.entities.CategoriaServicio;
 import gz.hoteles.entities.Servicio;
 import gz.hoteles.repositories.ServicioRepository;
 
@@ -34,6 +36,21 @@ public class ServicioController {
         return servicioRepository.findById(id).get();
     }
 
+    @GetMapping("/filteredByName")
+    public List<Servicio> getServicioByNombre(@RequestParam String nombre) {
+        return servicioRepository.getServicioByNombre(nombre);
+    }
+
+    @GetMapping("/filteredByCategory")
+    public List<Servicio> getServicioByCategoria(@RequestParam CategoriaServicio categoria) {
+        return servicioRepository.getServicioByCategoria(categoria);
+    }
+
+    @GetMapping("/filteredByDescription")
+    public List<Servicio> getServicioByDescripcion(@RequestParam String descripcion) {
+        return servicioRepository.getServicioByDescripcion(descripcion);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<?> put(@PathVariable(name = "id") int id, @RequestBody Servicio input) {
         Servicio find = servicioRepository.findById(id).get();   
@@ -48,6 +65,9 @@ public class ServicioController {
 
     @PostMapping
     public ResponseEntity<?> post(@RequestBody Servicio input) {
+        if (input.getNombre() == null || input.getNombre().isEmpty() || input.getCategoria() == null) {
+            return ResponseEntity.badRequest().body("Los campos 'nombre' y 'categoria' son obligatorios");
+        }
         Servicio save = servicioRepository.save(input);
         return ResponseEntity.ok(save);
     }

@@ -1,5 +1,6 @@
 package gz.hoteles.controller;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import gz.hoteles.entities.Huesped;
@@ -34,12 +36,36 @@ public class HuespedController {
         return huespedRepository.findById(id).get();
     }
 
+    @GetMapping("/filteredByName")
+    public List<Huesped> getHuespedesByNombre(@RequestParam String nombre) {
+        return huespedRepository.getHuespedesByNombre(nombre);
+    }
+
+    @GetMapping("/filteredByDni")
+    public List<Huesped> getHuespedesByDni(@RequestParam String dni) {
+        return huespedRepository.getHuespedesByDni(dni);
+    }
+
+    @GetMapping("/filteredByEmail")
+    public List<Huesped> getHuespedesByEmail(@RequestParam String email) {
+        return huespedRepository.getHuespedesByEmail(email);
+    }
+
+    @GetMapping("/filteredByCheckInDate")
+    public List<Huesped> getHuespedesByFechaEntrada(@RequestParam Date fecha) {
+        return huespedRepository.getHuespedesByFechaEntrada(fecha);
+    }
+
+    @GetMapping("/filteredByCheckOutDate")
+    public List<Huesped> getHuespedesByFechaSalida(@RequestParam Date fecha) {
+        return huespedRepository.getHuespedesByFechaSalida(fecha);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<?> put(@PathVariable(name = "id") int id, @RequestBody Huesped input) {
         Huesped find = huespedRepository.findById(id).get();   
         if(find != null){     
-            find.setNombre(input.getNombre());
-            find.setApellido(input.getApellido());
+            find.setNombreCompleto(input.getNombreCompleto());
             find.setDni(input.getDni());
             find.setEmail(input.getEmail());
             find.setFechaCheckIn(input.getFechaCheckIn());
@@ -51,6 +77,9 @@ public class HuespedController {
 
     @PostMapping
     public ResponseEntity<?> post(@RequestBody Huesped input) {
+        if(input.getNombreCompleto().isEmpty() || input.getNombreCompleto() == null || input.getDni() == null || input.getDni().isEmpty()) {
+            return ResponseEntity.badRequest().body("El nombre y el dni son obligatorios");
+        }
         Huesped save = huespedRepository.save(input);
         return ResponseEntity.ok(save);
     }
