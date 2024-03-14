@@ -28,5 +28,25 @@ public class Huesped {
     @ManyToOne
     @JoinColumn(name="habitacion_fk")
     private Habitacion habitacion;
+
+    public Huesped() {
+        
+    }
+
+    public Huesped (int id, String nombre, String dni, String email) {
+        this.id = id;
+        this.nombreCompleto = nombre;
+        this.dni = dni;
+        this.email = email;
+    }
+
+    public Huesped (int id, String nombre, String dni, String email, Date fechaCheckIn, Date fechaCheckOut) {
+        this.id = id;
+        this.nombreCompleto = nombre;
+        this.dni = dni;
+        this.email = email;
+        this.fechaCheckIn = fechaCheckIn;
+        this.fechaCheckOut = fechaCheckOut;
+    }
 }
 
