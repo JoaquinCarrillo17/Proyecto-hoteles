@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,18 +40,24 @@ public class ServicioController {
     }
 
     @GetMapping("/filteredByName")
-    public List<Servicio> getServicioByNombre(@RequestParam String nombre) {
-        return servicioRepository.getServicioByNombre(nombre);
+    public List<Servicio> getServicioByNombre(@RequestParam String nombre, @RequestParam int pages) {
+        Pageable pageable = PageRequest.of(0, pages);
+        Page<Servicio> page = servicioRepository.getServicioByNombre(nombre, pageable);
+        return page.getContent();
     }
 
     @GetMapping("/filteredByCategory")
-    public List<Servicio> getServicioByCategoria(@RequestParam CategoriaServicio categoria) {
-        return servicioRepository.getServicioByCategoria(categoria);
+    public List<Servicio> getServicioByCategoria(@RequestParam CategoriaServicio categoria, @RequestParam int pages) {
+        Pageable pageable = PageRequest.of(0, pages);
+        Page<Servicio> page = servicioRepository.getServicioByCategoria(categoria, pageable);
+        return page.getContent();
     }
 
     @GetMapping("/filteredByDescription")
-    public List<Servicio> getServicioByDescripcion(@RequestParam String descripcion) {
-        return servicioRepository.getServicioByDescripcion(descripcion);
+    public List<Servicio> getServicioByDescripcion(@RequestParam String descripcion, @RequestParam int pages) {
+        Pageable pageable = PageRequest.of(0, pages);
+        Page<Servicio> page = servicioRepository.getServicioByDescripcion(descripcion, pageable);
+        return page.getContent();
     }
 
     @PutMapping("/{id}")

@@ -26,11 +26,11 @@ public class Hotel {
     private String telefono;
     private String email;
     private String sitioWeb;
-    @JsonIgnore
+    //@JsonIgnore
     @ManyToMany
     @JoinTable(name = "hotel_servicio", joinColumns = {@JoinColumn(name = "hotel_fk")}, inverseJoinColumns = {@JoinColumn(name = "servicio_fk") })
     private List<Servicio> servicios;
-    @JsonIgnore
+    //@JsonIgnore
     @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Habitacion> habitaciones;
     

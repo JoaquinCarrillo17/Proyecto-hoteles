@@ -31,7 +31,7 @@ public class Habitacion {
     @ManyToOne
     @JoinColumn(name = "hotel_fk")
     private Hotel hotel;
-    @JsonIgnore
+    //@JsonIgnore
     @OneToMany(mappedBy = "habitacion", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Huesped> huespedes;
 }

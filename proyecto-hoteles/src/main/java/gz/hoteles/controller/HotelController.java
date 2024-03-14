@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import gz.hoteles.entities.Hotel;
 import gz.hoteles.repositories.HotelRepository;
+import gz.hoteles.servicio.IServicioHoteles;
 
 @RestController
 @RequestMapping("/hoteles")
@@ -24,6 +28,8 @@ public class HotelController {
     
     @Autowired
     HotelRepository hotelRepository;
+    @Autowired
+    IServicioHoteles servicioHoteles;
 
     @GetMapping()
     public List<Hotel> list() {
@@ -36,28 +42,38 @@ public class HotelController {
     }
 
     @GetMapping("/filteredByName")
-    public List<Hotel> getHotelByNombre(@RequestParam String nombre) {
-        return hotelRepository.getHotelByNombre(nombre);
+    public List<Hotel> getHotelByNombre(@RequestParam String nombre, @RequestParam int pages) {
+        Pageable pageable = PageRequest.of(0, pages);
+        Page<Hotel> page = hotelRepository.getHotelByNombre(nombre, pageable);
+        return page.getContent();
     }
 
     @GetMapping("/filteredByAddress")
-    public List<Hotel> getHotelByDirecion(@RequestParam String direccion) {
-        return hotelRepository.getHotelByDireccion(direccion);
+    public List<Hotel> getHotelByDirecion(@RequestParam String direccion, @RequestParam int pages) {
+        Pageable pageable = PageRequest.of(0, pages);
+        Page<Hotel> page = hotelRepository.getHotelByDireccion(direccion, pageable);
+        return page.getContent();
     }
 
     @GetMapping("/filteredByPhoneNumber")
-    public List<Hotel> getHotelByTelefono(@RequestParam String telefono) {
-        return hotelRepository.getHotelByTelefono(telefono);
+    public List<Hotel> getHotelByTelefono(@RequestParam String telefono, @RequestParam int pages) {
+        Pageable pageable = PageRequest.of(0, pages);
+        Page<Hotel> page = hotelRepository.getHotelByTelefono(telefono, pageable);
+        return page.getContent();
     }
 
     @GetMapping("/filteredByEmail")
-    public List<Hotel> getHotelByEmail(@RequestParam String email) {
-        return hotelRepository.getHotelByEmail(email);
+    public List<Hotel> getHotelByEmail(@RequestParam String email, @RequestParam int pages) {
+        Pageable pageable = PageRequest.of(0, pages);
+        Page<Hotel> page = hotelRepository.getHotelByEmail(email, pageable);
+        return page.getContent();
     }
 
     @GetMapping("/filteredByWebsite")
-    public List<Hotel> getHotelBySitioWeb(@RequestParam String sitioWeb) {
-        return hotelRepository.getHotelBySitioWeb(sitioWeb);
+    public List<Hotel> getHotelBySitioWeb(@RequestParam String sitioWeb, @RequestParam int pages) {
+        Pageable pageable = PageRequest.of(0, pages);
+        Page<Hotel> page = hotelRepository.getHotelBySitioWeb(sitioWeb, pageable);
+        return page.getContent();
     }
     
     @PutMapping("/{id}")
@@ -80,7 +96,7 @@ public class HotelController {
                 input.getDireccion() == null || input.getDireccion().isEmpty()) {
             return ResponseEntity.badRequest().body("Los campos 'nombre' y 'direccion' son obligatorios");
         }
-        Hotel save = hotelRepository.save(input);
+        Hotel save = servicioHoteles.crearHotel(input);
         return ResponseEntity.ok(save);
     }
     

@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,18 +40,24 @@ public class HabitacionController {
     }
 
     @GetMapping("/filteredByNumber")
-    public List<Habitacion> getHabitacionesByNumero(@RequestParam String numero) {
-        return habitacionRepository.getHabitacionesByNumero(numero);
+    public List<Habitacion> getHabitacionesByNumero(@RequestParam String numero, @RequestParam int pages) {
+        Pageable pageable = PageRequest.of(0, pages);
+        Page<Habitacion> page = habitacionRepository.getHabitacionesByNumero(numero, pageable);
+        return page.getContent();
     }
 
     @GetMapping("/filteredByTypeOfRoom")
-    public List<Habitacion> getHabitacionesByTipoHabitacion(@RequestParam TipoHabitacion tipo) {
-        return habitacionRepository.getHabitacionesByTipoHabitacion(tipo);
+    public List<Habitacion> getHabitacionesByTipoHabitacion(@RequestParam TipoHabitacion tipo, @RequestParam int pages) {
+        Pageable pageable = PageRequest.of(0, pages);
+        Page<Habitacion> page = habitacionRepository.getHabitacionesByTipoHabitacion(tipo, pageable);
+        return page.getContent();
     }
 
     @GetMapping("/filteredByPricePerNight")
-    public List<Habitacion> getHabitacionesByPrecioPorNoche(@RequestParam String precio) {
-        return habitacionRepository.getHabitacionesByPrecioPorNoche(precio);
+    public List<Habitacion> getHabitacionesByPrecioPorNoche(@RequestParam String precio, @RequestParam int pages) {
+        Pageable pageable = PageRequest.of(0, pages);
+        Page<Habitacion> page = habitacionRepository.getHabitacionesByPrecioPorNoche(precio, pageable);
+        return page.getContent();
     }
 
     @PutMapping("/{id}")

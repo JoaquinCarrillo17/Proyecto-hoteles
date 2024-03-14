@@ -1,7 +1,7 @@
 package gz.hoteles.repositories;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -10,18 +10,18 @@ import gz.hoteles.entities.Hotel;
 public interface HotelRepository extends JpaRepository<Hotel, Integer>{
 
     @Query("SELECT h FROM Hotel h WHERE h.nombre = :nombre")
-    List<Hotel> getHotelByNombre(String nombre);
+    Page<Hotel> getHotelByNombre(String nombre, Pageable pageable);
 
     @Query("SELECT h FROM Hotel h WHERE h.direccion = :direccion")
-    List<Hotel> getHotelByDireccion(String direccion);
+    Page<Hotel> getHotelByDireccion(String direccion, Pageable pageable);
 
     @Query("SELECT h FROM Hotel h WHERE h.telefono = :telefono")
-    List<Hotel> getHotelByTelefono(String telefono);
+    Page<Hotel> getHotelByTelefono(String telefono, Pageable pageable);
 
     @Query("SELECT h FROM Hotel h WHERE h.email = :email")
-    List<Hotel> getHotelByEmail(String email);
+    Page<Hotel> getHotelByEmail(String email, Pageable pageable);
 
     @Query("SELECT h FROM Hotel h WHERE h.sitioWeb = :sitioWeb")
-    List<Hotel> getHotelBySitioWeb(String sitioWeb);
+    Page<Hotel> getHotelBySitioWeb(String sitioWeb, Pageable pageable);
     
 }

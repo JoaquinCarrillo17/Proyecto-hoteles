@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,28 +40,38 @@ public class HuespedController {
     }
 
     @GetMapping("/filteredByName")
-    public List<Huesped> getHuespedesByNombre(@RequestParam String nombre) {
-        return huespedRepository.getHuespedesByNombre(nombre);
+    public List<Huesped> getHuespedesByNombre(@RequestParam String nombre, @RequestParam int pages) {
+        Pageable pageable = PageRequest.of(0, pages);
+        Page<Huesped> page = huespedRepository.getHuespedesByNombre(nombre, pageable);
+        return page.getContent();
     }
 
     @GetMapping("/filteredByDni")
-    public List<Huesped> getHuespedesByDni(@RequestParam String dni) {
-        return huespedRepository.getHuespedesByDni(dni);
+    public List<Huesped> getHuespedesByDni(@RequestParam String dni, @RequestParam int pages) {
+        Pageable pageable = PageRequest.of(0, pages);
+        Page<Huesped> page = huespedRepository.getHuespedesByDni(dni, pageable);
+        return page.getContent();
     }
 
     @GetMapping("/filteredByEmail")
-    public List<Huesped> getHuespedesByEmail(@RequestParam String email) {
-        return huespedRepository.getHuespedesByEmail(email);
+    public List<Huesped> getHuespedesByEmail(@RequestParam String email, @RequestParam int pages) {
+        Pageable pageable = PageRequest.of(0, pages);
+        Page<Huesped> page = huespedRepository.getHuespedesByEmail(email, pageable);
+        return page.getContent();
     }
 
     @GetMapping("/filteredByCheckInDate")
-    public List<Huesped> getHuespedesByFechaEntrada(@RequestParam Date fecha) {
-        return huespedRepository.getHuespedesByFechaEntrada(fecha);
+    public List<Huesped> getHuespedesByFechaEntrada(@RequestParam Date fecha, @RequestParam int pages) {
+        Pageable pageable = PageRequest.of(0, pages);
+        Page<Huesped> page = huespedRepository.getHuespedesByFechaEntrada(fecha, pageable);
+        return page.getContent();
     }
 
     @GetMapping("/filteredByCheckOutDate")
-    public List<Huesped> getHuespedesByFechaSalida(@RequestParam Date fecha) {
-        return huespedRepository.getHuespedesByFechaSalida(fecha);
+    public List<Huesped> getHuespedesByFechaSalida(@RequestParam Date fecha, @RequestParam int pages) {
+        Pageable pageable = PageRequest.of(0, pages);
+        Page<Huesped> page = huespedRepository.getHuespedesByFechaSalida(fecha, pageable);
+        return page.getContent();
     }
 
     @PutMapping("/{id}")

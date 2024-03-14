@@ -1,7 +1,8 @@
 package gz.hoteles.repositories;
 
-import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -11,13 +12,13 @@ import gz.hoteles.entities.Servicio;
 public interface ServicioRepository extends JpaRepository<Servicio, Integer>{
 
     @Query("SELECT s FROM Servicio s WHERE s.nombre = :nombre")
-	List<Servicio> getServicioByNombre(String nombre);
+	Page<Servicio> getServicioByNombre(String nombre, Pageable pageable);
 
     @Query("SELECT s FROM Servicio s WHERE s.categoria = :categoria")
-    List<Servicio> getServicioByCategoria(CategoriaServicio categoria);
+    Page<Servicio> getServicioByCategoria(CategoriaServicio categoria, Pageable pageable);
 
     @Query("SELECT s FROM Servicio s WHERE s.descripcion = :descripcion")
-    List<Servicio> getServicioByDescripcion(String descripcion);
+    Page<Servicio> getServicioByDescripcion(String descripcion, Pageable pageable);
     
 }
 
