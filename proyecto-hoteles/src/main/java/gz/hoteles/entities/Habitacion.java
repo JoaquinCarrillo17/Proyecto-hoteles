@@ -34,4 +34,8 @@ public class Habitacion {
     //@JsonIgnore
     @OneToMany(mappedBy = "habitacion", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Huesped> huespedes;
+
+    public void addHuesped(Huesped huesped) {
+        this.huespedes.add(huesped);
+    }
 }

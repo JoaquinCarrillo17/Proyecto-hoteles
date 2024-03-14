@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import gz.hoteles.entities.Habitacion;
 import gz.hoteles.entities.Hotel;
+import gz.hoteles.entities.Servicio;
 import gz.hoteles.repositories.HotelRepository;
 import gz.hoteles.servicio.IServicioHoteles;
 
@@ -96,8 +98,25 @@ public class HotelController {
                 input.getDireccion() == null || input.getDireccion().isEmpty()) {
             return ResponseEntity.badRequest().body("Los campos 'nombre' y 'direccion' son obligatorios");
         }
+        
         Hotel save = servicioHoteles.crearHotel(input);
         return ResponseEntity.ok(save);
+    }
+
+    @PostMapping("/{id}/servicios")
+    public ResponseEntity<?> anadirServicio(@PathVariable(name = "id") int id, @RequestBody Servicio input) {
+        Hotel h = servicioHoteles.anadirServicio(id, input);
+        if (h == null) {
+            return ResponseEntity.badRequest().build(); //CAMBIAR
+        } else return ResponseEntity.ok(h);
+    }
+
+    @PostMapping("/{id}/habitaciones")
+    public ResponseEntity<?> anadirHabitacion(@PathVariable(name = "id") int id, @RequestBody Habitacion input) {
+        Hotel h = servicioHoteles.anadirHabitacion(id, input);
+        if (h == null) {
+            return ResponseEntity.badRequest().build(); //CAMBIAR
+        } else return ResponseEntity.ok(h);
     }
     
     @DeleteMapping("/{id}")   

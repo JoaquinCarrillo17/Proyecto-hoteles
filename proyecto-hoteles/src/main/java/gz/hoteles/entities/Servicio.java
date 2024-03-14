@@ -1,5 +1,6 @@
 package gz.hoteles.entities;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -26,5 +27,9 @@ public class Servicio {
     private CategoriaServicio categoria;
     @JsonIgnore
     @ManyToMany(mappedBy = "servicios")
-    private List<Hotel> hoteles;
+    private List<Hotel> hoteles = new ArrayList<Hotel>();
+    
+    public void addHotel(Hotel hotel) {
+        this.hoteles.add(hotel);
+    }
 }

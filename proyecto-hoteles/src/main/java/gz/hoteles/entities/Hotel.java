@@ -1,5 +1,6 @@
 package gz.hoteles.entities;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -29,9 +30,17 @@ public class Hotel {
     //@JsonIgnore
     @ManyToMany
     @JoinTable(name = "hotel_servicio", joinColumns = {@JoinColumn(name = "hotel_fk")}, inverseJoinColumns = {@JoinColumn(name = "servicio_fk") })
-    private List<Servicio> servicios;
+    private List<Servicio> servicios = new ArrayList<Servicio>();
     //@JsonIgnore
     @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Habitacion> habitaciones;
+    private List<Habitacion> habitaciones = new ArrayList<Habitacion>();
+
+	public void addServicio(Servicio servicio) {
+		this.servicios.add(servicio);
+	}
+
+    public void addHabitacion(Habitacion habitacion) {
+        this.habitaciones.add(habitacion);
+    }
     
 }

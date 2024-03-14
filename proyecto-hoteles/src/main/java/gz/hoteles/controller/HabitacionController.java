@@ -19,8 +19,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import gz.hoteles.entities.Habitacion;
+import gz.hoteles.entities.Huesped;
 import gz.hoteles.entities.TipoHabitacion;
 import gz.hoteles.repositories.HabitacionRepository;
+import gz.hoteles.servicio.IServicioHoteles;
 
 @RestController
 @RequestMapping("/habitaciones")
@@ -28,6 +30,8 @@ public class HabitacionController {
     
     @Autowired
     HabitacionRepository habitacionRepository;
+    @Autowired
+    IServicioHoteles servicioHoteles;
 
     @GetMapping()
     public List<Habitacion> list() {
@@ -77,8 +81,16 @@ public class HabitacionController {
         if (input.getTipoHabitacion() == null) {
             return ResponseEntity.badRequest().body("Debes introducir el tipo de habitación");
         }
-        Habitacion save = habitacionRepository.save(input);
+        Habitacion save = servicioHoteles.crearHabitacion(input);
         return ResponseEntity.ok(save);
+    }
+
+    @PostMapping("/{id}/huespedes")
+    public ResponseEntity<?> anadirHuesped(@PathVariable(name = "id") int id, @RequestParam Huesped huesped) {
+        Habitacion h = servicioHoteles.anadirHuesped(id, huesped);
+        if (h == null) {
+            return ResponseEntity.badRequest().build(); //CAMBIAR
+        } else return ResponseEntity.ok(h);
     }
 
      @DeleteMapping("/{id}")   
