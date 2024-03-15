@@ -24,6 +24,12 @@ public class CustomExceptionHandler {
         return new ResponseEntity<>(errorResponse, ex.getStatusCode());
     }
 
+    @ExceptionHandler(value = IllegalArgumentException.class)
+    public ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException ex, WebRequest request) {
+        String errorMessage = "Error en la solicitud: " + ex.getMessage();
+        return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
     
     public static class ErrorResponse {
         private final HttpStatus status;

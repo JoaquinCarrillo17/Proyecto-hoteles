@@ -32,4 +32,15 @@ public class Servicio {
     public void addHotel(Hotel hotel) {
         this.hoteles.add(hotel);
     }
+
+    public Servicio() {
+        
+    }
+
+    public Servicio(int id, String nombre, String descripcion, CategoriaServicio categoria) {
+        this.id = id;
+        this.nombre = nombre;
+        this.descripcion = descripcion;
+        this.categoria = categoria;
+    }
 }

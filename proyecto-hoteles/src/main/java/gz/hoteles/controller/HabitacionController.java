@@ -1,12 +1,12 @@
 package gz.hoteles.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import gz.hoteles.entities.Habitacion;
 import gz.hoteles.entities.Huesped;
@@ -34,71 +35,102 @@ public class HabitacionController {
     IServicioHoteles servicioHoteles;
 
     @GetMapping()
-    public List<Habitacion> list() {
-        return habitacionRepository.findAll();
+    public ResponseEntity<?> list() {
+        List<Habitacion> habitaciones = habitacionRepository.findAll();
+        if (habitaciones.size() > 0) {
+            return ResponseEntity.ok(habitaciones);
+        } else throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No se ha encontrado ninguna habitación"); 
     }
 
     @GetMapping("/{id}")
-    public Habitacion get(@PathVariable(name = "id") int id) {
-        return habitacionRepository.findById(id).get();
+    public ResponseEntity<?> get(@PathVariable(name = "id") int id) {
+        if (id <= 0) {
+            throw new IllegalArgumentException("El ID debe ser un número entero positivo");
+        } 
+        Habitacion habitacion = habitacionRepository.findById(id).orElse(null);
+        if (habitacion == null) {
+           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ninguna habitación con el ID proporcionado");
+        } else return ResponseEntity.ok(habitacion);
     }
 
     @GetMapping("/filteredByNumber")
-    public List<Habitacion> getHabitacionesByNumero(@RequestParam String numero, @RequestParam int pages) {
+    public ResponseEntity<?> getHabitacionesByNumero(@RequestParam String numero, @RequestParam int pages) {
+        if (numero == null || numero.isEmpty()) {
+            throw new IllegalArgumentException("El parámetro 'número' no puede estar vacío");
+        }
         Pageable pageable = PageRequest.of(0, pages);
         Page<Habitacion> page = habitacionRepository.getHabitacionesByNumero(numero, pageable);
-        return page.getContent();
+        List<Habitacion> habitaciones = page.getContent();
+        if (habitaciones.size() > 0) {
+            return ResponseEntity.ok(habitaciones);
+        } else throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No se encontró ninguna habitación con el número '" + numero + "'");
     }
 
     @GetMapping("/filteredByTypeOfRoom")
-    public List<Habitacion> getHabitacionesByTipoHabitacion(@RequestParam TipoHabitacion tipo, @RequestParam int pages) {
+    public ResponseEntity<?> getHabitacionesByTipoHabitacion(@RequestParam TipoHabitacion tipo, @RequestParam int pages) {
+        if (tipo == null) {
+            throw new IllegalArgumentException("El parámetro 'tipo' no puede ser nulo");
+        }
         Pageable pageable = PageRequest.of(0, pages);
         Page<Habitacion> page = habitacionRepository.getHabitacionesByTipoHabitacion(tipo, pageable);
-        return page.getContent();
+        List<Habitacion> habitaciones = page.getContent();
+        if (habitaciones.size() > 0) {
+            return ResponseEntity.ok(habitaciones);
+        } else throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No se encontró ninguna habitación del tipo '" + tipo + "'");
     }
 
     @GetMapping("/filteredByPricePerNight")
-    public List<Habitacion> getHabitacionesByPrecioPorNoche(@RequestParam String precio, @RequestParam int pages) {
+    public ResponseEntity<?> getHabitacionesByPrecioPorNoche(@RequestParam String precio, @RequestParam int pages) {
+        if (precio == null || precio.isEmpty()) {
+            throw new IllegalArgumentException("El parámetro 'precio' no puede ser nulo.");
+        }
         Pageable pageable = PageRequest.of(0, pages);
         Page<Habitacion> page = habitacionRepository.getHabitacionesByPrecioPorNoche(precio, pageable);
-        return page.getContent();
+        List<Habitacion> habitaciones = page.getContent();
+        if (habitaciones.size() > 0) {
+            return ResponseEntity.ok(habitaciones);
+        } else throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No se encontró ninguna habitación con precio '" + precio + "€'");
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<?> put(@PathVariable(name = "id") int id, @RequestBody Habitacion input) {
-        Habitacion find = habitacionRepository.findById(id).get();   
+        if (id <= 0) {
+            throw new IllegalArgumentException("El ID debe ser un número entero positivo");
+        }
+        Habitacion find = habitacionRepository.findById(id).orElse(null);   
         if(find != null){     
             find.setNumero(input.getNumero());
             find.setPrecioNoche(input.getPrecioNoche());
             find.setTipoHabitacion(input.getTipoHabitacion());
-        }
+        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ninguna habitación por el ID proporcionado");
         Habitacion save = habitacionRepository.save(find);
-           return ResponseEntity.ok(save);
+        return ResponseEntity.ok(save);
     }
 
     @PostMapping
     public ResponseEntity<?> post(@RequestBody Habitacion input) {
         if (input.getTipoHabitacion() == null) {
-            return ResponseEntity.badRequest().body("Debes introducir el tipo de habitación");
+            throw new IllegalArgumentException("Debes introducir el tipo de habitación");
         }
         Habitacion save = servicioHoteles.crearHabitacion(input);
         return ResponseEntity.ok(save);
     }
 
     @PostMapping("/{id}/huespedes")
-    public ResponseEntity<?> anadirHuesped(@PathVariable(name = "id") int id, @RequestParam Huesped huesped) {
-        Habitacion h = servicioHoteles.anadirHuesped(id, huesped);
-        if (h == null) {
-            return ResponseEntity.badRequest().build(); //CAMBIAR
-        } else return ResponseEntity.ok(h);
+    public ResponseEntity<?> anadirHuesped(@PathVariable(name = "id") int id, @RequestBody Huesped huesped) {
+        if (id <= 0) {
+            throw new IllegalArgumentException("El ID debe ser un número entero positivo");
+        }
+        Habitacion h = servicioHoteles.anadirHuesped(id, huesped); // Contemplo el NOT_FOUND en el servicioHoteles
+        return ResponseEntity.ok(h);
     }
 
-     @DeleteMapping("/{id}")   
+    @DeleteMapping("/{id}")   
     public ResponseEntity<?> delete(@PathVariable(name = "id") int id) {
-          Optional<Habitacion> findById = habitacionRepository.findById(id);   
-        if(findById.get() != null){               
-            habitacionRepository.delete(findById.get());  
-        }
+        Habitacion findById = habitacionRepository.findById(id).orElse(null);   
+        if(findById != null){               
+            habitacionRepository.delete(findById);  
+        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ninguna habitacion por el ID proporcionado");
         return ResponseEntity.ok().build();
     }
 

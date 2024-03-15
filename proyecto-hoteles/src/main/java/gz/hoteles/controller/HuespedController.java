@@ -2,7 +2,6 @@ package gz.hoteles.controller;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -44,7 +43,7 @@ public class HuespedController {
     @GetMapping("/{id}")
     public ResponseEntity<?> get(@PathVariable(name = "id") int id) {
         if (id <= 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El ID debe ser un número entero positivo");
+            throw new IllegalArgumentException("El ID debe ser un número entero positivo");
         } 
         Huesped huesped = huespedRepository.findById(id).orElse(null);
         if (huesped == null) {
@@ -55,78 +54,78 @@ public class HuespedController {
     @GetMapping("/filteredByName")
     public ResponseEntity<?> getHuespedesByNombre(@RequestParam String nombre, @RequestParam int pages) {
         if (nombre == null || nombre.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El parámetro 'nombre' no puede estar vacío");
+            throw new IllegalArgumentException("El parámetro 'nombre' no puede estar vacío");
         }
         Pageable pageable = PageRequest.of(0, pages);
         Page<Huesped> page = huespedRepository.getHuespedesByNombre(nombre, pageable);
         List<Huesped> huespedes = page.getContent();
         if (huespedes.size() > 0){
             return ResponseEntity.ok(huespedes);
-        } else throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No se ha encontrado ningún huésped con nombre '" + nombre + "'");
+        } else throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No se encontró ningún huésped con nombre '" + nombre + "'");
     }
 
     @GetMapping("/filteredByDni")
     public ResponseEntity<?> getHuespedesByDni(@RequestParam String dni, @RequestParam int pages) {
         if (dni == null || dni.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El parámetro 'dni' no puede estar vacío");
+            throw new IllegalArgumentException("El parámetro 'dni' no puede estar vacío");
         }
         Pageable pageable = PageRequest.of(0, pages);
         Page<Huesped> page = huespedRepository.getHuespedesByDni(dni, pageable);
         List<Huesped> huespedes = page.getContent();
         if (huespedes.size() > 0){
             return ResponseEntity.ok(huespedes);
-        } else throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No se ha encontrado ningún huésped con dni '" + dni + "'");
+        } else throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No se encontró ningún huésped con dni '" + dni + "'");
     }
 
     @GetMapping("/filteredByEmail")
     public ResponseEntity<?> getHuespedesByEmail(@RequestParam String email, @RequestParam int pages) {
         if (email == null || email.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El parámetro 'email' no puede estar vacío");
+            throw new IllegalArgumentException("El parámetro 'email' no puede estar vacío");
         }
         Pageable pageable = PageRequest.of(0, pages);
         Page<Huesped> page = huespedRepository.getHuespedesByEmail(email, pageable);
         List<Huesped> huespedes = page.getContent();
         if (huespedes.size() > 0){
             return ResponseEntity.ok(huespedes);
-        } else throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No se ha encontrado ningún huésped con email '" + email + "'");
+        } else throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No se encontró ningún huésped con email '" + email + "'");
     }
 
     @GetMapping("/filteredByCheckInDate")
     public ResponseEntity<?> getHuespedesByFechaEntrada(@RequestParam Date fecha, @RequestParam int pages) {
         if (fecha == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El parámetro 'fecha' no puede estar vacío");
+            throw new IllegalArgumentException("El parámetro 'fecha' no puede estar vacío");
         }
         Pageable pageable = PageRequest.of(0, pages);
         Page<Huesped> page = huespedRepository.getHuespedesByFechaEntrada(fecha, pageable);
         List<Huesped> huespedes = page.getContent();
         if (huespedes.size() > 0){
             return ResponseEntity.ok(huespedes);
-        } else throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No se ha encontrado ningún huésped con fecha de entrada '" + fecha + "'");
+        } else throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No se encontró ningún huésped con fecha de entrada '" + fecha + "'");
     }
 
     @GetMapping("/filteredByCheckOutDate")
     public ResponseEntity<?> getHuespedesByFechaSalida(@RequestParam Date fecha, @RequestParam int pages) {
         if (fecha == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El parámetro 'fecha' no puede estar vacío");
+            throw new IllegalArgumentException("El parámetro 'fecha' no puede estar vacío");
         }
         Pageable pageable = PageRequest.of(0, pages);
         Page<Huesped> page = huespedRepository.getHuespedesByFechaSalida(fecha, pageable);
         List<Huesped> huespedes = page.getContent();
         if (huespedes.size() > 0){
             return ResponseEntity.ok(huespedes);
-        } else throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No se ha encontrado ningún huésped con fecha de salida '" + fecha + "'");
+        } else throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No se encontró ningún huésped con fecha de salida '" + fecha + "'");
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<?> put(@PathVariable(name = "id") int id, @RequestBody Huesped input) {
-        Huesped find = huespedRepository.findById(id).get();   
+        Huesped find = huespedRepository.findById(id).orElse(null);   
         if(find != null){     
             find.setNombreCompleto(input.getNombreCompleto());
             find.setDni(input.getDni());
             find.setEmail(input.getEmail());
             find.setFechaCheckIn(input.getFechaCheckIn());
             find.setFechaCheckOut(input.getFechaCheckOut());
-        }
+        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ningún huésped con el ID proporcionado");
         Huesped save = huespedRepository.save(find);
            return ResponseEntity.ok(save);
     }
@@ -135,20 +134,20 @@ public class HuespedController {
     public ResponseEntity<?> post(@RequestBody Huesped input) {
         
         if(input.getNombreCompleto().isEmpty() || input.getNombreCompleto() == null || input.getDni() == null || input.getDni().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre y el dni son obligatorios");
+            throw new IllegalArgumentException("El nombre y el dni son obligatorios");
         }
         Huesped save = huespedRepository.save(input);
         return ResponseEntity.ok(save);
     }
 
-     @DeleteMapping("/{id}")   
+    @DeleteMapping("/{id}")   
     public ResponseEntity<?> delete(@PathVariable(name = "id") int id) {
         if (id <= 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El ID debe ser un número entero positivo");
+            throw new IllegalArgumentException("El ID debe ser un número entero positivo");
         } 
-        Optional<Huesped> findById = huespedRepository.findById(id);   
-        if(findById.isPresent()){               
-            huespedRepository.delete(findById.get());  
+        Huesped findById = huespedRepository.findById(id).orElse(null);   
+        if(findById != null){               
+            huespedRepository.delete(findById);  
         } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ningún huésped con el ID proporcionado");
         return ResponseEntity.ok().build();
     }

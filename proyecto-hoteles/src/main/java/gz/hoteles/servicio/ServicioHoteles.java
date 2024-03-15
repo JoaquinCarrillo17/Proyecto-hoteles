@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import gz.hoteles.entities.Habitacion;
 import gz.hoteles.entities.Hotel;
@@ -58,7 +60,7 @@ public class ServicioHoteles implements IServicioHoteles {
             hotelRepository.save(hotel);
             servicio.addHotel(hotel);
             servicioRepository.save(servicio);
-        } 
+        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ningún hotel por el ID proporcionado");
         return hotel;
     }
 
@@ -75,7 +77,7 @@ public class ServicioHoteles implements IServicioHoteles {
                 huesped.setHabitacion(habitacion);
                 huespedRepository.save(huesped);
             }          
-        }
+        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ningún hotel por el ID proporcionado");
         return hotel;
     }
 
@@ -100,7 +102,7 @@ public class ServicioHoteles implements IServicioHoteles {
             habitacionRepository.save(habitacion);
             huesped.setHabitacion(habitacion);
             huespedRepository.save(huesped);
-        }
+        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ninguna habitacion por el ID proporcionado");
         return habitacion;
     }
     
