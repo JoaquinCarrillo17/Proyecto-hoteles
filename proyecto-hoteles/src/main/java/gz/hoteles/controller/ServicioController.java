@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import gz.hoteles.entities.CategoriaServicio;
+import gz.hoteles.entities.JSONMapper;
 import gz.hoteles.entities.Servicio;
 import gz.hoteles.repositories.ServicioRepository;
 
@@ -86,6 +88,30 @@ public class ServicioController {
         if (servicios.size() > 0) {
             return ResponseEntity.ok(servicios);
         } else throw new ResponseStatusException(HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping("/dynamicSearch")
+    public ResponseEntity<?> getHabitacionesFilteredByParam(@RequestBody JSONMapper json) {
+        if (json == null || json.getField() == null || json.getPages() <= 0
+                || json.getSortBy() == null) {
+            throw new IllegalArgumentException("Falta uno o más campos requeridos en el JSON");
+        }
+
+        String field = json.getField();
+        String value = json.getValue();
+        String sortDirection = json.getSortBy().equalsIgnoreCase("asc") ? "ASC" : "DESC";
+
+        Page<Servicio> page = switch (field) {
+            case "nombre" -> servicioRepository.findByNombreEquals(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+            case "descripcion" -> servicioRepository.findByDescripcionEquals(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+            case "categoria" -> servicioRepository.findByCategoriaEquals(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+            default -> throw new IllegalArgumentException("El campo proporcionado en el JSON no es válido");
+        };
+
+        List<Servicio> servicios = page.getContent();
+        if (servicios.size() > 0) {
+            return ResponseEntity.ok(servicios);
+        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontraron hoteles con " + json.getField() + " = " + json.getValue());
     }
 
     @PutMapping("/{id}")

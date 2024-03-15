@@ -2,6 +2,7 @@ package gz.hoteles.repositories;
 
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -19,6 +20,12 @@ public interface ServicioRepository extends JpaRepository<Servicio, Integer>{
 
     @Query("SELECT s FROM Servicio s WHERE s.descripcion = :descripcion")
     Page<Servicio> getServicioByDescripcion(String descripcion, Pageable pageable);
+
+	Page<Servicio> findByNombreEquals(String value, PageRequest of);
+
+    Page<Servicio> findByDescripcionEquals(String value, PageRequest of);
+
+    Page<Servicio> findByCategoriaEquals(String value, PageRequest of);
     
 }
 

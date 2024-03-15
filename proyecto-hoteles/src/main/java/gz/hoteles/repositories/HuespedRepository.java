@@ -3,6 +3,7 @@ package gz.hoteles.repositories;
 import java.util.Date;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -25,6 +26,16 @@ public interface HuespedRepository extends JpaRepository<Huesped, Integer> {
 
     @Query("SELECT h FROM Huesped h WHERE h.fechaCheckOut = :fecha")
 	Page<Huesped> getHuespedesByFechaSalida(Date fecha, Pageable pageable);
+
+    Page<Huesped> findByNombreCompletoEquals(String value, PageRequest of);
+
+    Page<Huesped> findByEmailEquals(String value, PageRequest of);
+
+    Page<Huesped> findByDniEquals(String value, PageRequest of);
+
+    Page<Huesped> findByFechaCheckInEquals(String value, PageRequest of);
+
+    Page<Huesped> findByFechaCheckOutEquals(String value, PageRequest of);
     
 }
 

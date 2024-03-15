@@ -1,8 +1,10 @@
 package gz.hoteles.entities;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -26,6 +28,7 @@ public class Hotel {
     private String telefono;
     private String email;
     private String sitioWeb;
+    
     //@JsonIgnore
     @ManyToMany
     @JoinTable(name = "hotel_servicio", joinColumns = {@JoinColumn(name = "hotel_fk")}, inverseJoinColumns = {@JoinColumn(name = "servicio_fk") })
@@ -33,6 +36,12 @@ public class Hotel {
     //@JsonIgnore
     @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Habitacion> habitaciones = new ArrayList<Habitacion>();
+    @JsonIgnore
+    private int numeroHabitaciones = habitaciones.size();
+    @JsonIgnore
+    private int numeroHabitacionesDisponibles;
+    @JsonIgnore
+    private int numeroHabitacionesReservadas;
 
 	public void addServicio(Servicio servicio) {
 		this.servicios.add(servicio);
@@ -40,6 +49,16 @@ public class Hotel {
 
     public void addHabitacion(Habitacion habitacion) {
         this.habitaciones.add(habitacion);
+        numeroHabitaciones++;
+        updateHabitaciones(Collections.singletonList(habitacion));
+    }
+
+    public void updateHabitaciones(List<Habitacion> habitaciones) {
+        for (Habitacion habitacion : habitaciones) {
+            if (habitacion.getHuespedes().size() > 0) {
+                this.numeroHabitacionesReservadas++;
+            } else this.numeroHabitacionesDisponibles++;
+        }
     }
 
     public Hotel() {

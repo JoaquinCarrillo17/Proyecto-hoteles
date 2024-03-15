@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,8 +20,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
-
 import gz.hoteles.entities.Huesped;
+import gz.hoteles.entities.JSONMapper;
 import gz.hoteles.repositories.HuespedRepository;
 
 @RestController
@@ -114,6 +115,32 @@ public class HuespedController {
         if (huespedes.size() > 0){
             return ResponseEntity.ok(huespedes);
         } else throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No se encontró ningún huésped con fecha de salida '" + fecha + "'");
+    }
+
+    @PostMapping("/dynamicSearch")
+    public ResponseEntity<?> getHabitacionesFilteredByParam(@RequestBody JSONMapper json) {
+        if (json == null || json.getField() == null || json.getPages() <= 0
+                || json.getSortBy() == null) {
+            throw new IllegalArgumentException("Falta uno o más campos requeridos en el JSON");
+        }
+
+        String field = json.getField();
+        String value = json.getValue();
+        String sortDirection = json.getSortBy().equalsIgnoreCase("asc") ? "ASC" : "DESC";
+
+        Page<Huesped> page = switch (field) {
+            case "nombre" -> huespedRepository.findByNombreCompletoEquals(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+            case "dni" -> huespedRepository.findByDniEquals(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+            case "email" -> huespedRepository.findByEmailEquals(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+            case "fecha entrada" -> huespedRepository.findByFechaCheckInEquals(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+            case "fecha salida" -> huespedRepository.findByFechaCheckOutEquals(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+            default -> throw new IllegalArgumentException("El campo proporcionado en el JSON no es válido");
+        };
+
+        List<Huesped> huespedes = page.getContent();
+        if (huespedes.size() > 0) {
+            return ResponseEntity.ok(huespedes);
+        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontraron hoteles con " + json.getField() + " = " + json.getValue());
     }
 
     @PutMapping("/{id}")

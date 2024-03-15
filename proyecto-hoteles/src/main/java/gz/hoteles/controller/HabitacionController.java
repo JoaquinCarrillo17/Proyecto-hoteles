@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import gz.hoteles.entities.Habitacion;
 import gz.hoteles.entities.Huesped;
+import gz.hoteles.entities.JSONMapper;
 import gz.hoteles.entities.TipoHabitacion;
 import gz.hoteles.repositories.HabitacionRepository;
 import gz.hoteles.servicio.IServicioHoteles;
@@ -90,6 +92,30 @@ public class HabitacionController {
         if (habitaciones.size() > 0) {
             return ResponseEntity.ok(habitaciones);
         } else throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No se encontró ninguna habitación con precio '" + precio + "€'");
+    }
+
+    @PostMapping("/dynamicSearch")
+    public ResponseEntity<?> getHabitacionesFilteredByParam(@RequestBody JSONMapper json) {
+        if (json == null || json.getField() == null || json.getPages() <= 0
+                || json.getSortBy() == null) {
+            throw new IllegalArgumentException("Falta uno o más campos requeridos en el JSON");
+        }
+
+        String field = json.getField();
+        String value = json.getValue();
+        String sortDirection = json.getSortBy().equalsIgnoreCase("asc") ? "ASC" : "DESC";
+
+        Page<Habitacion> page = switch (field) {
+            case "numero" -> habitacionRepository.findByNumeroEquals(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+            case "tipoHabitacion" -> habitacionRepository.findByTipoHabitacionEquals(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+            case "precioNoche" -> habitacionRepository.findByPrecioNocheEquals(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+            default -> throw new IllegalArgumentException("El campo proporcionado en el JSON no es válido");
+        };
+
+        List<Habitacion> habitaciones = page.getContent();
+        if (habitaciones.size() > 0) {
+            return ResponseEntity.ok(habitaciones);
+        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontraron hoteles con " + json.getField() + " = " + json.getValue());
     }
 
     @PutMapping("/{id}")

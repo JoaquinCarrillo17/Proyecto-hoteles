@@ -37,18 +37,19 @@ public class ServicioHoteles implements IServicioHoteles {
         for (Servicio s : servicios) {
             servicioRepository.save(s);
         }
-       Hotel h = hotelRepository.save(hotel);
-
-       for (Habitacion habitacion : h.getHabitaciones()) {
+        hotel.updateHabitaciones(hotel.getHabitaciones());
+        Hotel h = hotelRepository.save(hotel);
+        h.setNumeroHabitaciones(h.getHabitaciones().size());
+        for (Habitacion habitacion : h.getHabitaciones()) {
             habitacion.setHotel(h);
             habitacionRepository.save(habitacion);
             for (Huesped huesped : habitacion.getHuespedes()) {
                 huesped.setHabitacion(habitacion);
                 huespedRepository.save(huesped);
             }
-       }
+        }
 
-       return h;
+        return h;
     }
 
     @Override
