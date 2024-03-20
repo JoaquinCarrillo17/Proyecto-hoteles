@@ -22,8 +22,8 @@ public interface HabitacionRepository extends JpaRepository<Habitacion, Integer>
 
     Page<Habitacion> findByNumeroEquals(String value, PageRequest of);
 
-    Page<Habitacion> findByPrecioNocheEquals(String value, PageRequest of);
+    Page<Habitacion> findByPrecioNocheEquals(Float value, PageRequest of);
 
-    Page<Habitacion> findByTipoHabitacionEquals(String value, PageRequest of);
+    Page<Habitacion> findByTipoHabitacionEquals(TipoHabitacion value, PageRequest of);
 
 }

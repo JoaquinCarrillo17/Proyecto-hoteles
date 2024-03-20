@@ -118,7 +118,7 @@ public class HuespedController {
     }
 
     @PostMapping("/dynamicSearch")
-    public ResponseEntity<?> getHabitacionesFilteredByParam(@RequestBody JSONMapper json) {
+    public ResponseEntity<?> getHuespedesFilteredByParam(@RequestBody JSONMapper json) {
         if (json == null || json.getField() == null || json.getPages() <= 0
                 || json.getSortBy() == null) {
             throw new IllegalArgumentException("Falta uno o más campos requeridos en el JSON");

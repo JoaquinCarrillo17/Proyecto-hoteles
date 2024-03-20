@@ -106,9 +106,28 @@ public class HabitacionController {
         String sortDirection = json.getSortBy().equalsIgnoreCase("asc") ? "ASC" : "DESC";
 
         Page<Habitacion> page = switch (field) {
-            case "numero" -> habitacionRepository.findByNumeroEquals(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
-            case "tipoHabitacion" -> habitacionRepository.findByTipoHabitacionEquals(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
-            case "precioNoche" -> habitacionRepository.findByPrecioNocheEquals(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+            case "numero" -> habitacionRepository.findByNumeroEquals(value,
+                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+            case "precioNoche" -> habitacionRepository.findByPrecioNocheEquals(Float.parseFloat(value),
+                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+            case "tipoHabitacion" -> {
+                switch (value.toUpperCase()) {
+                    case "INDIVIDUAL":
+                        yield habitacionRepository.findByTipoHabitacionEquals(TipoHabitacion.INDIVIDUAL, PageRequest
+                                .of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+                    case "DOBLE":
+                        yield habitacionRepository.findByTipoHabitacionEquals(TipoHabitacion.DOBLE, PageRequest.of(0,
+                                json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+                    case "CUADRUPLE":
+                        yield habitacionRepository.findByTipoHabitacionEquals(TipoHabitacion.CUADRUPLE, PageRequest
+                                .of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+                    case "SUITE":
+                        yield habitacionRepository.findByTipoHabitacionEquals(TipoHabitacion.SUITE, PageRequest.of(0,
+                                json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+                    default:
+                        throw new IllegalArgumentException("Valor de tipo de habitación no válido");
+                }
+            }
             default -> throw new IllegalArgumentException("El campo proporcionado en el JSON no es válido");
         };
 

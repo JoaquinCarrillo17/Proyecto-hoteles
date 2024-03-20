@@ -104,7 +104,22 @@ public class ServicioController {
         Page<Servicio> page = switch (field) {
             case "nombre" -> servicioRepository.findByNombreEquals(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
             case "descripcion" -> servicioRepository.findByDescripcionEquals(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
-            case "categoria" -> servicioRepository.findByCategoriaEquals(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+            case "categoria" -> {
+                switch (value.toUpperCase()) {
+                    case "GIMNASIO":
+                        yield servicioRepository.findByCategoriaEquals(CategoriaServicio.GIMNASIO, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+                    case "LAVANDERIA":
+                        yield servicioRepository.findByCategoriaEquals(CategoriaServicio.LAVANDERIA, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+                    case "BAR":
+                        yield servicioRepository.findByCategoriaEquals(CategoriaServicio.BAR, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+                    case "CASINO":
+                        yield servicioRepository.findByCategoriaEquals(CategoriaServicio.CASINO, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+                    case "KARAOKE":
+                        yield servicioRepository.findByCategoriaEquals(CategoriaServicio.KARAOKE, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+                    default:
+                        throw new IllegalArgumentException("Valor de categoría no válido");
+                }
+            }
             default -> throw new IllegalArgumentException("El campo proporcionado en el JSON no es válido");
         };
 

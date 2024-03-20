@@ -25,7 +25,7 @@ public interface ServicioRepository extends JpaRepository<Servicio, Integer>{
 
     Page<Servicio> findByDescripcionEquals(String value, PageRequest of);
 
-    Page<Servicio> findByCategoriaEquals(String value, PageRequest of);
+    Page<Servicio> findByCategoriaEquals(CategoriaServicio value, PageRequest of);
     
 }
 
