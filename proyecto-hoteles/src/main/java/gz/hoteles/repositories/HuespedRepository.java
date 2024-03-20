@@ -33,9 +33,9 @@ public interface HuespedRepository extends JpaRepository<Huesped, Integer> {
 
     Page<Huesped> findByDniEquals(String value, PageRequest of);
 
-    Page<Huesped> findByFechaCheckInEquals(String value, PageRequest of);
+    Page<Huesped> findByFechaCheckInEquals(Date value, PageRequest of);
 
-    Page<Huesped> findByFechaCheckOutEquals(String value, PageRequest of);
+    Page<Huesped> findByFechaCheckOutEquals(Date value, PageRequest of);
     
 }
 

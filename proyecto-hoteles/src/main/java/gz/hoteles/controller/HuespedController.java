@@ -1,5 +1,7 @@
 package gz.hoteles.controller;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -123,17 +125,27 @@ public class HuespedController {
                 || json.getSortBy() == null) {
             throw new IllegalArgumentException("Falta uno o más campos requeridos en el JSON");
         }
+        
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 
         String field = json.getField();
         String value = json.getValue();
         String sortDirection = json.getSortBy().equalsIgnoreCase("asc") ? "ASC" : "DESC";
+        Date date = null;
+        if (field.equals("fecha entrada") || field.equals("fecha salida")) {
+        	try {
+				date = dateFormat.parse(value);
+			} catch (ParseException e) {
+				throw new IllegalArgumentException("Error al parsear la fecha: " + e.getMessage());
+			}
+        }
 
         Page<Huesped> page = switch (field) {
             case "nombre" -> huespedRepository.findByNombreCompletoEquals(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
             case "dni" -> huespedRepository.findByDniEquals(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
             case "email" -> huespedRepository.findByEmailEquals(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
-            case "fecha entrada" -> huespedRepository.findByFechaCheckInEquals(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
-            case "fecha salida" -> huespedRepository.findByFechaCheckOutEquals(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+            case "fecha entrada" -> huespedRepository.findByFechaCheckInEquals(date, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+            case "fecha salida" -> huespedRepository.findByFechaCheckOutEquals(date, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
             default -> throw new IllegalArgumentException("El campo proporcionado en el JSON no es válido");
         };
 
