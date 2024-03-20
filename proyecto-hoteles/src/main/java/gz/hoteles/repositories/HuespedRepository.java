@@ -13,19 +13,19 @@ import gz.hoteles.entities.Huesped;
 public interface HuespedRepository extends JpaRepository<Huesped, Integer> {
 
     @Query("SELECT h FROM Huesped h WHERE h.nombreCompleto = :nombre OR h.nombreCompleto LIKE %:nombre%")
-	Page<Huesped> getHuespedesByNombre(String nombre, Pageable pageable);
+    Page<Huesped> getHuespedesByNombre(String nombre, Pageable pageable);
 
     @Query("SELECT h FROM Huesped h WHERE h.dni = :dni")
-	Page<Huesped> getHuespedesByDni(String dni, Pageable pageable);
+    Page<Huesped> getHuespedesByDni(String dni, Pageable pageable);
 
     @Query("SELECT h FROM Huesped h WHERE h.email = :email")
-	Page<Huesped> getHuespedesByEmail(String email, Pageable pageable);
+    Page<Huesped> getHuespedesByEmail(String email, Pageable pageable);
 
     @Query("SELECT h FROM Huesped h WHERE h.fechaCheckIn = :fecha")
-	Page<Huesped> getHuespedesByFechaEntrada(Date fecha, Pageable pageable);
+    Page<Huesped> getHuespedesByFechaEntrada(Date fecha, Pageable pageable);
 
     @Query("SELECT h FROM Huesped h WHERE h.fechaCheckOut = :fecha")
-	Page<Huesped> getHuespedesByFechaSalida(Date fecha, Pageable pageable);
+    Page<Huesped> getHuespedesByFechaSalida(Date fecha, Pageable pageable);
 
     Page<Huesped> findByNombreCompletoEquals(String value, PageRequest of);
 
@@ -49,6 +49,19 @@ public interface HuespedRepository extends JpaRepository<Huesped, Integer> {
 
     Page<Huesped> findByEmailEqualsAndFechaCheckInAfterAndFechaCheckOutBefore(String value, Date fechaEntrada,
             Date fechaSalida, PageRequest of);
-    
-}
 
+    Page<Huesped> findByNombreCompletoContainingIgnoreCaseAndFechaCheckOutBefore(String value, Date fechaSalida,
+            PageRequest of);
+
+    Page<Huesped> findByDniEqualsAndFechaCheckOutBefore(String value, Date fechaSalida, PageRequest of);
+
+    Page<Huesped> findByEmailEqualsAndFechaCheckOutBefore(String value, Date fechaSalida, PageRequest of);
+
+    Page<Huesped> findByNombreCompletoContainingIgnoreCaseAndFechaCheckInAfter(String value, Date fechaEntrada,
+            PageRequest of);
+
+    Page<Huesped> findByDniEqualsAndFechaCheckInAfter(String value, Date fechaEntrada, PageRequest of);
+
+    Page<Huesped> findByEmailEqualsAndFechaCheckInAfter(String value, Date fechaEntrada, PageRequest of);
+
+}

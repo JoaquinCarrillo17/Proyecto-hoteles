@@ -34,7 +34,7 @@ import gz.hoteles.repositories.HuespedRepository;
 @RestController
 @RequestMapping("/huespedes")
 public class HuespedController {
-    
+
     @Autowired
     HuespedRepository huespedRepository;
 
@@ -55,11 +55,13 @@ public class HuespedController {
     public ResponseEntity<?> get(@PathVariable(name = "id") int id) {
         if (id <= 0) {
             throw new IllegalArgumentException("El ID debe ser un número entero positivo");
-        } 
+        }
         Huesped huesped = huespedRepository.findById(id).orElse(null);
         if (huesped == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ningún huésped con el ID proporcionado");
-        } else return ResponseEntity.ok(convertToDtoHuesped(huesped));
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No se encontró ningún huésped con el ID proporcionado");
+        } else
+            return ResponseEntity.ok(convertToDtoHuesped(huesped));
     }
 
     @GetMapping("/filteredByName")
@@ -73,7 +75,9 @@ public class HuespedController {
         List<HuespedDTO> huespedesDTO = convertToDtoHuespedList(huespedes);
         if (huespedesDTO.size() > 0) {
             return ResponseEntity.ok(huespedesDTO);
-        } else throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No se encontró ningún huésped con nombre '" + nombre + "'");
+        } else
+            throw new ResponseStatusException(HttpStatus.NO_CONTENT,
+                    "No se encontró ningún huésped con nombre '" + nombre + "'");
     }
 
     @GetMapping("/filteredByDni")
@@ -87,7 +91,9 @@ public class HuespedController {
         List<HuespedDTO> huespedesDTO = convertToDtoHuespedList(huespedes);
         if (huespedesDTO.size() > 0) {
             return ResponseEntity.ok(huespedesDTO);
-        } else throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No se encontró ningún huésped con dni '" + dni + "'");
+        } else
+            throw new ResponseStatusException(HttpStatus.NO_CONTENT,
+                    "No se encontró ningún huésped con dni '" + dni + "'");
     }
 
     @GetMapping("/filteredByEmail")
@@ -101,7 +107,9 @@ public class HuespedController {
         List<HuespedDTO> huespedesDTO = convertToDtoHuespedList(huespedes);
         if (huespedesDTO.size() > 0) {
             return ResponseEntity.ok(huespedesDTO);
-        } else throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No se encontró ningún huésped con email '" + email + "'");
+        } else
+            throw new ResponseStatusException(HttpStatus.NO_CONTENT,
+                    "No se encontró ningún huésped con email '" + email + "'");
     }
 
     @GetMapping("/filteredByCheckInDate")
@@ -115,7 +123,9 @@ public class HuespedController {
         List<HuespedDTO> huespedesDTO = convertToDtoHuespedList(huespedes);
         if (huespedesDTO.size() > 0) {
             return ResponseEntity.ok(huespedesDTO);
-        } else throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No se encontró ningún huésped con fecha de entrada '" + fecha + "'");
+        } else
+            throw new ResponseStatusException(HttpStatus.NO_CONTENT,
+                    "No se encontró ningún huésped con fecha de entrada '" + fecha + "'");
     }
 
     @GetMapping("/filteredByCheckOutDate")
@@ -129,7 +139,9 @@ public class HuespedController {
         List<HuespedDTO> huespedesDTO = convertToDtoHuespedList(huespedes);
         if (huespedesDTO.size() > 0) {
             return ResponseEntity.ok(huespedesDTO);
-        } else throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No se encontró ningún huésped con fecha de salida '" + fecha + "'");
+        } else
+            throw new ResponseStatusException(HttpStatus.NO_CONTENT,
+                    "No se encontró ningún huésped con fecha de salida '" + fecha + "'");
     }
 
     @PostMapping("/dynamicSearch")
@@ -138,33 +150,39 @@ public class HuespedController {
                 || json.getSortBy() == null) {
             throw new IllegalArgumentException("Falta uno o más campos requeridos en el JSON");
         }
-        
+
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 
         String field = json.getField();
         String value = json.getValue();
         String sortDirection = json.getSortDirection().equalsIgnoreCase("asc") ? "ASC" : "DESC";
         String sortByField = json.getSortBy(); // comprobar que recibe un string correcto
-        if (!sortByField.equalsIgnoreCase("nombre") && !sortByField.equalsIgnoreCase("dni") && !sortByField.equalsIgnoreCase("email") && !sortByField.equalsIgnoreCase("fecha entrada") && !sortByField.equalsIgnoreCase("fecha salida")) {
+        if (!sortByField.equalsIgnoreCase("nombreCompleto") && !sortByField.equalsIgnoreCase("dni")
+                && !sortByField.equalsIgnoreCase("email") && !sortByField.equalsIgnoreCase("fecha entrada")
+                && !sortByField.equalsIgnoreCase("fecha salida")) {
             throw new IllegalArgumentException("No se puede ordenar por " + sortByField);
         }
 
-
         Date date = null;
         if (field.equals("fecha entrada") || field.equals("fecha salida")) {
-        	try {
-				date = dateFormat.parse(value);
-			} catch (ParseException e) {
-				throw new IllegalArgumentException("Error al parsear la fecha: " + e.getMessage());
-			}
+            try {
+                date = dateFormat.parse(value);
+            } catch (ParseException e) {
+                throw new IllegalArgumentException("Error al parsear la fecha: " + e.getMessage());
+            }
         }
 
         Page<Huesped> page = switch (field) {
-            case "nombre" -> huespedRepository.findByNombreCompletoContainingIgnoreCase(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-            case "dni" -> huespedRepository.findByDniEquals(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-            case "email" -> huespedRepository.findByEmailEquals(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-            case "fecha entrada" -> huespedRepository.findByFechaCheckInEquals(date, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-            case "fecha salida" -> huespedRepository.findByFechaCheckOutEquals(date, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+            case "nombre" -> huespedRepository.findByNombreCompletoContainingIgnoreCase(value,
+                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+            case "dni" -> huespedRepository.findByDniEquals(value,
+                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+            case "email" -> huespedRepository.findByEmailEquals(value,
+                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+            case "fecha entrada" -> huespedRepository.findByFechaCheckInEquals(date,
+                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+            case "fecha salida" -> huespedRepository.findByFechaCheckOutEquals(date,
+                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
             default -> throw new IllegalArgumentException("No se puede filtrar por '" + field + "'");
         };
 
@@ -172,7 +190,9 @@ public class HuespedController {
         List<HuespedDTO> huespedesDTO = convertToDtoHuespedList(huespedes);
         if (huespedesDTO.size() > 0) {
             return ResponseEntity.ok(huespedesDTO);
-        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontraron hoteles con " + json.getField() + " = " + json.getValue());
+        } else
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No se encontraron hoteles con " + json.getField() + " = " + json.getValue());
     }
 
     @PostMapping("/dynamicSearchWithDateRange")
@@ -183,7 +203,8 @@ public class HuespedController {
                 || json.getSortBy() == null) {
             throw new IllegalArgumentException("Falta uno o más campos requeridos en el JSON");
         }
-        System.out.println(fechaEntrada);;
+        System.out.println(fechaEntrada);
+        ;
         String field = json.getField();
         String value = json.getValue();
         String sortDirection = json.getSortDirection().equalsIgnoreCase("asc") ? "ASC" : "DESC";
@@ -193,19 +214,52 @@ public class HuespedController {
             throw new IllegalArgumentException("No se puede ordenar por " + sortByField);
         }
 
-        Page<Huesped> page = switch (field) {
-            case "nombre" ->
-                huespedRepository.findByNombreCompletoContainingIgnoreCaseAndFechaCheckInAfterAndFechaCheckOutBefore(value,
-                        fechaEntrada, fechaSalida, PageRequest.of(0, json.getPages(),
-                                Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-            case "dni" -> huespedRepository.findByDniEqualsAndFechaCheckInAfterAndFechaCheckOutBefore(value,
-                    fechaEntrada, fechaSalida,
-                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-            case "email" -> huespedRepository.findByEmailEqualsAndFechaCheckInAfterAndFechaCheckOutBefore(value,
-                    fechaEntrada, fechaSalida,
-                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-            default -> throw new IllegalArgumentException("No se puede filtrar por '" + field + "'");
-        };
+        Page<Huesped> page = null;
+
+        if (fechaEntrada == null && fechaSalida == null) {
+            getHuespedesFilteredByParam(json);
+        } else {
+            if (fechaEntrada == null) {
+                page = switch (field) {
+                    case "nombre" -> huespedRepository.findByNombreCompletoContainingIgnoreCaseAndFechaCheckOutBefore(
+                            value, fechaSalida, PageRequest.of(0, json.getPages(),
+                                    Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+                    case "dni" ->
+                        huespedRepository.findByDniEqualsAndFechaCheckOutBefore(value, fechaSalida, PageRequest.of(0,
+                                json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+                    case "email" ->
+                        huespedRepository.findByEmailEqualsAndFechaCheckOutBefore(value, fechaSalida, PageRequest.of(0,
+                                json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+                    default -> throw new IllegalArgumentException("No se puede filtrar por '" + field + "'");
+                };
+            } else if (fechaSalida == null) {
+                page = switch (field) {
+                    case "nombre" -> huespedRepository.findByNombreCompletoContainingIgnoreCaseAndFechaCheckInAfter(
+                            value, fechaEntrada, PageRequest.of(0, json.getPages(),
+                                    Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+                    case "dni" -> huespedRepository.findByDniEqualsAndFechaCheckInAfter(value, fechaEntrada, PageRequest
+                            .of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+                    case "email" ->
+                        huespedRepository.findByEmailEqualsAndFechaCheckInAfter(value, fechaEntrada, PageRequest.of(0,
+                                json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+                    default -> throw new IllegalArgumentException("No se puede filtrar por '" + field + "'");
+                };
+            } else {
+                page = switch (field) {
+                    case "nombre" -> huespedRepository
+                            .findByNombreCompletoContainingIgnoreCaseAndFechaCheckInAfterAndFechaCheckOutBefore(value,
+                                    fechaEntrada, fechaSalida, PageRequest.of(0, json.getPages(),
+                                            Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+                    case "dni" -> huespedRepository.findByDniEqualsAndFechaCheckInAfterAndFechaCheckOutBefore(value,
+                            fechaEntrada, fechaSalida, PageRequest.of(0, json.getPages(),
+                                    Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+                    case "email" -> huespedRepository.findByEmailEqualsAndFechaCheckInAfterAndFechaCheckOutBefore(value,
+                            fechaEntrada, fechaSalida, PageRequest.of(0, json.getPages(),
+                                    Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+                    default -> throw new IllegalArgumentException("No se puede filtrar por '" + field + "'");
+                };
+            }
+        }
 
         List<Huesped> huespedes = page.getContent();
         List<HuespedDTO> huespedesDTO = convertToDtoHuespedList(huespedes);
@@ -217,44 +271,48 @@ public class HuespedController {
         }
     }
 
-
     @PutMapping("/{id}")
     public ResponseEntity<?> put(@PathVariable(name = "id") int id, @RequestBody Huesped input) {
-        Huesped find = huespedRepository.findById(id).orElse(null);   
-        if(find != null){     
+        Huesped find = huespedRepository.findById(id).orElse(null);
+        if (find != null) {
             find.setNombreCompleto(input.getNombreCompleto());
             find.setDni(input.getDni());
             find.setEmail(input.getEmail());
             find.setFechaCheckIn(input.getFechaCheckIn());
             find.setFechaCheckOut(input.getFechaCheckOut());
-        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ningún huésped con el ID proporcionado");
+        } else
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No se encontró ningún huésped con el ID proporcionado");
         Huesped save = huespedRepository.save(find);
         return ResponseEntity.ok(convertToDtoHuesped(save));
     }
 
     @PostMapping
     public ResponseEntity<?> post(@RequestBody Huesped input) {
-        
-        if(input.getNombreCompleto().isEmpty() || input.getNombreCompleto() == null || input.getDni() == null || input.getDni().isEmpty()) {
+
+        if (input.getNombreCompleto().isEmpty() || input.getNombreCompleto() == null || input.getDni() == null
+                || input.getDni().isEmpty()) {
             throw new IllegalArgumentException("El nombre y el dni son obligatorios");
         }
         Huesped save = huespedRepository.save(input);
         return ResponseEntity.ok(convertToDtoHuesped(save));
     }
 
-    @DeleteMapping("/{id}")   
+    @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable(name = "id") int id) {
         if (id <= 0) {
             throw new IllegalArgumentException("El ID debe ser un número entero positivo");
-        } 
-        Huesped findById = huespedRepository.findById(id).orElse(null);   
-        if(findById != null){               
-            huespedRepository.delete(findById);  
-        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ningún huésped con el ID proporcionado");
+        }
+        Huesped findById = huespedRepository.findById(id).orElse(null);
+        if (findById != null) {
+            huespedRepository.delete(findById);
+        } else
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No se encontró ningún huésped con el ID proporcionado");
         return ResponseEntity.ok().build();
     }
 
-    /*====== MAPPER ====== */
+    /* ====== MAPPER ====== */
 
     public static HuespedDTO convertToDtoHuesped(Huesped huesped) {
         return modelMapper.map(huesped, HuespedDTO.class);
@@ -262,8 +320,8 @@ public class HuespedController {
 
     public static List<HuespedDTO> convertToDtoHuespedList(List<Huesped> huespedes) {
         return huespedes.stream()
-                        .map(huesped -> convertToDtoHuesped(huesped))
-                        .collect(Collectors.toList());
+                .map(huesped -> convertToDtoHuesped(huesped))
+                .collect(Collectors.toList());
     }
 
 }
