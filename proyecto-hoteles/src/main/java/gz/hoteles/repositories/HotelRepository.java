@@ -10,10 +10,10 @@ import gz.hoteles.entities.Hotel;
 
 public interface HotelRepository extends JpaRepository<Hotel, Integer>{
 
-    @Query("SELECT h FROM Hotel h WHERE h.nombre = :nombre")
+    @Query("SELECT h FROM Hotel h WHERE h.nombre = :nombre OR h.nombre LIKE %:nombre%")
     Page<Hotel> getHotelByNombre(String nombre, Pageable pageable);
 
-    @Query("SELECT h FROM Hotel h WHERE h.direccion = :direccion")
+    @Query("SELECT h FROM Hotel h WHERE h.direccion = :direccion OR h.direccion LIKE %:direccion%")
     Page<Hotel> getHotelByDireccion(String direccion, Pageable pageable);
 
     @Query("SELECT h FROM Hotel h WHERE h.telefono = :telefono")
@@ -30,5 +30,8 @@ public interface HotelRepository extends JpaRepository<Hotel, Integer>{
     Page<Hotel> findByTelefonoEquals(String value, PageRequest of);
     Page<Hotel> findByNombreEquals(String value, PageRequest of);
     Page<Hotel> findByDireccionEquals(String value, PageRequest of);
+
+    Page<Hotel> findByNombreContainingIgnoreCase(String value, PageRequest of);
+    Page<Hotel> findByDireccionContainingIgnoreCase(String value, PageRequest of);
     
 }

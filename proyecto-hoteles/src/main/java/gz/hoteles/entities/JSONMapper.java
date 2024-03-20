@@ -8,4 +8,5 @@ public class JSONMapper {
     private String value;
     private int pages;
     private String sortBy;
+    private String sortDirection;
 }

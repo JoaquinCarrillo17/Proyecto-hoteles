@@ -12,7 +12,7 @@ import gz.hoteles.entities.Huesped;
 
 public interface HuespedRepository extends JpaRepository<Huesped, Integer> {
 
-    @Query("SELECT h FROM Huesped h WHERE h.nombreCompleto = :nombre")
+    @Query("SELECT h FROM Huesped h WHERE h.nombreCompleto = :nombre OR h.nombreCompleto LIKE %:nombre%")
 	Page<Huesped> getHuespedesByNombre(String nombre, Pageable pageable);
 
     @Query("SELECT h FROM Huesped h WHERE h.dni = :dni")
@@ -36,6 +36,19 @@ public interface HuespedRepository extends JpaRepository<Huesped, Integer> {
     Page<Huesped> findByFechaCheckInEquals(Date value, PageRequest of);
 
     Page<Huesped> findByFechaCheckOutEquals(Date value, PageRequest of);
+
+    Page<Huesped> findByNombreCompletoContainingIgnoreCase(String value, PageRequest of);
+
+    Page<Huesped> findByNombreCompletoContainingIgnoreCaseAndFechaCheckInAfterAndFechaCheckOutBefore(String value,
+            Date fechaEntrada,
+            Date fechaSalida, PageRequest of);
+
+    Page<Huesped> findByDniEqualsAndFechaCheckInAfterAndFechaCheckOutBefore(String value, Date fechaEntrada,
+            Date fechaSalida,
+            PageRequest of);
+
+    Page<Huesped> findByEmailEqualsAndFechaCheckInAfterAndFechaCheckOutBefore(String value, Date fechaEntrada,
+            Date fechaSalida, PageRequest of);
     
 }
 

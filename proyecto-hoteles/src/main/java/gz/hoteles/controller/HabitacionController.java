@@ -1,7 +1,9 @@
 package gz.hoteles.controller;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import gz.hoteles.dto.HabitacionDTO;
 import gz.hoteles.entities.Habitacion;
 import gz.hoteles.entities.Huesped;
 import gz.hoteles.entities.JSONMapper;
@@ -36,11 +39,14 @@ public class HabitacionController {
     @Autowired
     IServicioHoteles servicioHoteles;
 
+    private static final ModelMapper modelMapper = new ModelMapper();
+
     @GetMapping()
     public ResponseEntity<?> list() {
         List<Habitacion> habitaciones = habitacionRepository.findAll();
-        if (habitaciones.size() > 0) {
-            return ResponseEntity.ok(habitaciones);
+        List<HabitacionDTO> habitacionDTO = convertToDtoHabitacionList(habitaciones);
+        if (habitacionDTO.size() > 0) {
+            return ResponseEntity.ok(habitacionDTO);
         } else throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No se ha encontrado ninguna habitación"); 
     }
 
@@ -52,7 +58,7 @@ public class HabitacionController {
         Habitacion habitacion = habitacionRepository.findById(id).orElse(null);
         if (habitacion == null) {
            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ninguna habitación con el ID proporcionado");
-        } else return ResponseEntity.ok(habitacion);
+        } else return ResponseEntity.ok(convertToDtoHabitacion(habitacion));
     }
 
     @GetMapping("/filteredByNumber")
@@ -63,9 +69,10 @@ public class HabitacionController {
         Pageable pageable = PageRequest.of(0, pages);
         Page<Habitacion> page = habitacionRepository.getHabitacionesByNumero(numero, pageable);
         List<Habitacion> habitaciones = page.getContent();
-        if (habitaciones.size() > 0) {
-            return ResponseEntity.ok(habitaciones);
-        } else throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No se encontró ninguna habitación con el número '" + numero + "'");
+        List<HabitacionDTO> habitacionDTO = convertToDtoHabitacionList(habitaciones);
+        if (habitacionDTO.size() > 0) {
+            return ResponseEntity.ok(habitacionDTO);
+        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ninguna habitación con el número '" + numero + "'");
     }
 
     @GetMapping("/filteredByTypeOfRoom")
@@ -76,9 +83,10 @@ public class HabitacionController {
         Pageable pageable = PageRequest.of(0, pages);
         Page<Habitacion> page = habitacionRepository.getHabitacionesByTipoHabitacion(tipo, pageable);
         List<Habitacion> habitaciones = page.getContent();
-        if (habitaciones.size() > 0) {
-            return ResponseEntity.ok(habitaciones);
-        } else throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No se encontró ninguna habitación del tipo '" + tipo + "'");
+        List<HabitacionDTO> habitacionDTO = convertToDtoHabitacionList(habitaciones);
+        if (habitacionDTO.size() > 0) {
+            return ResponseEntity.ok(habitacionDTO);
+        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ninguna habitación del tipo '" + tipo + "'");
     }
 
     @GetMapping("/filteredByPricePerNight")
@@ -89,9 +97,10 @@ public class HabitacionController {
         Pageable pageable = PageRequest.of(0, pages);
         Page<Habitacion> page = habitacionRepository.getHabitacionesByPrecioPorNoche(precio, pageable);
         List<Habitacion> habitaciones = page.getContent();
-        if (habitaciones.size() > 0) {
-            return ResponseEntity.ok(habitaciones);
-        } else throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No se encontró ninguna habitación con precio '" + precio + "€'");
+        List<HabitacionDTO> habitacionDTO = convertToDtoHabitacionList(habitaciones);
+        if (habitacionDTO.size() > 0) {
+            return ResponseEntity.ok(habitacionDTO);
+        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ninguna habitación con precio '" + precio + "€'");
     }
 
     @PostMapping("/dynamicSearch")
@@ -103,37 +112,42 @@ public class HabitacionController {
 
         String field = json.getField();
         String value = json.getValue();
-        String sortDirection = json.getSortBy().equalsIgnoreCase("asc") ? "ASC" : "DESC";
+        String sortDirection = json.getSortDirection().equalsIgnoreCase("asc") ? "ASC" : "DESC";
+        String sortByField = json.getSortBy(); // comprobar que recibe un string correcto
+        if (!sortByField.equalsIgnoreCase("numero") && !sortByField.equalsIgnoreCase("precioNoche") && !sortByField.equalsIgnoreCase("tipoHabitacion")) {
+            throw new IllegalArgumentException("No se puede ordenar por " + sortByField);
+        }
 
         Page<Habitacion> page = switch (field) {
             case "numero" -> habitacionRepository.findByNumeroEquals(value,
-                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
             case "precioNoche" -> habitacionRepository.findByPrecioNocheEquals(Float.parseFloat(value),
-                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
             case "tipoHabitacion" -> {
                 switch (value.toUpperCase()) {
                     case "INDIVIDUAL":
                         yield habitacionRepository.findByTipoHabitacionEquals(TipoHabitacion.INDIVIDUAL, PageRequest
-                                .of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+                                .of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
                     case "DOBLE":
                         yield habitacionRepository.findByTipoHabitacionEquals(TipoHabitacion.DOBLE, PageRequest.of(0,
-                                json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+                                json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
                     case "CUADRUPLE":
                         yield habitacionRepository.findByTipoHabitacionEquals(TipoHabitacion.CUADRUPLE, PageRequest
-                                .of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+                                .of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
                     case "SUITE":
                         yield habitacionRepository.findByTipoHabitacionEquals(TipoHabitacion.SUITE, PageRequest.of(0,
-                                json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+                                json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
                     default:
                         throw new IllegalArgumentException("Valor de tipo de habitación no válido");
                 }
             }
-            default -> throw new IllegalArgumentException("El campo proporcionado en el JSON no es válido");
+            default -> throw new IllegalArgumentException("No se puede filtrar por '" + field + "'");
         };
 
         List<Habitacion> habitaciones = page.getContent();
-        if (habitaciones.size() > 0) {
-            return ResponseEntity.ok(habitaciones);
+        List<HabitacionDTO> habitacionDTO = convertToDtoHabitacionList(habitaciones);
+        if (habitacionDTO.size() > 0) {
+            return ResponseEntity.ok(habitacionDTO);
         } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontraron hoteles con " + json.getField() + " = " + json.getValue());
     }
 
@@ -149,7 +163,7 @@ public class HabitacionController {
             find.setTipoHabitacion(input.getTipoHabitacion());
         } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ninguna habitación por el ID proporcionado");
         Habitacion save = habitacionRepository.save(find);
-        return ResponseEntity.ok(save);
+        return ResponseEntity.ok(convertToDtoHabitacion(save));
     }
 
     @PostMapping
@@ -158,7 +172,7 @@ public class HabitacionController {
             throw new IllegalArgumentException("Debes introducir el tipo de habitación");
         }
         Habitacion save = servicioHoteles.crearHabitacion(input);
-        return ResponseEntity.ok(save);
+        return ResponseEntity.ok(convertToDtoHabitacion(save));
     }
 
     @PostMapping("/{id}/huespedes")
@@ -167,7 +181,7 @@ public class HabitacionController {
             throw new IllegalArgumentException("El ID debe ser un número entero positivo");
         }
         Habitacion h = servicioHoteles.anadirHuesped(id, huesped); // Contemplo el NOT_FOUND en el servicioHoteles
-        return ResponseEntity.ok(h);
+        return ResponseEntity.ok(convertToDtoHabitacion(h));
     }
 
     @DeleteMapping("/{id}")   
@@ -178,5 +192,18 @@ public class HabitacionController {
         } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ninguna habitacion por el ID proporcionado");
         return ResponseEntity.ok().build();
     }
+
+    /* ====== MAPPER ====== */
+
+    public static HabitacionDTO convertToDtoHabitacion(Habitacion habitacion) {
+        return modelMapper.map(habitacion, HabitacionDTO.class);
+    }
+
+    public static List<HabitacionDTO> convertToDtoHabitacionList(List<Habitacion> habitaciones) {
+        return habitaciones.stream()
+                           .map(habitacion -> convertToDtoHabitacion(habitacion))
+                           .collect(Collectors.toList());
+    }
+    
 
 }

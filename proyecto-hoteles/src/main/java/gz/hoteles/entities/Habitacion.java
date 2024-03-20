@@ -34,7 +34,7 @@ public class Habitacion {
     private Hotel hotel;
     //@JsonIgnore
     @OneToMany(mappedBy = "habitacion", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Huesped> huespedes = new ArrayList<Huesped>();;
+    private List<Huesped> huespedes = new ArrayList<Huesped>();
 
     public void addHuesped(Huesped huesped) {
         this.huespedes.add(huesped);

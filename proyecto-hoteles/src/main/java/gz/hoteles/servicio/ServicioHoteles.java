@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+
 import gz.hoteles.entities.Habitacion;
 import gz.hoteles.entities.Hotel;
 import gz.hoteles.entities.Huesped;
@@ -105,6 +106,7 @@ public class ServicioHoteles implements IServicioHoteles {
             huespedRepository.save(huesped);
         } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ninguna habitacion por el ID proporcionado");
         return habitacion;
-    }
-    
+    }    
+
+
 }

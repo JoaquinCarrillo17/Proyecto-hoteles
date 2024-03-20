@@ -12,7 +12,7 @@ import gz.hoteles.entities.Servicio;
 
 public interface ServicioRepository extends JpaRepository<Servicio, Integer>{
 
-    @Query("SELECT s FROM Servicio s WHERE s.nombre = :nombre")
+    @Query("SELECT s FROM Servicio s WHERE s.nombre = :nombre OR s.nombre LIKE %:nombre%")
 	Page<Servicio> getServicioByNombre(String nombre, Pageable pageable);
 
     @Query("SELECT s FROM Servicio s WHERE s.categoria = :categoria")
@@ -26,6 +26,8 @@ public interface ServicioRepository extends JpaRepository<Servicio, Integer>{
     Page<Servicio> findByDescripcionEquals(String value, PageRequest of);
 
     Page<Servicio> findByCategoriaEquals(CategoriaServicio value, PageRequest of);
+
+    Page<Servicio> findByNombreContainingIgnoreCase(String value, PageRequest of);
     
 }
 

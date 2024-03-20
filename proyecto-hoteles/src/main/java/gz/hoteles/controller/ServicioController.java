@@ -1,7 +1,9 @@
 package gz.hoteles.controller;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import gz.hoteles.dto.ServicioDTO;
 import gz.hoteles.entities.CategoriaServicio;
 import gz.hoteles.entities.JSONMapper;
 import gz.hoteles.entities.Servicio;
@@ -32,11 +35,14 @@ public class ServicioController {
     @Autowired
     ServicioRepository servicioRepository;
 
+    private static final ModelMapper modelMapper = new ModelMapper();
+
     @GetMapping()
     public ResponseEntity<?> list() {
         List<Servicio> servicios = servicioRepository.findAll();
-        if (servicios.size() > 0) {
-            return ResponseEntity.ok(servicios);
+        List<ServicioDTO> serviciosDTO = convertToDtoServicioList(servicios);
+        if (serviciosDTO.size() > 0) {
+            return ResponseEntity.ok(serviciosDTO);
         } else throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No se ha encontrado ningún servicio");
     }
 
@@ -48,7 +54,7 @@ public class ServicioController {
         Servicio servicio = servicioRepository.findById(id).orElse(null);
         if (servicio == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ningún servicio con el ID proporcionado");
-        } else return ResponseEntity.ok(servicio);
+        } else return ResponseEntity.ok(convertToDtoServicio(servicio));
     }
 
     @GetMapping("/filteredByName")
@@ -59,9 +65,10 @@ public class ServicioController {
         Pageable pageable = PageRequest.of(0, pages);
         Page<Servicio> page = servicioRepository.getServicioByNombre(nombre, pageable);
         List<Servicio> servicios = page.getContent();
-        if (servicios.size() > 0) {
-            return ResponseEntity.ok(servicios);
-        } else throw new ResponseStatusException(HttpStatus.NO_CONTENT);
+        List<ServicioDTO> serviciosDTO = convertToDtoServicioList(servicios);
+        if (serviciosDTO.size() > 0) {
+            return ResponseEntity.ok(serviciosDTO);
+        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ningún hotel por el nombre '" + nombre + "'");
     }
 
     @GetMapping("/filteredByCategory")
@@ -72,9 +79,10 @@ public class ServicioController {
         Pageable pageable = PageRequest.of(0, pages);
         Page<Servicio> page = servicioRepository.getServicioByCategoria(categoria, pageable);
         List<Servicio> servicios = page.getContent();
-        if (servicios.size() > 0) {
-            return ResponseEntity.ok(servicios);
-        } else throw new ResponseStatusException(HttpStatus.NO_CONTENT);
+        List<ServicioDTO> serviciosDTO = convertToDtoServicioList(servicios);
+        if (serviciosDTO.size() > 0) {
+            return ResponseEntity.ok(serviciosDTO);
+        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ningún servicio por la categoría '" + categoria + "'");
     }
 
     @GetMapping("/filteredByDescription")
@@ -85,9 +93,10 @@ public class ServicioController {
         Pageable pageable = PageRequest.of(0, pages);
         Page<Servicio> page = servicioRepository.getServicioByDescripcion(descripcion, pageable);
         List<Servicio> servicios = page.getContent();
-        if (servicios.size() > 0) {
-            return ResponseEntity.ok(servicios);
-        } else throw new ResponseStatusException(HttpStatus.NO_CONTENT);
+        List<ServicioDTO> serviciosDTO = convertToDtoServicioList(servicios);
+        if (serviciosDTO.size() > 0) {
+            return ResponseEntity.ok(serviciosDTO);
+        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ningún servicio por la descripción '" + descripcion + "'");
     }
 
     @PostMapping("/dynamicSearch")
@@ -99,33 +108,39 @@ public class ServicioController {
 
         String field = json.getField();
         String value = json.getValue();
-        String sortDirection = json.getSortBy().equalsIgnoreCase("asc") ? "ASC" : "DESC";
+        String sortDirection = json.getSortDirection().equalsIgnoreCase("asc") ? "ASC" : "DESC";
+        String sortByField = json.getSortBy(); // comprobar que recibe un string correcto
+        if (!sortByField.equalsIgnoreCase("nombre") && !sortByField.equalsIgnoreCase("descripcion") && !sortByField.equalsIgnoreCase("categoria")) {
+            throw new IllegalArgumentException("No se puede ordenar por " + sortByField);
+        }
+
 
         Page<Servicio> page = switch (field) {
-            case "nombre" -> servicioRepository.findByNombreEquals(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
-            case "descripcion" -> servicioRepository.findByDescripcionEquals(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+            case "nombre" -> servicioRepository.findByNombreContainingIgnoreCase(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+            case "descripcion" -> servicioRepository.findByDescripcionEquals(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
             case "categoria" -> {
                 switch (value.toUpperCase()) {
                     case "GIMNASIO":
-                        yield servicioRepository.findByCategoriaEquals(CategoriaServicio.GIMNASIO, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+                        yield servicioRepository.findByCategoriaEquals(CategoriaServicio.GIMNASIO, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
                     case "LAVANDERIA":
-                        yield servicioRepository.findByCategoriaEquals(CategoriaServicio.LAVANDERIA, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+                        yield servicioRepository.findByCategoriaEquals(CategoriaServicio.LAVANDERIA, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
                     case "BAR":
-                        yield servicioRepository.findByCategoriaEquals(CategoriaServicio.BAR, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+                        yield servicioRepository.findByCategoriaEquals(CategoriaServicio.BAR, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
                     case "CASINO":
-                        yield servicioRepository.findByCategoriaEquals(CategoriaServicio.CASINO, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+                        yield servicioRepository.findByCategoriaEquals(CategoriaServicio.CASINO, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
                     case "KARAOKE":
-                        yield servicioRepository.findByCategoriaEquals(CategoriaServicio.KARAOKE, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), "id")));
+                        yield servicioRepository.findByCategoriaEquals(CategoriaServicio.KARAOKE, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
                     default:
                         throw new IllegalArgumentException("Valor de categoría no válido");
                 }
             }
-            default -> throw new IllegalArgumentException("El campo proporcionado en el JSON no es válido");
+            default -> throw new IllegalArgumentException("No se puede filtrar por '" + field + "'");
         };
 
         List<Servicio> servicios = page.getContent();
-        if (servicios.size() > 0) {
-            return ResponseEntity.ok(servicios);
+        List<ServicioDTO> serviciosDTO = convertToDtoServicioList(servicios);
+        if (serviciosDTO.size() > 0) {
+            return ResponseEntity.ok(serviciosDTO);
         } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontraron hoteles con " + json.getField() + " = " + json.getValue());
     }
 
@@ -141,7 +156,7 @@ public class ServicioController {
             find.setDescripcion(input.getDescripcion());
         } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ningun servicio por el ID proporcionado");
         Servicio save = servicioRepository.save(find);
-           return ResponseEntity.ok(save);
+           return ResponseEntity.ok(convertToDtoServicio(save));
     }
 
     @PostMapping
@@ -150,7 +165,7 @@ public class ServicioController {
             throw new IllegalArgumentException("Los campos 'nombre' y 'categoria' son obligatorios");
         }
         Servicio save = servicioRepository.save(input);
-        return ResponseEntity.ok(save);
+        return ResponseEntity.ok(convertToDtoServicio(save));
     }
 
     @DeleteMapping("/{id}")   
@@ -160,6 +175,18 @@ public class ServicioController {
             servicioRepository.delete(findById);  
         } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ningun servicio por el ID proporcionado");
         return ResponseEntity.ok().build();
+    }
+
+    /*====== MAPPER ====== */
+
+    public static ServicioDTO convertToDtoServicio(Servicio servicio) {
+        return modelMapper.map(servicio, ServicioDTO.class);
+    }
+
+    public static List<ServicioDTO> convertToDtoServicioList(List<Servicio> servicios) {
+        return servicios.stream()
+                        .map(servicio -> convertToDtoServicio(servicio))
+                        .collect(Collectors.toList());
     }
     
 
