@@ -28,6 +28,25 @@ public interface ServicioRepository extends JpaRepository<Servicio, Integer>{
     Page<Servicio> findByCategoriaEquals(CategoriaServicio value, PageRequest of);
 
     Page<Servicio> findByNombreContainingIgnoreCase(String value, PageRequest of);
+
+    /* Funciones para el filtrado GET tocho */
+
+    Page<Servicio> findByNombreAndDescripcionAndCategoria(String nombre, String descripcion,
+            CategoriaServicio categoria, PageRequest of);
+
+    Page<Servicio> findByNombreAndDescripcion(String nombre, String descripcion, PageRequest of);
+
+    Page<Servicio> findByNombreAndCategoria(String nombre, CategoriaServicio categoria, PageRequest of);
+
+    Page<Servicio> findByDescripcionAndCategoria(String descripcion, CategoriaServicio categoria, PageRequest of);
+
+    Page<Servicio> findByNombre(String nombre, PageRequest of);
+
+    Page<Servicio> findByDescripcion(String descripcion, PageRequest of);
+
+    Page<Servicio> findByCategoria(CategoriaServicio categoria, PageRequest of);
+
+    /* Fin funciones GET tocho */
     
 }
 

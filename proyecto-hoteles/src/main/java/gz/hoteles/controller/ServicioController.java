@@ -27,11 +27,12 @@ import gz.hoteles.entities.CategoriaServicio;
 import gz.hoteles.entities.JSONMapper;
 import gz.hoteles.entities.Servicio;
 import gz.hoteles.repositories.ServicioRepository;
+import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
 @RequestMapping("/servicios")
 public class ServicioController {
-    
+
     @Autowired
     ServicioRepository servicioRepository;
 
@@ -43,18 +44,21 @@ public class ServicioController {
         List<ServicioDTO> serviciosDTO = convertToDtoServicioList(servicios);
         if (serviciosDTO.size() > 0) {
             return ResponseEntity.ok(serviciosDTO);
-        } else throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No se ha encontrado ningún servicio");
+        } else
+            throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No se ha encontrado ningún servicio");
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> get(@PathVariable(name = "id") int id) {
         if (id <= 0) {
             throw new IllegalArgumentException("El ID debe ser un número entero positivo");
-        } 
+        }
         Servicio servicio = servicioRepository.findById(id).orElse(null);
         if (servicio == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ningún servicio con el ID proporcionado");
-        } else return ResponseEntity.ok(convertToDtoServicio(servicio));
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No se encontró ningún servicio con el ID proporcionado");
+        } else
+            return ResponseEntity.ok(convertToDtoServicio(servicio));
     }
 
     @GetMapping("/filteredByName")
@@ -68,11 +72,14 @@ public class ServicioController {
         List<ServicioDTO> serviciosDTO = convertToDtoServicioList(servicios);
         if (serviciosDTO.size() > 0) {
             return ResponseEntity.ok(serviciosDTO);
-        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ningún hotel por el nombre '" + nombre + "'");
+        } else
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No se encontró ningún hotel por el nombre '" + nombre + "'");
     }
 
     @GetMapping("/filteredByCategory")
-    public ResponseEntity<?> getServicioByCategoria(@RequestParam CategoriaServicio categoria, @RequestParam int pages) {
+    public ResponseEntity<?> getServicioByCategoria(@RequestParam CategoriaServicio categoria,
+            @RequestParam int pages) {
         if (categoria == null) {
             throw new IllegalArgumentException("El parámetro 'categoría' no puede ser nulo");
         }
@@ -82,7 +89,9 @@ public class ServicioController {
         List<ServicioDTO> serviciosDTO = convertToDtoServicioList(servicios);
         if (serviciosDTO.size() > 0) {
             return ResponseEntity.ok(serviciosDTO);
-        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ningún servicio por la categoría '" + categoria + "'");
+        } else
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No se encontró ningún servicio por la categoría '" + categoria + "'");
     }
 
     @GetMapping("/filteredByDescription")
@@ -96,7 +105,9 @@ public class ServicioController {
         List<ServicioDTO> serviciosDTO = convertToDtoServicioList(servicios);
         if (serviciosDTO.size() > 0) {
             return ResponseEntity.ok(serviciosDTO);
-        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ningún servicio por la descripción '" + descripcion + "'");
+        } else
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No se encontró ningún servicio por la descripción '" + descripcion + "'");
     }
 
     @PostMapping("/dynamicSearch")
@@ -110,26 +121,33 @@ public class ServicioController {
         String value = json.getValue();
         String sortDirection = json.getSortDirection().equalsIgnoreCase("asc") ? "ASC" : "DESC";
         String sortByField = json.getSortBy(); // comprobar que recibe un string correcto
-        if (!sortByField.equalsIgnoreCase("nombre") && !sortByField.equalsIgnoreCase("descripcion") && !sortByField.equalsIgnoreCase("categoria")) {
+        if (!sortByField.equalsIgnoreCase("nombre") && !sortByField.equalsIgnoreCase("descripcion")
+                && !sortByField.equalsIgnoreCase("categoria")) {
             throw new IllegalArgumentException("No se puede ordenar por " + sortByField);
         }
 
-
         Page<Servicio> page = switch (field) {
-            case "nombre" -> servicioRepository.findByNombreContainingIgnoreCase(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-            case "descripcion" -> servicioRepository.findByDescripcionEquals(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+            case "nombre" -> servicioRepository.findByNombreContainingIgnoreCase(value,
+                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+            case "descripcion" -> servicioRepository.findByDescripcionEquals(value,
+                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
             case "categoria" -> {
                 switch (value.toUpperCase()) {
                     case "GIMNASIO":
-                        yield servicioRepository.findByCategoriaEquals(CategoriaServicio.GIMNASIO, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+                        yield servicioRepository.findByCategoriaEquals(CategoriaServicio.GIMNASIO, PageRequest.of(0,
+                                json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
                     case "LAVANDERIA":
-                        yield servicioRepository.findByCategoriaEquals(CategoriaServicio.LAVANDERIA, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+                        yield servicioRepository.findByCategoriaEquals(CategoriaServicio.LAVANDERIA, PageRequest.of(0,
+                                json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
                     case "BAR":
-                        yield servicioRepository.findByCategoriaEquals(CategoriaServicio.BAR, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+                        yield servicioRepository.findByCategoriaEquals(CategoriaServicio.BAR, PageRequest.of(0,
+                                json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
                     case "CASINO":
-                        yield servicioRepository.findByCategoriaEquals(CategoriaServicio.CASINO, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+                        yield servicioRepository.findByCategoriaEquals(CategoriaServicio.CASINO, PageRequest.of(0,
+                                json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
                     case "KARAOKE":
-                        yield servicioRepository.findByCategoriaEquals(CategoriaServicio.KARAOKE, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+                        yield servicioRepository.findByCategoriaEquals(CategoriaServicio.KARAOKE, PageRequest.of(0,
+                                json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
                     default:
                         throw new IllegalArgumentException("Valor de categoría no válido");
                 }
@@ -141,7 +159,46 @@ public class ServicioController {
         List<ServicioDTO> serviciosDTO = convertToDtoServicioList(servicios);
         if (serviciosDTO.size() > 0) {
             return ResponseEntity.ok(serviciosDTO);
-        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontraron hoteles con " + json.getField() + " = " + json.getValue());
+        } else
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No se encontraron servicios con " + json.getField() + " = " + json.getValue());
+    }
+
+    @Operation(summary = "Filtrado con GET por todos sus parámetros")
+    @GetMapping("/filteredByEverything")
+    public ResponseEntity<?> getFilteredByEverything(@RequestParam(required = false) String nombre,
+            @RequestParam(required = false) String descripcion,
+            @RequestParam(required = false) CategoriaServicio categoria, @RequestParam int pages) {
+       
+        Page<Servicio> page = null;
+
+        if (nombre != null && descripcion != null && categoria != null) {
+            page = servicioRepository.findByNombreAndDescripcionAndCategoria(nombre, descripcion, categoria,
+                    PageRequest.of(0, pages));
+        } else if (nombre != null && descripcion != null) {
+            page = servicioRepository.findByNombreAndDescripcion(nombre, descripcion, PageRequest.of(0, pages));
+        } else if (nombre != null && categoria != null) {
+            page = servicioRepository.findByNombreAndCategoria(nombre, categoria, PageRequest.of(0, pages));
+        } else if (descripcion != null && categoria != null) {
+            page = servicioRepository.findByDescripcionAndCategoria(descripcion, categoria, PageRequest.of(0, pages));
+        } else if (nombre != null) {
+            page = servicioRepository.findByNombre(nombre, PageRequest.of(0, pages));
+        } else if (descripcion != null) {
+            page = servicioRepository.findByDescripcion(descripcion, PageRequest.of(0, pages));
+        } else if (categoria != null) {
+            page = servicioRepository.findByCategoria(categoria, PageRequest.of(0, pages));
+        } else {
+            page = servicioRepository.findAll(PageRequest.of(0, pages));
+        }
+
+        List<Servicio> servicios = page.getContent();
+        List<ServicioDTO> serviciosDTO = convertToDtoServicioList(servicios);
+        if (serviciosDTO.size() > 0) {
+            return ResponseEntity.ok(serviciosDTO);
+        } else
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No se encontraron servicios por los parámetros proporcionados");
+
     }
 
     @PutMapping("/{id}")
@@ -149,14 +206,16 @@ public class ServicioController {
         if (id <= 0) {
             throw new IllegalArgumentException("El ID debe ser un número entero positivo");
         }
-        Servicio find = servicioRepository.findById(id).orElse(null);   
-        if(find != null){     
+        Servicio find = servicioRepository.findById(id).orElse(null);
+        if (find != null) {
             find.setCategoria(input.getCategoria());
             find.setNombre(input.getNombre());
             find.setDescripcion(input.getDescripcion());
-        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ningun servicio por el ID proporcionado");
+        } else
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No se encontró ningun servicio por el ID proporcionado");
         Servicio save = servicioRepository.save(find);
-           return ResponseEntity.ok(convertToDtoServicio(save));
+        return ResponseEntity.ok(convertToDtoServicio(save));
     }
 
     @PostMapping
@@ -168,16 +227,18 @@ public class ServicioController {
         return ResponseEntity.ok(convertToDtoServicio(save));
     }
 
-    @DeleteMapping("/{id}")   
+    @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable(name = "id") int id) {
-        Servicio findById = servicioRepository.findById(id).orElse(null);   
-        if(findById != null){               
-            servicioRepository.delete(findById);  
-        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ningun servicio por el ID proporcionado");
+        Servicio findById = servicioRepository.findById(id).orElse(null);
+        if (findById != null) {
+            servicioRepository.delete(findById);
+        } else
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No se encontró ningun servicio por el ID proporcionado");
         return ResponseEntity.ok().build();
     }
 
-    /*====== MAPPER ====== */
+    /* ====== MAPPER ====== */
 
     public static ServicioDTO convertToDtoServicio(Servicio servicio) {
         return modelMapper.map(servicio, ServicioDTO.class);
@@ -185,9 +246,8 @@ public class ServicioController {
 
     public static List<ServicioDTO> convertToDtoServicioList(List<Servicio> servicios) {
         return servicios.stream()
-                        .map(servicio -> convertToDtoServicio(servicio))
-                        .collect(Collectors.toList());
+                .map(servicio -> convertToDtoServicio(servicio))
+                .collect(Collectors.toList());
     }
-    
 
 }

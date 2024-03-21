@@ -29,6 +29,7 @@ import gz.hoteles.entities.JSONMapper;
 import gz.hoteles.entities.TipoHabitacion;
 import gz.hoteles.repositories.HabitacionRepository;
 import gz.hoteles.servicio.IServicioHoteles;
+import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
 @RequestMapping("/habitaciones")
@@ -148,7 +149,40 @@ public class HabitacionController {
         List<HabitacionDTO> habitacionDTO = convertToDtoHabitacionList(habitaciones);
         if (habitacionDTO.size() > 0) {
             return ResponseEntity.ok(habitacionDTO);
-        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontraron hoteles con " + json.getField() + " = " + json.getValue());
+        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontraron habitaciones con " + json.getField() + " = " + json.getValue());
+    }
+
+    @Operation(summary = "Filtrado con GET por todos sus parámetros")
+    @GetMapping("/filteredByEverything")
+    public ResponseEntity<?> getFilteredByEverything(@RequestParam(required = false) String numero, @RequestParam(required = false) TipoHabitacion tipoHabitacion, @RequestParam(required = false) Float precioNoche, @RequestParam int pages) {
+        
+        Page<Habitacion> page = null;
+
+        if (numero != null && tipoHabitacion != null && precioNoche != null) {
+            page = habitacionRepository.findByNumeroAndTipoHabitacionAndPrecioNoche(numero, tipoHabitacion, precioNoche,
+                    PageRequest.of(0, pages));
+        } else if (numero != null && tipoHabitacion != null) {
+            page = habitacionRepository.findByNumeroAndTipoHabitacion(numero, tipoHabitacion, PageRequest.of(0, pages));
+        } else if (numero != null && precioNoche != null) {
+            page = habitacionRepository.findByNumeroAndPrecioNoche(numero, precioNoche, PageRequest.of(0, pages));
+        } else if (tipoHabitacion != null && precioNoche != null) {
+            page = habitacionRepository.findByTipoHabitacionAndPrecioNoche(tipoHabitacion, precioNoche, PageRequest.of(0, pages));
+        } else if (numero != null) {
+            page = habitacionRepository.findByNumero(numero, PageRequest.of(0, pages));
+        } else if (tipoHabitacion != null) {
+            page = habitacionRepository.findByTipoHabitacion(tipoHabitacion, PageRequest.of(0, pages));
+        } else if (precioNoche != null) {
+            page = habitacionRepository.findByPrecioNoche(precioNoche, PageRequest.of(0, pages));
+        } else {
+            page = habitacionRepository.findAll(PageRequest.of(0, pages));
+        }
+
+        List<Habitacion> habitaciones = page.getContent();
+        List<HabitacionDTO> habitacionDTO = convertToDtoHabitacionList(habitaciones);
+        if (habitacionDTO.size() > 0) {
+            return ResponseEntity.ok(habitacionDTO);
+        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontraron habitaciones por los parametros proporcionados");
+
     }
 
     @PutMapping("/{id}")

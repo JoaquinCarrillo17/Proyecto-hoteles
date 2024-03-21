@@ -10,7 +10,7 @@ import gz.hoteles.entities.Habitacion;
 import gz.hoteles.entities.TipoHabitacion;
 
 public interface HabitacionRepository extends JpaRepository<Habitacion, Integer> {
-    
+
     @Query("SELECT h FROM Habitacion h WHERE h.numero = :numero")
     Page<Habitacion> getHabitacionesByNumero(String numero, Pageable pageable);
 
@@ -25,5 +25,25 @@ public interface HabitacionRepository extends JpaRepository<Habitacion, Integer>
     Page<Habitacion> findByPrecioNocheEquals(Float value, PageRequest of);
 
     Page<Habitacion> findByTipoHabitacionEquals(TipoHabitacion value, PageRequest of);
+
+    /* Funciones GET tocho */
+
+    Page<Habitacion> findByNumeroAndTipoHabitacionAndPrecioNoche(String numero, TipoHabitacion tipoHabitacion,
+            Float precioNoche, PageRequest of);
+
+    Page<Habitacion> findByNumeroAndTipoHabitacion(String numero, TipoHabitacion tipoHabitacion, PageRequest of);
+
+    Page<Habitacion> findByNumeroAndPrecioNoche(String numero, Float precioNoche, PageRequest of);
+
+    Page<Habitacion> findByTipoHabitacionAndPrecioNoche(TipoHabitacion tipoHabitacion, Float precioNoche,
+            PageRequest of);
+
+    Page<Habitacion> findByNumero(String numero, PageRequest of);
+
+    Page<Habitacion> findByTipoHabitacion(TipoHabitacion tipoHabitacion, PageRequest of);
+
+    Page<Habitacion> findByPrecioNoche(Float precioNoche, PageRequest of);
+
+    /* Fin funciones GET tocho */
 
 }
