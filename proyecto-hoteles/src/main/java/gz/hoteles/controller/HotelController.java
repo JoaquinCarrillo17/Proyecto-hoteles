@@ -29,11 +29,12 @@ import gz.hoteles.entities.JSONMapper;
 import gz.hoteles.entities.Servicio;
 import gz.hoteles.repositories.HotelRepository;
 import gz.hoteles.servicio.IServicioHoteles;
+import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
 @RequestMapping("/hoteles")
 public class HotelController {
-    
+
     @Autowired
     HotelRepository hotelRepository;
     @Autowired
@@ -47,17 +48,19 @@ public class HotelController {
         List<HotelDTO> hotelesDTO = convertToDtoHotelList(hoteles);
         if (hotelesDTO.size() > 0) {
             return ResponseEntity.ok(hotelesDTO);
-        } else throw new ResponseStatusException(HttpStatus.NO_CONTENT);
+        } else
+            throw new ResponseStatusException(HttpStatus.NO_CONTENT);
     }
-    
+
     @GetMapping("/{id}")
     public ResponseEntity<?> get(@PathVariable(name = "id") int id) {
         if (id <= 0) {
             throw new IllegalArgumentException("El ID debe ser un número entero positivo");
-        } 
+        }
         Hotel hotel = hotelRepository.findById(id).orElse(null);
         if (hotel == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ningún hotel por el ID proporcionado");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No se encontró ningún hotel por el ID proporcionado");
         } else {
             HotelDTO hotelDTO = convertToDtoHotel(hotel);
             return ResponseEntity.ok(hotelDTO);
@@ -75,7 +78,9 @@ public class HotelController {
         List<HotelDTO> hotelesDTO = convertToDtoHotelList(hoteles);
         if (hotelesDTO.size() > 0) {
             return ResponseEntity.ok(hotelesDTO);
-        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ningún hotel por el nombre '" + nombre + "'");
+        } else
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No se encontró ningún hotel por el nombre '" + nombre + "'");
     }
 
     @GetMapping("/filteredByAddress")
@@ -89,7 +94,9 @@ public class HotelController {
         List<HotelDTO> hotelesDTO = convertToDtoHotelList(hoteles);
         if (hotelesDTO.size() > 0) {
             return ResponseEntity.ok(hotelesDTO);
-        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ningún hotel por la dirección '" + direccion + "'");
+        } else
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No se encontró ningún hotel por la dirección '" + direccion + "'");
     }
 
     @GetMapping("/filteredByPhoneNumber")
@@ -103,7 +110,9 @@ public class HotelController {
         List<HotelDTO> hotelesDTO = convertToDtoHotelList(hoteles);
         if (hotelesDTO.size() > 0) {
             return ResponseEntity.ok(hotelesDTO);
-        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ningún hotel por el teléfono '" + telefono + "'");
+        } else
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No se encontró ningún hotel por el teléfono '" + telefono + "'");
     }
 
     @GetMapping("/filteredByEmail")
@@ -117,7 +126,9 @@ public class HotelController {
         List<HotelDTO> hotelesDTO = convertToDtoHotelList(hoteles);
         if (hotelesDTO.size() > 0) {
             return ResponseEntity.ok(hotelesDTO);
-        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ningún hotel por el email '" + email + "'");
+        } else
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No se encontró ningún hotel por el email '" + email + "'");
     }
 
     @GetMapping("/filteredByWebsite")
@@ -131,7 +142,9 @@ public class HotelController {
         List<HotelDTO> hotelesDTO = convertToDtoHotelList(hoteles);
         if (hotelesDTO.size() > 0) {
             return ResponseEntity.ok(hotelesDTO);
-        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ningún hotel por el sitio web '" + sitioWeb + "'");
+        } else
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No se encontró ningún hotel por el sitio web '" + sitioWeb + "'");
     }
 
     @PostMapping("/dynamicSearch")
@@ -145,16 +158,23 @@ public class HotelController {
         String value = json.getValue();
         String sortDirection = json.getSortDirection().equalsIgnoreCase("asc") ? "ASC" : "DESC";
         String sortByField = json.getSortBy(); // comprobar que recibe un string correcto
-        if (!sortByField.equalsIgnoreCase("sitioWeb") && !sortByField.equalsIgnoreCase("email") && !sortByField.equalsIgnoreCase("telefono") && !sortByField.equalsIgnoreCase("direccion") && !sortByField.equalsIgnoreCase("nombre")) {
+        if (!sortByField.equalsIgnoreCase("sitioWeb") && !sortByField.equalsIgnoreCase("email")
+                && !sortByField.equalsIgnoreCase("telefono") && !sortByField.equalsIgnoreCase("direccion")
+                && !sortByField.equalsIgnoreCase("nombre")) {
             throw new IllegalArgumentException("No se puede ordenar por " + sortByField);
         }
 
         Page<Hotel> page = switch (field) {
-            case "sitioWeb" -> hotelRepository.findBySitioWebEquals(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-            case "email" -> hotelRepository.findByEmailEquals(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-            case "telefono" -> hotelRepository.findByTelefonoEquals(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-            case "direccion" -> hotelRepository.findByDireccionContainingIgnoreCase(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-            case "nombre" -> hotelRepository.findByNombreContainingIgnoreCase(value, PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+            case "sitioWeb" -> hotelRepository.findBySitioWebEquals(value,
+                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+            case "email" -> hotelRepository.findByEmailEquals(value,
+                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+            case "telefono" -> hotelRepository.findByTelefonoEquals(value,
+                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+            case "direccion" -> hotelRepository.findByDireccionContainingIgnoreCase(value,
+                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+            case "nombre" -> hotelRepository.findByNombreContainingIgnoreCase(value,
+                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
             default -> throw new IllegalArgumentException("No se puede filtrar por '" + field + "'");
         };
 
@@ -162,10 +182,100 @@ public class HotelController {
         List<HotelDTO> hotelesDTO = convertToDtoHotelList(hoteles);
         if (hotelesDTO.size() > 0) {
             return ResponseEntity.ok(hotelesDTO);
-        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontraron hoteles con " + json.getField() + " = " + json.getValue());
-        
+        } else
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No se encontraron hoteles con " + json.getField() + " = " + json.getValue());
+
     }
-    
+
+    @Operation(summary = "Filtrado con GET por todos sus parámetros")
+    @GetMapping("/filteredByEverything")
+    public ResponseEntity<?> getFilteredByEverything(@RequestParam(required = false) String nombre,
+            @RequestParam(required = false) String direccion, @RequestParam(required = false) String telefono,
+            @RequestParam(required = false) String email, @RequestParam(required = false) String sitioWeb, @RequestParam int pages) {
+
+        Page<Hotel> page = null;
+
+        if (nombre != null && direccion != null && telefono != null && email != null && sitioWeb != null) {
+            page = hotelRepository.findByNombreAndDireccionAndTelefonoAndEmailAndSitioWeb(nombre, direccion, telefono,
+                    email, sitioWeb, PageRequest.of(0, pages));
+        } else if (nombre != null && direccion != null && telefono != null && email != null) {
+            page = hotelRepository.findByNombreAndDireccionAndTelefonoAndEmail(nombre, direccion, telefono, email,
+                    PageRequest.of(0, pages));
+        } else if (nombre != null && direccion != null && telefono != null) {
+            page = hotelRepository.findByNombreAndDireccionAndTelefono(nombre, direccion, telefono,
+                    PageRequest.of(0, pages));
+        } else if (nombre != null && direccion != null && email != null) {
+            page = hotelRepository.findByNombreAndDireccionAndEmail(nombre, direccion, email, PageRequest.of(0, pages));
+        } else if (nombre != null && direccion != null && sitioWeb != null) {
+            page = hotelRepository.findByNombreAndDireccionAndSitioWeb(nombre, direccion, sitioWeb,
+                    PageRequest.of(0, pages));
+        } else if (nombre != null && telefono != null && email != null) {
+            page = hotelRepository.findByNombreAndTelefonoAndEmail(nombre, telefono, email, PageRequest.of(0, pages));
+        } else if (nombre != null && telefono != null && sitioWeb != null) {
+            page = hotelRepository.findByNombreAndTelefonoAndSitioWeb(nombre, telefono, sitioWeb,
+                    PageRequest.of(0, pages));
+        } else if (nombre != null && email != null && sitioWeb != null) {
+            page = hotelRepository.findByNombreAndEmailAndSitioWeb(nombre, email, sitioWeb, PageRequest.of(0, pages));
+        } else if (direccion != null && telefono != null && email != null && sitioWeb != null) {
+            page = hotelRepository.findByDireccionAndTelefonoAndEmailAndSitioWeb(direccion, telefono, email, sitioWeb,
+                    PageRequest.of(0, pages));
+        } else if (direccion != null && telefono != null && email != null) {
+            page = hotelRepository.findByDireccionAndTelefonoAndEmail(direccion, telefono, email,
+                    PageRequest.of(0, pages));
+        } else if (direccion != null && telefono != null && sitioWeb != null) {
+            page = hotelRepository.findByDireccionAndTelefonoAndSitioWeb(direccion, telefono, sitioWeb,
+                    PageRequest.of(0, pages));
+        } else if (direccion != null && email != null && sitioWeb != null) {
+            page = hotelRepository.findByDireccionAndEmailAndSitioWeb(direccion, email, sitioWeb,
+                    PageRequest.of(0, pages));
+        } else if (telefono != null && email != null && sitioWeb != null) {
+            page = hotelRepository.findByTelefonoAndEmailAndSitioWeb(telefono, email, sitioWeb,
+                    PageRequest.of(0, pages));
+        } else if (nombre != null && direccion != null) {
+            page = hotelRepository.findByNombreAndDireccion(nombre, direccion, PageRequest.of(0, pages));
+        } else if (nombre != null && telefono != null) {
+            page = hotelRepository.findByNombreAndTelefono(nombre, telefono, PageRequest.of(0, pages));
+        } else if (nombre != null && email != null) {
+            page = hotelRepository.findByNombreAndEmail(nombre, email, PageRequest.of(0, pages));
+        } else if (nombre != null && sitioWeb != null) {
+            page = hotelRepository.findByNombreAndSitioWeb(nombre, sitioWeb, PageRequest.of(0, pages));
+        } else if (direccion != null && telefono != null) {
+            page = hotelRepository.findByDireccionAndTelefono(direccion, telefono, PageRequest.of(0, pages));
+        } else if (direccion != null && email != null) {
+            page = hotelRepository.findByDireccionAndEmail(direccion, email, PageRequest.of(0, pages));
+        } else if (direccion != null && sitioWeb != null) {
+            page = hotelRepository.findByDireccionAndSitioWeb(direccion, sitioWeb, PageRequest.of(0, pages));
+        } else if (telefono != null && email != null) {
+            page = hotelRepository.findByTelefonoAndEmail(telefono, email, PageRequest.of(0, pages));
+        } else if (telefono != null && sitioWeb != null) {
+            page = hotelRepository.findByTelefonoAndSitioWeb(telefono, sitioWeb, PageRequest.of(0, pages));
+        } else if (email != null && sitioWeb != null) {
+            page = hotelRepository.findByEmailAndSitioWeb(email, sitioWeb, PageRequest.of(0, pages));
+        } else if (nombre != null) {
+            page = hotelRepository.findByNombre(nombre, PageRequest.of(0, pages));
+        } else if (direccion != null) {
+            page = hotelRepository.findByDireccion(direccion, PageRequest.of(0, pages));
+        } else if (telefono != null) {
+            page = hotelRepository.findByTelefono(telefono, PageRequest.of(0, pages));
+        } else if (email != null) {
+            page = hotelRepository.findByEmail(email, PageRequest.of(0, pages));
+        } else if (sitioWeb != null) {
+            page = hotelRepository.findBySitioWeb(sitioWeb, PageRequest.of(0, pages));
+        } else {
+            page = hotelRepository.findAll(PageRequest.of(0, pages));
+        }
+
+        List<Hotel> hoteles = page.getContent();
+        List<HotelDTO> hotelesDTO = convertToDtoHotelList(hoteles);
+        if (hotelesDTO.size() > 0) {
+            return ResponseEntity.ok(hotelesDTO);
+        } else
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No se encontraron hoteles por los parámetros proporcionados");
+
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<?> put(@PathVariable(name = "id") int id, @RequestBody Hotel input) {
         Hotel find = hotelRepository.findById(id).orElse(null);
@@ -181,12 +291,12 @@ public class HotelController {
         Hotel save = hotelRepository.save(find);
         return ResponseEntity.ok(convertToDtoHotel(save));
     }
-    
+
     @PostMapping
-    public ResponseEntity<?> post(@RequestBody Hotel input) { //Los campos nombre y direccion seran obligatorios
+    public ResponseEntity<?> post(@RequestBody Hotel input) { // Los campos nombre y direccion seran obligatorios
         if (input.getNombre() == null || input.getNombre().isEmpty() ||
                 input.getDireccion() == null || input.getDireccion().isEmpty()) {
-                    throw new IllegalArgumentException("Los campos 'nombre' y 'direccion' son obligatorios");
+            throw new IllegalArgumentException("Los campos 'nombre' y 'direccion' son obligatorios");
         }
         Hotel save = servicioHoteles.crearHotel(input);
         return ResponseEntity.ok(convertToDtoHotel(save));
@@ -194,28 +304,30 @@ public class HotelController {
 
     @PostMapping("/{id}/servicios")
     public ResponseEntity<?> anadirServicio(@PathVariable(name = "id") int id, @RequestBody Servicio input) {
-        Hotel h = servicioHoteles.anadirServicio(id, input); //Comprobacion NOT_FOUND en la funcion
+        Hotel h = servicioHoteles.anadirServicio(id, input); // Comprobacion NOT_FOUND en la funcion
         return ResponseEntity.ok(convertToDtoHotel(h));
     }
 
     @PostMapping("/{id}/habitaciones")
     public ResponseEntity<?> anadirHabitacion(@PathVariable(name = "id") int id, @RequestBody Habitacion input) {
-        Hotel h = servicioHoteles.anadirHabitacion(id, input); //Comprobacion NOT_FOUND en la funcion
+        Hotel h = servicioHoteles.anadirHabitacion(id, input); // Comprobacion NOT_FOUND en la funcion
         return ResponseEntity.ok(convertToDtoHotel(h));
     }
-    
-    @DeleteMapping("/{id}")   
+
+    @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable(name = "id") int id) {
         if (id <= 0) {
             throw new IllegalArgumentException("El ID debe ser un número entero positivo");
-        } 
-        Hotel findById = hotelRepository.findById(id).orElse(null);   
-        if(findById != null){               
-            hotelRepository.delete(findById);  
-        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ningún hotel por el ID proporcionado");
+        }
+        Hotel findById = hotelRepository.findById(id).orElse(null);
+        if (findById != null) {
+            hotelRepository.delete(findById);
+        } else
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No se encontró ningún hotel por el ID proporcionado");
         return ResponseEntity.ok().build();
     }
-    
+
     /* ====== MAPPER ====== */
 
     public static HotelDTO convertToDtoHotel(Hotel hotel) {
@@ -224,8 +336,8 @@ public class HotelController {
 
     public static List<HotelDTO> convertToDtoHotelList(List<Hotel> hoteles) {
         return hoteles.stream()
-                        .map(hotel -> convertToDtoHotel(hotel))
-                        .collect(Collectors.toList());
+                .map(hotel -> convertToDtoHotel(hotel))
+                .collect(Collectors.toList());
     }
 
 }
