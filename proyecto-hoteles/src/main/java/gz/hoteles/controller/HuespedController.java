@@ -26,10 +26,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import gz.hoteles.dto.HabitacionDTO;
 import gz.hoteles.dto.HuespedDTO;
+import gz.hoteles.entities.Habitacion;
 import gz.hoteles.entities.Huesped;
 import gz.hoteles.entities.JSONMapper;
 import gz.hoteles.repositories.HuespedRepository;
+import gz.hoteles.servicio.IServicioHoteles;
+import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
 @RequestMapping("/huespedes")
@@ -37,6 +41,9 @@ public class HuespedController {
 
     @Autowired
     HuespedRepository huespedRepository;
+
+    @Autowired
+    IServicioHoteles servicioHoteles;
 
     private static final ModelMapper modelMapper = new ModelMapper();
 
@@ -203,8 +210,7 @@ public class HuespedController {
                 || json.getSortBy() == null) {
             throw new IllegalArgumentException("Falta uno o más campos requeridos en el JSON");
         }
-        System.out.println(fechaEntrada);
-        ;
+        
         String field = json.getField();
         String value = json.getValue();
         String sortDirection = json.getSortDirection().equalsIgnoreCase("asc") ? "ASC" : "DESC";
@@ -271,6 +277,124 @@ public class HuespedController {
         }
     }
 
+    @Operation(summary = "Filtrado con GET por todos sus parámetros")
+    @GetMapping("/filteredByEverythingWithDateRange")
+    public ResponseEntity<?> getFilteredByEverythingWithDateRange(@RequestParam(required = false) String nombre,
+            @RequestParam(required = false) String email, @RequestParam(required = false) String dni,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date fechaEntrada,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date fechaSalida,
+            @RequestParam int pages) {
+
+        Page<Huesped> page = null;
+        
+        if (fechaEntrada != null && fechaSalida != null) {
+            // Caso: Se proporcionan ambas fechas
+            page = findByNombreCompletoAndEmailAndDniAndFechaCheckInAndFechaCheckOut(nombre, email, dni, fechaEntrada, fechaSalida, pages);
+        } else if (fechaEntrada != null) {
+            // Caso: Solo se proporciona fecha de entrada
+            page = findByNombreCompletoAndEmailAndFechaCheckIn(nombre, email, dni, fechaEntrada, pages);
+        } else if (fechaSalida != null) {
+            // Caso: Solo se proporciona fecha de salida
+            page = findByNombreCompletoAndEmailAndDniAndFechaCheckOut(nombre, email, dni, fechaSalida, pages);
+        } else {
+            // Caso: No se proporciona ninguna fecha
+            page = findByNombreAndEmailAndDni(nombre, email, dni, pages);
+        }
+
+        List<Huesped> huespedes = page.getContent();
+        List<HuespedDTO> huespedesDTO = convertToDtoHuespedList(huespedes);
+        if (huespedesDTO.size() > 0) {
+            return ResponseEntity.ok(huespedesDTO);
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No se encontraron huéspedes con los parámetros proporcionados");
+        }
+
+    }
+
+    private Page<Huesped> findByNombreCompletoAndEmailAndDniAndFechaCheckInAndFechaCheckOut(String nombreCompleto, String email, String dni, Date fechaCheckIn, Date fechaCheckOut, int pages) {
+        if (nombreCompleto != null && email != null && dni != null) {
+            return huespedRepository.findByNombreCompletoAndEmailAndDniAndFechaCheckInAfterAndFechaCheckOutBefore(nombreCompleto, email, dni, fechaCheckIn, fechaCheckOut, PageRequest.of(0, pages));
+        } else if (nombreCompleto != null && email != null) {
+            return huespedRepository.findByNombreCompletoAndEmailAndFechaCheckInAfterAndFechaCheckOutBefore(nombreCompleto, email, fechaCheckIn, fechaCheckOut, PageRequest.of(0, pages));
+        } else if (nombreCompleto != null) {
+            return huespedRepository.findByNombreCompletoAndFechaCheckInAfterAndFechaCheckOutBefore(nombreCompleto, fechaCheckIn, fechaCheckOut, PageRequest.of(0, pages));
+        } else if (email != null && dni != null) {
+            return huespedRepository.findByEmailAndDniAndFechaCheckInAfterAndFechaCheckOutBefore(email, dni, fechaCheckIn, fechaCheckOut, PageRequest.of(0, pages));
+        } else if (email != null) {
+            return huespedRepository.findByEmailAndFechaCheckInAfterAndFechaCheckOutBefore(email, fechaCheckIn, fechaCheckOut, PageRequest.of(0, pages));
+        } else if (dni != null) {
+            return huespedRepository.findByDniAndFechaCheckInAfterAndFechaCheckOutBefore(dni, fechaCheckIn, fechaCheckOut, PageRequest.of(0, pages));
+        } else {
+            return huespedRepository.findByFechaCheckInAfterAndFechaCheckOutBefore(fechaCheckIn, fechaCheckOut, PageRequest.of(0, pages));
+        }
+    }
+    
+    private Page<Huesped> findByNombreCompletoAndEmailAndFechaCheckIn(String nombreCompleto, String email, String dni, Date fechaCheckIn, int pages) {
+        if (nombreCompleto != null && email != null && dni != null) {
+            return huespedRepository.findByNombreCompletoAndEmailAndDniAndFechaCheckInAfter(nombreCompleto, email, dni, fechaCheckIn, PageRequest.of(0, pages));
+        } else if (nombreCompleto != null && email != null) {
+            return huespedRepository.findByNombreCompletoAndEmailAndFechaCheckInAfter(nombreCompleto, email, fechaCheckIn, PageRequest.of(0, pages));
+        } else if (nombreCompleto != null) {
+            return huespedRepository.findByNombreCompletoAndFechaCheckInAfter(nombreCompleto, fechaCheckIn, PageRequest.of(0, pages));
+        } else if (email != null && dni != null) {
+            return huespedRepository.findByEmailAndDniAndFechaCheckInAfter(email, dni, fechaCheckIn, PageRequest.of(0, pages));
+        } else if (email != null) {
+            return huespedRepository.findByEmailAndFechaCheckInAfter(email, fechaCheckIn, PageRequest.of(0, pages));
+        } else if (dni != null) {
+            return huespedRepository.findByDniAndFechaCheckInAfter(dni, fechaCheckIn, PageRequest.of(0, pages));
+        } else {
+            return huespedRepository.findByFechaCheckInAfter(fechaCheckIn, PageRequest.of(0, pages));
+        }
+    }
+    
+    private Page<Huesped> findByNombreCompletoAndEmailAndDniAndFechaCheckOut(String nombreCompleto, String email, String dni, Date fechaCheckOut, int pages) {
+        if (nombreCompleto != null && email != null && dni != null) {
+            return huespedRepository.findByNombreCompletoAndEmailAndDniAndFechaCheckOutBefore(nombreCompleto, email, dni, fechaCheckOut, PageRequest.of(0, pages));
+        } else if (nombreCompleto != null && email != null) {
+            return huespedRepository.findByNombreCompletoAndEmailAndFechaCheckOutBefore(nombreCompleto, email, fechaCheckOut, PageRequest.of(0, pages));
+        } else if (nombreCompleto != null) {
+            return huespedRepository.findByNombreCompletoAndFechaCheckOutBefore(nombreCompleto, fechaCheckOut, PageRequest.of(0, pages));
+        } else if (email != null && dni != null) {
+            return huespedRepository.findByEmailAndDniAndFechaCheckOutBefore(email, dni, fechaCheckOut, PageRequest.of(0, pages));
+        } else if (email != null) {
+            return huespedRepository.findByEmailAndFechaCheckOutBefore(email, fechaCheckOut, PageRequest.of(0, pages));
+        } else if (dni != null) {
+            return huespedRepository.findByDniAndFechaCheckOutBefore(dni, fechaCheckOut, PageRequest.of(0, pages));
+        } else {
+            return huespedRepository.findByFechaCheckOutBefore(fechaCheckOut, PageRequest.of(0, pages));
+        }
+    }
+
+    private Page<Huesped> findByNombreAndEmailAndDni(String nombre, String email, String dni, int pages) {
+        if (nombre != null && email != null && dni != null) {
+            return huespedRepository.findByNombreCompletoAndEmailAndDni(nombre, email, dni, PageRequest.of(0, pages));
+        } else if (nombre != null && email != null) {
+            return huespedRepository.findByNombreCompletoAndEmail(nombre, email, PageRequest.of(0, pages));
+        } else if (nombre != null) {
+            return huespedRepository.findByNombreCompleto(nombre, PageRequest.of(0, pages));
+        } else if (email != null && dni != null) {
+            return huespedRepository.findByEmailAndDni(email, dni, PageRequest.of(0, pages));
+        } else if (email != null) {
+            return huespedRepository.findByEmail(email, PageRequest.of(0, pages));
+        } else if (dni != null) {
+            return huespedRepository.findByDni(dni, PageRequest.of(0, pages));
+        } else {
+            return huespedRepository.findAll(PageRequest.of(0, pages));
+        }
+    }
+
+    @Operation(summary = "Asocia un huésped NO EXISTENTE a una habitación")
+    @PostMapping("/{id}")
+    public ResponseEntity<?> linkearHuespedNoExistenteHabitacion(@PathVariable(name = "id") int id,
+            @RequestBody Huesped huesped) {
+        if (id <= 0) {
+            throw new IllegalArgumentException("El ID debe ser un número entero positivo");
+        }
+        Habitacion h = servicioHoteles.anadirHuesped(id, huesped);
+        return ResponseEntity.ok(convertToDtoHabitacion(h));
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<?> put(@PathVariable(name = "id") int id, @RequestBody Huesped input) {
         Huesped find = huespedRepository.findById(id).orElse(null);
@@ -322,6 +446,10 @@ public class HuespedController {
         return huespedes.stream()
                 .map(huesped -> convertToDtoHuesped(huesped))
                 .collect(Collectors.toList());
+    }
+
+    public static HabitacionDTO convertToDtoHabitacion(Habitacion habitacion) {
+        return modelMapper.map(habitacion, HabitacionDTO.class);
     }
 
 }

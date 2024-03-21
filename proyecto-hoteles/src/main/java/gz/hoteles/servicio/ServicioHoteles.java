@@ -106,7 +106,6 @@ public class ServicioHoteles implements IServicioHoteles {
             huespedRepository.save(huesped);
         } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ninguna habitacion por el ID proporcionado");
         return habitacion;
-    }    
-
+    } 
 
 }
