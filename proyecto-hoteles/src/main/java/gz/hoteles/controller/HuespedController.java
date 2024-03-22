@@ -3,8 +3,6 @@ package gz.hoteles.controller;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -136,9 +134,8 @@ public class HuespedController {
             throw new IllegalArgumentException("El parámetro 'fecha' no puede estar vacío");
         }
     
-        //log.info("La fecha introducida es: " + fechaUtc + ", es de tipo: " + fechaUtc.getClass());
+        System.out.println(fecha);
         
-        // Utilizar la fecha UTC para la consulta
         Pageable pageable = PageRequest.of(0, pages);
         Page<Huesped> page = huespedRepository.getHuespedesByFechaEntrada(fecha, pageable);
         List<Huesped> huespedes = page.getContent();
@@ -189,12 +186,13 @@ public class HuespedController {
 
         Date date = null;
         if (field.equals("fecha entrada") || field.equals("fecha salida")) {
-            try {
-                date = dateFormat.parse(value);
-            } catch (ParseException e) {
-                throw new IllegalArgumentException("Error al parsear la fecha: " + e.getMessage());
-            }
+        try {
+            date = dateFormat.parse(value);
+            System.out.println(date);
+        } catch (ParseException e) {
+            throw new IllegalArgumentException("Error al parsear la fecha: " + e.getMessage());
         }
+    }
 
         Page<Huesped> page = switch (field) {
             case "nombre" -> huespedRepository.findByNombreCompletoContainingIgnoreCase(value,
@@ -247,15 +245,15 @@ public class HuespedController {
                 switch (criteria.getOperation()) {
                     case "equals":
                         spec = spec.and((root, query, cb) -> cb.equal(root.get(criteria.getKey()),
-                                new Timestamp(date.getTime())));
+                                date));
                         break;
                     case "not equals":
                         spec = spec.and((root, query, cb) -> cb.notEqual(root.get(criteria.getKey()),
-                                new Timestamp(date.getTime())));
+                                date));
                         break;
                     case "contains":
                         spec = spec.and((root, query, cb) -> cb.like(root.get(criteria.getKey()),
-                                "%" + new Timestamp(date.getTime()) + "%"));
+                                "%" + date + "%"));
                         break;
                     case "greater than":
                         spec = spec.and(
@@ -352,7 +350,7 @@ public class HuespedController {
         Page<Huesped> page = null;
 
         if (fechaEntrada == null && fechaSalida == null) {
-            getHuespedesFilteredByParam(json);
+            return getHuespedesFilteredByParam(json);
         } else {
             if (fechaEntrada == null) {
                 page = switch (field) {
