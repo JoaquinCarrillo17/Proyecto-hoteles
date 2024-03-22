@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +34,9 @@ import gz.hoteles.entities.Huesped;
 import gz.hoteles.entities.JSONMapper;
 import gz.hoteles.repositories.HuespedRepository;
 import gz.hoteles.servicio.IServicioHoteles;
+import gz.hoteles.support.ListOrderCriteria;
+import gz.hoteles.support.SearchCriteria;
+import gz.hoteles.support.SearchRequest;
 import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
@@ -200,6 +204,65 @@ public class HuespedController {
         } else
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "No se encontraron hoteles con " + json.getField() + " = " + json.getValue());
+    }
+
+    @PostMapping("/dynamicSearchTocho")
+    public ResponseEntity<?> getFilteredByDynamicSearch(@RequestBody SearchRequest searchRequest) {
+        if (searchRequest == null || searchRequest.getListSearchCriteria() == null
+                || searchRequest.getListSearchCriteria().isEmpty()
+                || searchRequest.getPage() == null || searchRequest.getPage().getPageSize() <= 0
+                || searchRequest.getPage().getPageIndex() < 0) {
+            throw new IllegalArgumentException("Falta uno o más campos requeridos en el JSON");
+        }
+
+        List<SearchCriteria> searchCriteriaList = searchRequest.getListSearchCriteria();
+        ListOrderCriteria orderCriteriaList = searchRequest.getListOrderCriteria();
+        int pageSize = searchRequest.getPage().getPageSize();
+        int pageIndex = searchRequest.getPage().getPageIndex();
+
+        Specification<Huesped> spec = Specification.where(null);
+        for (SearchCriteria criteria : searchCriteriaList) {
+            switch (criteria.getOperation()) {
+                case "equals":
+                    spec = spec.and((root, query, cb) -> cb.equal(root.get(criteria.getKey()), criteria.getValue()));
+                    break;
+                case "not equals":
+                    spec = spec.and((root, query, cb) -> cb.notEqual(root.get(criteria.getKey()), criteria.getValue()));
+                    break;
+                case "contains":
+                    spec = spec.and((root, query, cb) -> cb.like(root.get(criteria.getKey()), "%" + criteria.getValue() + "%"));
+                    break;
+                case "greater than":
+                    spec = spec.and((root, query, cb) -> cb.greaterThan(root.get(criteria.getKey()), criteria.getValue()));
+                    break;
+                case "less than":
+                    spec = spec.and((root, query, cb) -> cb.lessThan(root.get(criteria.getKey()), criteria.getValue()));
+                    break;
+                case "greater or equals than":
+                    spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get(criteria.getKey()), criteria.getValue()));
+                    break;
+                case "less or equals than":
+                    spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get(criteria.getKey()), criteria.getValue()));
+                    break;
+                default:
+                    throw new IllegalArgumentException("Operador de búsqueda no válido: " + criteria.getOperation());
+            }
+        }
+
+        String sortByField = orderCriteriaList.getValueSortOrder();
+        String sortDirection = orderCriteriaList.getSortBy().equalsIgnoreCase("asc") ? "ASC" : "DESC";
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortByField);
+
+        Page<Huesped> page = huespedRepository.findAll(spec, PageRequest.of(pageIndex, pageSize, sort));
+
+        List<Huesped> huespedes = page.getContent();
+        List<HuespedDTO> huespedesDTO = convertToDtoHuespedList(huespedes);
+        if (huespedesDTO.size() > 0) {
+            return ResponseEntity.ok(huespedesDTO);
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No se encontraron huéspedes con los parámetros proporcionados"); }
+
     }
 
     @PostMapping("/dynamicSearchWithDateRange")

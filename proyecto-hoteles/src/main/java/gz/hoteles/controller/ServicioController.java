@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,9 +25,11 @@ import org.springframework.web.server.ResponseStatusException;
 
 import gz.hoteles.dto.ServicioDTO;
 import gz.hoteles.entities.CategoriaServicio;
-import gz.hoteles.entities.JSONMapper;
 import gz.hoteles.entities.Servicio;
 import gz.hoteles.repositories.ServicioRepository;
+import gz.hoteles.support.ListOrderCriteria;
+import gz.hoteles.support.SearchCriteria;
+import gz.hoteles.support.SearchRequest;
 import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
@@ -110,58 +113,139 @@ public class ServicioController {
                     "No se encontró ningún servicio por la descripción '" + descripcion + "'");
     }
 
+    /*
+     * @PostMapping("/dynamicSearch")
+     * public ResponseEntity<?> getHabitacionesFilteredByParam(@RequestBody
+     * JSONMapper json) {
+     * if (json == null || json.getField() == null || json.getPages() <= 0
+     * || json.getSortBy() == null) {
+     * throw new
+     * IllegalArgumentException("Falta uno o más campos requeridos en el JSON");
+     * }
+     * 
+     * String field = json.getField();
+     * String value = json.getValue();
+     * String sortDirection = json.getSortDirection().equalsIgnoreCase("asc") ?
+     * "ASC" : "DESC";
+     * String sortByField = json.getSortBy(); // comprobar que recibe un string
+     * correcto
+     * if (!sortByField.equalsIgnoreCase("nombre") &&
+     * !sortByField.equalsIgnoreCase("descripcion")
+     * && !sortByField.equalsIgnoreCase("categoria")) {
+     * throw new IllegalArgumentException("No se puede ordenar por " + sortByField);
+     * }
+     * 
+     * Page<Servicio> page = switch (field) {
+     * case "nombre" -> servicioRepository.findByNombreContainingIgnoreCase(value,
+     * PageRequest.of(0, json.getPages(),
+     * Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+     * case "descripcion" -> servicioRepository.findByDescripcionEquals(value,
+     * PageRequest.of(0, json.getPages(),
+     * Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+     * case "categoria" -> {
+     * switch (value.toUpperCase()) {
+     * case "GIMNASIO":
+     * yield servicioRepository.findByCategoriaEquals(CategoriaServicio.GIMNASIO,
+     * PageRequest.of(0,
+     * json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection),
+     * sortByField)));
+     * case "LAVANDERIA":
+     * yield servicioRepository.findByCategoriaEquals(CategoriaServicio.LAVANDERIA,
+     * PageRequest.of(0,
+     * json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection),
+     * sortByField)));
+     * case "BAR":
+     * yield servicioRepository.findByCategoriaEquals(CategoriaServicio.BAR,
+     * PageRequest.of(0,
+     * json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection),
+     * sortByField)));
+     * case "CASINO":
+     * yield servicioRepository.findByCategoriaEquals(CategoriaServicio.CASINO,
+     * PageRequest.of(0,
+     * json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection),
+     * sortByField)));
+     * case "KARAOKE":
+     * yield servicioRepository.findByCategoriaEquals(CategoriaServicio.KARAOKE,
+     * PageRequest.of(0,
+     * json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection),
+     * sortByField)));
+     * default:
+     * throw new IllegalArgumentException("Valor de categoría no válido");
+     * }
+     * }
+     * default -> throw new IllegalArgumentException("No se puede filtrar por '" +
+     * field + "'");
+     * };
+     * 
+     * List<Servicio> servicios = page.getContent();
+     * List<ServicioDTO> serviciosDTO = convertToDtoServicioList(servicios);
+     * if (serviciosDTO.size() > 0) {
+     * return ResponseEntity.ok(serviciosDTO);
+     * } else
+     * throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+     * "No se encontraron servicios con " + json.getField() + " = " +
+     * json.getValue());
+     * }
+     */
+
     @PostMapping("/dynamicSearch")
-    public ResponseEntity<?> getHabitacionesFilteredByParam(@RequestBody JSONMapper json) {
-        if (json == null || json.getField() == null || json.getPages() <= 0
-                || json.getSortBy() == null) {
+    public ResponseEntity<?> getFilteredByDynamicSearch(@RequestBody SearchRequest searchRequest) {
+        if (searchRequest == null || searchRequest.getListSearchCriteria() == null
+                || searchRequest.getListSearchCriteria().isEmpty()
+                || searchRequest.getPage() == null || searchRequest.getPage().getPageSize() <= 0
+                || searchRequest.getPage().getPageIndex() < 0) {
             throw new IllegalArgumentException("Falta uno o más campos requeridos en el JSON");
         }
 
-        String field = json.getField();
-        String value = json.getValue();
-        String sortDirection = json.getSortDirection().equalsIgnoreCase("asc") ? "ASC" : "DESC";
-        String sortByField = json.getSortBy(); // comprobar que recibe un string correcto
-        if (!sortByField.equalsIgnoreCase("nombre") && !sortByField.equalsIgnoreCase("descripcion")
-                && !sortByField.equalsIgnoreCase("categoria")) {
-            throw new IllegalArgumentException("No se puede ordenar por " + sortByField);
+        List<SearchCriteria> searchCriteriaList = searchRequest.getListSearchCriteria();
+        ListOrderCriteria orderCriteriaList = searchRequest.getListOrderCriteria();
+        int pageSize = searchRequest.getPage().getPageSize();
+        int pageIndex = searchRequest.getPage().getPageIndex();
+
+        Specification<Servicio> spec = Specification.where(null);
+        for (SearchCriteria criteria : searchCriteriaList) {
+            switch (criteria.getOperation()) {
+                case "equals":
+                    spec = spec.and((root, query, cb) -> cb.equal(root.get(criteria.getKey()), criteria.getValue()));
+                    break;
+                case "not equals":
+                    spec = spec.and((root, query, cb) -> cb.notEqual(root.get(criteria.getKey()), criteria.getValue()));
+                    break;
+                case "contains":
+                    spec = spec.and((root, query, cb) -> cb.like(root.get(criteria.getKey()), "%" + criteria.getValue() + "%"));
+                    break;
+                case "greater than":
+                    spec = spec.and((root, query, cb) -> cb.greaterThan(root.get(criteria.getKey()), criteria.getValue()));
+                    break;
+                case "less than":
+                    spec = spec.and((root, query, cb) -> cb.lessThan(root.get(criteria.getKey()), criteria.getValue()));
+                    break;
+                case "greater or equals than":
+                    spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get(criteria.getKey()), criteria.getValue()));
+                    break;
+                case "less or equals than":
+                    spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get(criteria.getKey()), criteria.getValue()));
+                    break;
+                default:
+                    throw new IllegalArgumentException("Operador de búsqueda no válido: " + criteria.getOperation());
+            }
         }
 
-        Page<Servicio> page = switch (field) {
-            case "nombre" -> servicioRepository.findByNombreContainingIgnoreCase(value,
-                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-            case "descripcion" -> servicioRepository.findByDescripcionEquals(value,
-                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-            case "categoria" -> {
-                switch (value.toUpperCase()) {
-                    case "GIMNASIO":
-                        yield servicioRepository.findByCategoriaEquals(CategoriaServicio.GIMNASIO, PageRequest.of(0,
-                                json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-                    case "LAVANDERIA":
-                        yield servicioRepository.findByCategoriaEquals(CategoriaServicio.LAVANDERIA, PageRequest.of(0,
-                                json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-                    case "BAR":
-                        yield servicioRepository.findByCategoriaEquals(CategoriaServicio.BAR, PageRequest.of(0,
-                                json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-                    case "CASINO":
-                        yield servicioRepository.findByCategoriaEquals(CategoriaServicio.CASINO, PageRequest.of(0,
-                                json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-                    case "KARAOKE":
-                        yield servicioRepository.findByCategoriaEquals(CategoriaServicio.KARAOKE, PageRequest.of(0,
-                                json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-                    default:
-                        throw new IllegalArgumentException("Valor de categoría no válido");
-                }
-            }
-            default -> throw new IllegalArgumentException("No se puede filtrar por '" + field + "'");
-        };
+        String sortByField = orderCriteriaList.getValueSortOrder();
+        String sortDirection = orderCriteriaList.getSortBy().equalsIgnoreCase("asc") ? "ASC" : "DESC";
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortByField);
+
+        Page<Servicio> page = servicioRepository.findAll(spec, PageRequest.of(pageIndex, pageSize, sort));
 
         List<Servicio> servicios = page.getContent();
         List<ServicioDTO> serviciosDTO = convertToDtoServicioList(servicios);
-        if (serviciosDTO.size() > 0) {
+        if (!serviciosDTO.isEmpty()) {
             return ResponseEntity.ok(serviciosDTO);
-        } else
+        } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "No se encontraron servicios con " + json.getField() + " = " + json.getValue());
+                    "No se encontraron servicios con los criterios proporcionados");
+        }
+
     }
 
     @Operation(summary = "Filtrado con GET por todos sus parámetros")
@@ -169,7 +253,7 @@ public class ServicioController {
     public ResponseEntity<?> getFilteredByEverything(@RequestParam(required = false) String nombre,
             @RequestParam(required = false) String descripcion,
             @RequestParam(required = false) CategoriaServicio categoria, @RequestParam int pages) {
-       
+
         Page<Servicio> page = null;
 
         if (nombre != null && descripcion != null && categoria != null) {

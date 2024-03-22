@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,10 +26,12 @@ import org.springframework.web.server.ResponseStatusException;
 import gz.hoteles.dto.HabitacionDTO;
 import gz.hoteles.entities.Habitacion;
 import gz.hoteles.entities.Huesped;
-import gz.hoteles.entities.JSONMapper;
 import gz.hoteles.entities.TipoHabitacion;
 import gz.hoteles.repositories.HabitacionRepository;
 import gz.hoteles.servicio.IServicioHoteles;
+import gz.hoteles.support.ListOrderCriteria;
+import gz.hoteles.support.SearchCriteria;
+import gz.hoteles.support.SearchRequest;
 import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
@@ -104,7 +107,7 @@ public class HabitacionController {
         } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ninguna habitación con precio '" + precio + "€'");
     }
 
-    @PostMapping("/dynamicSearch")
+    /*@PostMapping("/dynamicSearch")
     public ResponseEntity<?> getHabitacionesFilteredByParam(@RequestBody JSONMapper json) {
         if (json == null || json.getField() == null || json.getPages() <= 0
                 || json.getSortBy() == null) {
@@ -150,6 +153,63 @@ public class HabitacionController {
         if (habitacionDTO.size() > 0) {
             return ResponseEntity.ok(habitacionDTO);
         } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontraron habitaciones con " + json.getField() + " = " + json.getValue());
+    }*/
+
+    @PostMapping("/dynamicSearch")
+    public ResponseEntity<?> getFilteredByDynamicSearch(@RequestBody SearchRequest searchRequest) {
+        if (searchRequest == null || searchRequest.getListSearchCriteria() == null
+                || searchRequest.getListSearchCriteria().isEmpty()
+                || searchRequest.getPage() == null || searchRequest.getPage().getPageSize() <= 0
+                || searchRequest.getPage().getPageIndex() < 0) {
+            throw new IllegalArgumentException("Falta uno o más campos requeridos en el JSON");
+        }
+
+        List<SearchCriteria> searchCriteriaList = searchRequest.getListSearchCriteria();
+        ListOrderCriteria orderCriteriaList = searchRequest.getListOrderCriteria();
+        int pageSize = searchRequest.getPage().getPageSize();
+        int pageIndex = searchRequest.getPage().getPageIndex();
+
+        Specification<Habitacion> spec = Specification.where(null);
+        for (SearchCriteria criteria : searchCriteriaList) {
+            switch (criteria.getOperation()) {
+                case "equals":
+                    spec = spec.and((root, query, cb) -> cb.equal(root.get(criteria.getKey()), criteria.getValue()));
+                    break;
+                case "not equals":
+                    spec = spec.and((root, query, cb) -> cb.notEqual(root.get(criteria.getKey()), criteria.getValue()));
+                    break;
+                case "contains":
+                    spec = spec.and((root, query, cb) -> cb.like(root.get(criteria.getKey()), "%" + criteria.getValue() + "%"));
+                    break;
+                case "greater than":
+                    spec = spec.and((root, query, cb) -> cb.greaterThan(root.get(criteria.getKey()), criteria.getValue()));
+                    break;
+                case "less than":
+                    spec = spec.and((root, query, cb) -> cb.lessThan(root.get(criteria.getKey()), criteria.getValue()));
+                    break;
+                case "greater or equals than":
+                    spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get(criteria.getKey()), criteria.getValue()));
+                    break;
+                case "less or equals than":
+                    spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get(criteria.getKey()), criteria.getValue()));
+                    break;
+                default:
+                    throw new IllegalArgumentException("Operador de búsqueda no válido: " + criteria.getOperation());
+            }
+        }
+
+        String sortByField = orderCriteriaList.getValueSortOrder();
+        String sortDirection = orderCriteriaList.getSortBy().equalsIgnoreCase("asc") ? "ASC" : "DESC";
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortByField);
+
+        Page<Habitacion> page = habitacionRepository.findAll(spec, PageRequest.of(pageIndex, pageSize, sort));
+
+        List<Habitacion> habitaciones = page.getContent();
+        List<HabitacionDTO> habitacionDTO = convertToDtoHabitacionList(habitaciones);
+        if (habitacionDTO.size() > 0) {
+            return ResponseEntity.ok(habitacionDTO);
+        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontraron habitaciones por los parametros proporcionados");
+
     }
 
     @Operation(summary = "Filtrado con GET por todos sus parámetros")

@@ -4,6 +4,7 @@ package gz.hoteles.repositories;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -47,6 +48,8 @@ public interface ServicioRepository extends JpaRepository<Servicio, Integer>{
     Page<Servicio> findByCategoria(CategoriaServicio categoria, PageRequest of);
 
     /* Fin funciones GET tocho */
+
+    Page<Servicio> findAll(Specification<Servicio> spec, Pageable pageable); // Para el dynamic search tocho
     
 }
 
