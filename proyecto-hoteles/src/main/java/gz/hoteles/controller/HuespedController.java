@@ -3,11 +3,15 @@ package gz.hoteles.controller;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -43,6 +47,8 @@ import io.swagger.v3.oas.annotations.Operation;
 @RestController
 @RequestMapping("/huespedes")
 public class HuespedController {
+
+    Logger log = LoggerFactory.getLogger(HuespedController.class);
 
     @Autowired
     HuespedRepository huespedRepository;
@@ -125,23 +131,29 @@ public class HuespedController {
     }
 
     @GetMapping("/filteredByCheckInDate")
-    public ResponseEntity<?> getHuespedesByFechaEntrada(@RequestParam Date fecha, @RequestParam int pages) {
+    public ResponseEntity<?> getHuespedesByFechaEntrada(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date fecha, @RequestParam int pages) {
         if (fecha == null) {
             throw new IllegalArgumentException("El parámetro 'fecha' no puede estar vacío");
         }
+    
+        //log.info("La fecha introducida es: " + fechaUtc + ", es de tipo: " + fechaUtc.getClass());
+        
+        // Utilizar la fecha UTC para la consulta
         Pageable pageable = PageRequest.of(0, pages);
         Page<Huesped> page = huespedRepository.getHuespedesByFechaEntrada(fecha, pageable);
         List<Huesped> huespedes = page.getContent();
         List<HuespedDTO> huespedesDTO = convertToDtoHuespedList(huespedes);
         if (huespedesDTO.size() > 0) {
             return ResponseEntity.ok(huespedesDTO);
-        } else
+        } else {
             throw new ResponseStatusException(HttpStatus.NO_CONTENT,
                     "No se encontró ningún huésped con fecha de entrada '" + fecha + "'");
+        }
     }
 
     @GetMapping("/filteredByCheckOutDate")
-    public ResponseEntity<?> getHuespedesByFechaSalida(@RequestParam Date fecha, @RequestParam int pages) {
+    public ResponseEntity<?> getHuespedesByFechaSalida(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date fecha, @RequestParam int pages) {
         if (fecha == null) {
             throw new IllegalArgumentException("El parámetro 'fecha' no puede estar vacío");
         }
@@ -262,7 +274,8 @@ public class HuespedController {
                                 date));
                         break;
                     default:
-                        throw new IllegalArgumentException("Operador de búsqueda no válido: " + criteria.getOperation());
+                        throw new IllegalArgumentException(
+                                "Operador de búsqueda no válido: " + criteria.getOperation());
                 }
             } else {
                 switch (criteria.getOperation()) {

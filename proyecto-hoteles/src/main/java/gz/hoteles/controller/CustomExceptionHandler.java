@@ -13,7 +13,7 @@ public class CustomExceptionHandler {
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<Object> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex, WebRequest request) {
-        String errorMessage = "El parámetro '" + ex.getName() + "' debe ser un número entero válido.";
+        String errorMessage = "El parámetro '" + ex.getName() + "' debe ser un número entero válido y es " + ex.getValue() + " que es de tipo " + ex.getValue().getClass();
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, errorMessage);
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
