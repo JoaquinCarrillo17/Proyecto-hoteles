@@ -150,47 +150,6 @@ public class HotelController {
                     "No se encontró ningún hotel por el sitio web '" + sitioWeb + "'");
     }
 
-    /*@PostMapping("/dynamicSearch")
-    public ResponseEntity<?> getHotelesFilteredByParam(@RequestBody JSONMapper json) {
-        if (json == null || json.getField() == null || json.getPages() <= 0
-                || json.getSortBy() == null) {
-            throw new IllegalArgumentException("Falta uno o más campos requeridos en el JSON");
-        }
-
-        String field = json.getField();
-        String value = json.getValue();
-        String sortDirection = json.getSortDirection().equalsIgnoreCase("asc") ? "ASC" : "DESC";
-        String sortByField = json.getSortBy(); // comprobar que recibe un string correcto
-        if (!sortByField.equalsIgnoreCase("sitioWeb") && !sortByField.equalsIgnoreCase("email")
-                && !sortByField.equalsIgnoreCase("telefono") && !sortByField.equalsIgnoreCase("direccion")
-                && !sortByField.equalsIgnoreCase("nombre")) {
-            throw new IllegalArgumentException("No se puede ordenar por " + sortByField);
-        }
-
-        Page<Hotel> page = switch (field) {
-            case "sitioWeb" -> hotelRepository.findBySitioWebEquals(value,
-                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-            case "email" -> hotelRepository.findByEmailEquals(value,
-                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-            case "telefono" -> hotelRepository.findByTelefonoEquals(value,
-                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-            case "direccion" -> hotelRepository.findByDireccionContainingIgnoreCase(value,
-                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-            case "nombre" -> hotelRepository.findByNombreContainingIgnoreCase(value,
-                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-            default -> throw new IllegalArgumentException("No se puede filtrar por '" + field + "'");
-        };
-
-        List<Hotel> hoteles = page.getContent();
-        List<HotelDTO> hotelesDTO = convertToDtoHotelList(hoteles);
-        if (hotelesDTO.size() > 0) {
-            return ResponseEntity.ok(hotelesDTO);
-        } else
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "No se encontraron hoteles con " + json.getField() + " = " + json.getValue());
-
-    }*/
-
     @PostMapping("/dynamicSearch")
     public ResponseEntity<?> getFilteredByDynamicSearch(@RequestBody SearchRequest searchRequest) {
         if (searchRequest == null || searchRequest.getListSearchCriteria() == null
@@ -364,12 +323,14 @@ public class HotelController {
         return ResponseEntity.ok(convertToDtoHotel(save));
     }
 
+    @Operation(summary = "Añadir servicio al hotel")
     @PostMapping("/{id}/servicios")
     public ResponseEntity<?> anadirServicio(@PathVariable(name = "id") int id, @RequestBody Servicio input) {
         Hotel h = servicioHoteles.anadirServicio(id, input); // Comprobacion NOT_FOUND en la funcion
         return ResponseEntity.ok(convertToDtoHotel(h));
     }
 
+    @Operation(summary = "Añadir habitación al hotel")
     @PostMapping("/{id}/habitaciones")
     public ResponseEntity<?> anadirHabitacion(@PathVariable(name = "id") int id, @RequestBody Habitacion input) {
         Hotel h = servicioHoteles.anadirHabitacion(id, input); // Comprobacion NOT_FOUND en la funcion

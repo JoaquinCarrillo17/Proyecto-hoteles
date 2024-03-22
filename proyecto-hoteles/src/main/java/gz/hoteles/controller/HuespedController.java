@@ -1,5 +1,6 @@
 package gz.hoteles.controller;
 
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -155,7 +156,7 @@ public class HuespedController {
                     "No se encontró ningún huésped con fecha de salida '" + fecha + "'");
     }
 
-    @PostMapping("/dynamicSearch")
+    // @PostMapping("/dynamicSearch")
     public ResponseEntity<?> getHuespedesFilteredByParam(@RequestBody JSONMapper json) {
         if (json == null || json.getField() == null || json.getPages() <= 0
                 || json.getSortBy() == null) {
@@ -206,7 +207,7 @@ public class HuespedController {
                     "No se encontraron hoteles con " + json.getField() + " = " + json.getValue());
     }
 
-    @PostMapping("/dynamicSearchTocho")
+    @PostMapping("/dynamicSearch")
     public ResponseEntity<?> getFilteredByDynamicSearch(@RequestBody SearchRequest searchRequest) {
         if (searchRequest == null || searchRequest.getListSearchCriteria() == null
                 || searchRequest.getListSearchCriteria().isEmpty()
@@ -221,31 +222,82 @@ public class HuespedController {
         int pageIndex = searchRequest.getPage().getPageIndex();
 
         Specification<Huesped> spec = Specification.where(null);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
         for (SearchCriteria criteria : searchCriteriaList) {
-            switch (criteria.getOperation()) {
-                case "equals":
-                    spec = spec.and((root, query, cb) -> cb.equal(root.get(criteria.getKey()), criteria.getValue()));
-                    break;
-                case "not equals":
-                    spec = spec.and((root, query, cb) -> cb.notEqual(root.get(criteria.getKey()), criteria.getValue()));
-                    break;
-                case "contains":
-                    spec = spec.and((root, query, cb) -> cb.like(root.get(criteria.getKey()), "%" + criteria.getValue() + "%"));
-                    break;
-                case "greater than":
-                    spec = spec.and((root, query, cb) -> cb.greaterThan(root.get(criteria.getKey()), criteria.getValue()));
-                    break;
-                case "less than":
-                    spec = spec.and((root, query, cb) -> cb.lessThan(root.get(criteria.getKey()), criteria.getValue()));
-                    break;
-                case "greater or equals than":
-                    spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get(criteria.getKey()), criteria.getValue()));
-                    break;
-                case "less or equals than":
-                    spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get(criteria.getKey()), criteria.getValue()));
-                    break;
-                default:
-                    throw new IllegalArgumentException("Operador de búsqueda no válido: " + criteria.getOperation());
+            Date date;
+            if (criteria.getKey().equals("fechaCheckIn") || criteria.getKey().equals("fechaCheckOut")) {
+                try {
+                    date = dateFormat.parse(criteria.getValue());
+                } catch (ParseException e) {
+                    throw new IllegalArgumentException("Error al parsear la fecha: " + e.getMessage());
+                }
+
+                switch (criteria.getOperation()) {
+                    case "equals":
+                        spec = spec.and((root, query, cb) -> cb.equal(root.get(criteria.getKey()),
+                                new Timestamp(date.getTime())));
+                        break;
+                    case "not equals":
+                        spec = spec.and((root, query, cb) -> cb.notEqual(root.get(criteria.getKey()),
+                                new Timestamp(date.getTime())));
+                        break;
+                    case "contains":
+                        spec = spec.and((root, query, cb) -> cb.like(root.get(criteria.getKey()),
+                                "%" + new Timestamp(date.getTime()) + "%"));
+                        break;
+                    case "greater than":
+                        spec = spec.and(
+                                (root, query, cb) -> cb.greaterThan(root.get(criteria.getKey()), date));
+                        break;
+                    case "less than":
+                        spec = spec.and(
+                                (root, query, cb) -> cb.lessThan(root.get(criteria.getKey()), date));
+                        break;
+                    case "greater or equals than":
+                        spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get(criteria.getKey()),
+                                date));
+                        break;
+                    case "less or equals than":
+                        spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get(criteria.getKey()),
+                                date));
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Operador de búsqueda no válido: " + criteria.getOperation());
+                }
+            } else {
+                switch (criteria.getOperation()) {
+                    case "equals":
+                        spec = spec
+                                .and((root, query, cb) -> cb.equal(root.get(criteria.getKey()), criteria.getValue()));
+                        break;
+                    case "not equals":
+                        spec = spec.and(
+                                (root, query, cb) -> cb.notEqual(root.get(criteria.getKey()), criteria.getValue()));
+                        break;
+                    case "contains":
+                        spec = spec.and((root, query, cb) -> cb.like(root.get(criteria.getKey()),
+                                "%" + criteria.getValue() + "%"));
+                        break;
+                    case "greater than":
+                        spec = spec.and(
+                                (root, query, cb) -> cb.greaterThan(root.get(criteria.getKey()), criteria.getValue()));
+                        break;
+                    case "less than":
+                        spec = spec.and(
+                                (root, query, cb) -> cb.lessThan(root.get(criteria.getKey()), criteria.getValue()));
+                        break;
+                    case "greater or equals than":
+                        spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get(criteria.getKey()),
+                                criteria.getValue()));
+                        break;
+                    case "less or equals than":
+                        spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get(criteria.getKey()),
+                                criteria.getValue()));
+                        break;
+                    default:
+                        throw new IllegalArgumentException(
+                                "Operador de búsqueda no válido: " + criteria.getOperation());
+                }
             }
         }
 
@@ -261,7 +313,8 @@ public class HuespedController {
             return ResponseEntity.ok(huespedesDTO);
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "No se encontraron huéspedes con los parámetros proporcionados"); }
+                    "No se encontraron huéspedes con los parámetros proporcionados");
+        }
 
     }
 
@@ -273,7 +326,7 @@ public class HuespedController {
                 || json.getSortBy() == null) {
             throw new IllegalArgumentException("Falta uno o más campos requeridos en el JSON");
         }
-        
+
         String field = json.getField();
         String value = json.getValue();
         String sortDirection = json.getSortDirection().equalsIgnoreCase("asc") ? "ASC" : "DESC";
@@ -349,10 +402,11 @@ public class HuespedController {
             @RequestParam int pages) {
 
         Page<Huesped> page = null;
-        
+
         if (fechaEntrada != null && fechaSalida != null) {
             // Caso: Se proporcionan ambas fechas
-            page = findByNombreCompletoAndEmailAndDniAndFechaCheckInAndFechaCheckOut(nombre, email, dni, fechaEntrada, fechaSalida, pages);
+            page = findByNombreCompletoAndEmailAndDniAndFechaCheckInAndFechaCheckOut(nombre, email, dni, fechaEntrada,
+                    fechaSalida, pages);
         } else if (fechaEntrada != null) {
             // Caso: Solo se proporciona fecha de entrada
             page = findByNombreCompletoAndEmailAndFechaCheckIn(nombre, email, dni, fechaEntrada, pages);
@@ -375,33 +429,46 @@ public class HuespedController {
 
     }
 
-    private Page<Huesped> findByNombreCompletoAndEmailAndDniAndFechaCheckInAndFechaCheckOut(String nombreCompleto, String email, String dni, Date fechaCheckIn, Date fechaCheckOut, int pages) {
+    private Page<Huesped> findByNombreCompletoAndEmailAndDniAndFechaCheckInAndFechaCheckOut(String nombreCompleto,
+            String email, String dni, Date fechaCheckIn, Date fechaCheckOut, int pages) {
         if (nombreCompleto != null && email != null && dni != null) {
-            return huespedRepository.findByNombreCompletoAndEmailAndDniAndFechaCheckInAfterAndFechaCheckOutBefore(nombreCompleto, email, dni, fechaCheckIn, fechaCheckOut, PageRequest.of(0, pages));
+            return huespedRepository.findByNombreCompletoAndEmailAndDniAndFechaCheckInAfterAndFechaCheckOutBefore(
+                    nombreCompleto, email, dni, fechaCheckIn, fechaCheckOut, PageRequest.of(0, pages));
         } else if (nombreCompleto != null && email != null) {
-            return huespedRepository.findByNombreCompletoAndEmailAndFechaCheckInAfterAndFechaCheckOutBefore(nombreCompleto, email, fechaCheckIn, fechaCheckOut, PageRequest.of(0, pages));
+            return huespedRepository.findByNombreCompletoAndEmailAndFechaCheckInAfterAndFechaCheckOutBefore(
+                    nombreCompleto, email, fechaCheckIn, fechaCheckOut, PageRequest.of(0, pages));
         } else if (nombreCompleto != null) {
-            return huespedRepository.findByNombreCompletoAndFechaCheckInAfterAndFechaCheckOutBefore(nombreCompleto, fechaCheckIn, fechaCheckOut, PageRequest.of(0, pages));
+            return huespedRepository.findByNombreCompletoAndFechaCheckInAfterAndFechaCheckOutBefore(nombreCompleto,
+                    fechaCheckIn, fechaCheckOut, PageRequest.of(0, pages));
         } else if (email != null && dni != null) {
-            return huespedRepository.findByEmailAndDniAndFechaCheckInAfterAndFechaCheckOutBefore(email, dni, fechaCheckIn, fechaCheckOut, PageRequest.of(0, pages));
+            return huespedRepository.findByEmailAndDniAndFechaCheckInAfterAndFechaCheckOutBefore(email, dni,
+                    fechaCheckIn, fechaCheckOut, PageRequest.of(0, pages));
         } else if (email != null) {
-            return huespedRepository.findByEmailAndFechaCheckInAfterAndFechaCheckOutBefore(email, fechaCheckIn, fechaCheckOut, PageRequest.of(0, pages));
+            return huespedRepository.findByEmailAndFechaCheckInAfterAndFechaCheckOutBefore(email, fechaCheckIn,
+                    fechaCheckOut, PageRequest.of(0, pages));
         } else if (dni != null) {
-            return huespedRepository.findByDniAndFechaCheckInAfterAndFechaCheckOutBefore(dni, fechaCheckIn, fechaCheckOut, PageRequest.of(0, pages));
+            return huespedRepository.findByDniAndFechaCheckInAfterAndFechaCheckOutBefore(dni, fechaCheckIn,
+                    fechaCheckOut, PageRequest.of(0, pages));
         } else {
-            return huespedRepository.findByFechaCheckInAfterAndFechaCheckOutBefore(fechaCheckIn, fechaCheckOut, PageRequest.of(0, pages));
+            return huespedRepository.findByFechaCheckInAfterAndFechaCheckOutBefore(fechaCheckIn, fechaCheckOut,
+                    PageRequest.of(0, pages));
         }
     }
-    
-    private Page<Huesped> findByNombreCompletoAndEmailAndFechaCheckIn(String nombreCompleto, String email, String dni, Date fechaCheckIn, int pages) {
+
+    private Page<Huesped> findByNombreCompletoAndEmailAndFechaCheckIn(String nombreCompleto, String email, String dni,
+            Date fechaCheckIn, int pages) {
         if (nombreCompleto != null && email != null && dni != null) {
-            return huespedRepository.findByNombreCompletoAndEmailAndDniAndFechaCheckInAfter(nombreCompleto, email, dni, fechaCheckIn, PageRequest.of(0, pages));
+            return huespedRepository.findByNombreCompletoAndEmailAndDniAndFechaCheckInAfter(nombreCompleto, email, dni,
+                    fechaCheckIn, PageRequest.of(0, pages));
         } else if (nombreCompleto != null && email != null) {
-            return huespedRepository.findByNombreCompletoAndEmailAndFechaCheckInAfter(nombreCompleto, email, fechaCheckIn, PageRequest.of(0, pages));
+            return huespedRepository.findByNombreCompletoAndEmailAndFechaCheckInAfter(nombreCompleto, email,
+                    fechaCheckIn, PageRequest.of(0, pages));
         } else if (nombreCompleto != null) {
-            return huespedRepository.findByNombreCompletoAndFechaCheckInAfter(nombreCompleto, fechaCheckIn, PageRequest.of(0, pages));
+            return huespedRepository.findByNombreCompletoAndFechaCheckInAfter(nombreCompleto, fechaCheckIn,
+                    PageRequest.of(0, pages));
         } else if (email != null && dni != null) {
-            return huespedRepository.findByEmailAndDniAndFechaCheckInAfter(email, dni, fechaCheckIn, PageRequest.of(0, pages));
+            return huespedRepository.findByEmailAndDniAndFechaCheckInAfter(email, dni, fechaCheckIn,
+                    PageRequest.of(0, pages));
         } else if (email != null) {
             return huespedRepository.findByEmailAndFechaCheckInAfter(email, fechaCheckIn, PageRequest.of(0, pages));
         } else if (dni != null) {
@@ -410,16 +477,21 @@ public class HuespedController {
             return huespedRepository.findByFechaCheckInAfter(fechaCheckIn, PageRequest.of(0, pages));
         }
     }
-    
-    private Page<Huesped> findByNombreCompletoAndEmailAndDniAndFechaCheckOut(String nombreCompleto, String email, String dni, Date fechaCheckOut, int pages) {
+
+    private Page<Huesped> findByNombreCompletoAndEmailAndDniAndFechaCheckOut(String nombreCompleto, String email,
+            String dni, Date fechaCheckOut, int pages) {
         if (nombreCompleto != null && email != null && dni != null) {
-            return huespedRepository.findByNombreCompletoAndEmailAndDniAndFechaCheckOutBefore(nombreCompleto, email, dni, fechaCheckOut, PageRequest.of(0, pages));
+            return huespedRepository.findByNombreCompletoAndEmailAndDniAndFechaCheckOutBefore(nombreCompleto, email,
+                    dni, fechaCheckOut, PageRequest.of(0, pages));
         } else if (nombreCompleto != null && email != null) {
-            return huespedRepository.findByNombreCompletoAndEmailAndFechaCheckOutBefore(nombreCompleto, email, fechaCheckOut, PageRequest.of(0, pages));
+            return huespedRepository.findByNombreCompletoAndEmailAndFechaCheckOutBefore(nombreCompleto, email,
+                    fechaCheckOut, PageRequest.of(0, pages));
         } else if (nombreCompleto != null) {
-            return huespedRepository.findByNombreCompletoAndFechaCheckOutBefore(nombreCompleto, fechaCheckOut, PageRequest.of(0, pages));
+            return huespedRepository.findByNombreCompletoAndFechaCheckOutBefore(nombreCompleto, fechaCheckOut,
+                    PageRequest.of(0, pages));
         } else if (email != null && dni != null) {
-            return huespedRepository.findByEmailAndDniAndFechaCheckOutBefore(email, dni, fechaCheckOut, PageRequest.of(0, pages));
+            return huespedRepository.findByEmailAndDniAndFechaCheckOutBefore(email, dni, fechaCheckOut,
+                    PageRequest.of(0, pages));
         } else if (email != null) {
             return huespedRepository.findByEmailAndFechaCheckOutBefore(email, fechaCheckOut, PageRequest.of(0, pages));
         } else if (dni != null) {
