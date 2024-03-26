@@ -88,7 +88,7 @@ public class ServicioHoteles implements IServicioHoteles {
     @Override
     public Habitacion crearHabitacion(Habitacion habitacion) {
         Habitacion h = habitacionRepository.save(habitacion);
-        for (Huesped huesped : h.getHuespedes()) {
+        for (Huesped huesped : habitacion.getHuespedes()) {
             huesped.setHabitacion(h);
             huespedRepository.save(huesped);
         }

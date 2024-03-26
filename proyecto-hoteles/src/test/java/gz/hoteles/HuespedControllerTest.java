@@ -9,12 +9,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -24,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.server.ResponseStatusException;
 
 import gz.hoteles.controller.HuespedController;
+import gz.hoteles.dto.HuespedDTO;
 import gz.hoteles.entities.Huesped;
 import gz.hoteles.repositories.HuespedRepository;
 
@@ -34,6 +37,18 @@ public class HuespedControllerTest {
 
     @InjectMocks
     HuespedController huespedController;
+
+    private static final ModelMapper modelMapper = new ModelMapper();
+
+    public static HuespedDTO convertToDtoHuesped(Huesped huesped) {
+        return modelMapper.map(huesped, HuespedDTO.class);
+    }
+
+    public static List<HuespedDTO> convertToDtoHuespedList(List<Huesped> huespedes) {
+        return huespedes.stream()
+                .map(huesped -> convertToDtoHuesped(huesped))
+                .collect(Collectors.toList());
+    }
 
     @Test
     public void testList() {
@@ -46,7 +61,7 @@ public class HuespedControllerTest {
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 
-        List<Huesped> result = (List<Huesped>) responseEntity.getBody();
+        List<HuespedDTO> result = (List<HuespedDTO>) responseEntity.getBody();
 
         assertEquals(2, result.size());
     }
@@ -60,7 +75,7 @@ public class HuespedControllerTest {
         ResponseEntity<?> responseEntity = huespedController.get(validId);
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(mockHuesped, responseEntity.getBody());
+        assertEquals(convertToDtoHuesped(mockHuesped), responseEntity.getBody());
     }
 
     @Test
@@ -154,7 +169,7 @@ public class HuespedControllerTest {
         ResponseEntity<?> response = huespedController.getHuespedesByDni(dni, pages);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        List<Huesped> result = (List<Huesped>) response.getBody();
+        List<HuespedDTO> result = (List<HuespedDTO>) response.getBody();
         assertEquals(1, result.size());
         assertEquals(dni, result.get(0).getDni());
     }
@@ -203,7 +218,7 @@ public class HuespedControllerTest {
         ResponseEntity<?> response = huespedController.getHuespedesByEmail(email, pages);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        List<Huesped> result = (List<Huesped>) response.getBody();
+        List<HuespedDTO> result = (List<HuespedDTO>) response.getBody();
         assertEquals(1, result.size());
         assertEquals(email, result.get(0).getEmail());
     }
@@ -252,7 +267,7 @@ public class HuespedControllerTest {
         ResponseEntity<?> response = huespedController.getHuespedesByFechaEntrada(fecha, pages);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        List<Huesped> result = (List<Huesped>) response.getBody();
+        List<HuespedDTO> result = (List<HuespedDTO>) response.getBody();
         assertEquals(1, result.size());
         assertEquals(fecha, result.get(0).getFechaCheckIn());
     }
@@ -301,7 +316,7 @@ public class HuespedControllerTest {
         ResponseEntity<?> response = huespedController.getHuespedesByFechaSalida(fecha, pages);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        List<Huesped> result = (List<Huesped>) response.getBody();
+        List<HuespedDTO> result = (List<HuespedDTO>) response.getBody();
         assertEquals(1, result.size());
         assertEquals(fecha, result.get(0).getFechaCheckOut());
     }
@@ -348,7 +363,7 @@ public class HuespedControllerTest {
         ResponseEntity<?> response = huespedController.put(id, updatedHuesped);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(updatedHuesped, response.getBody());
+        assertEquals(convertToDtoHuesped(updatedHuesped), response.getBody());
     }
 
     @Test
@@ -376,7 +391,7 @@ public class HuespedControllerTest {
         ResponseEntity<?> response = huespedController.post(inputHuesped);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(savedHuesped, response.getBody());
+        assertEquals(convertToDtoHuesped(savedHuesped), response.getBody());
     }
 
     @Test

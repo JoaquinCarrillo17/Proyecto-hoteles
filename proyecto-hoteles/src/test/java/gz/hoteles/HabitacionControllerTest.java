@@ -14,12 +14,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -27,6 +29,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.server.ResponseStatusException;
 
+import gz.hoteles.dto.HabitacionDTO;
 import gz.hoteles.controller.HabitacionController;
 import gz.hoteles.entities.Habitacion;
 import gz.hoteles.entities.Huesped;
@@ -42,8 +45,20 @@ public class HabitacionControllerTest {
 
     @InjectMocks
     HabitacionController habitacionController;
-    @InjectMocks
+    @Mock
     ServicioHoteles servicioHoteles;
+
+    private static final ModelMapper modelMapper = new ModelMapper();
+
+    public static HabitacionDTO convertToDtoHabitacion(Habitacion habitacion) {
+        return modelMapper.map(habitacion, HabitacionDTO.class);
+    }
+
+    public static List<HabitacionDTO> convertToDtoHabitacionList(List<Habitacion> habitaciones) {
+        return habitaciones.stream()
+                           .map(habitacion -> convertToDtoHabitacion(habitacion))
+                           .collect(Collectors.toList());
+    }
 
     @Test
     public void testListWithRooms() {
@@ -55,8 +70,10 @@ public class HabitacionControllerTest {
 
         ResponseEntity<?> response = habitacionController.list();
 
+        List<HabitacionDTO> expectedDTOs = convertToDtoHabitacionList(mockRooms);
+
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(mockRooms, response.getBody());
+        assertEquals(expectedDTOs, response.getBody());
     }
 
     @Test
@@ -80,7 +97,7 @@ public class HabitacionControllerTest {
         ResponseEntity<?> response = habitacionController.get(1);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(habitacion, response.getBody());
+        assertEquals(convertToDtoHabitacion(habitacion), response.getBody());
     }
 
     @Test
@@ -115,7 +132,7 @@ public class HabitacionControllerTest {
         ResponseEntity<?> response = habitacionController.getHabitacionesByNumero("101", 10);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(habitaciones, response.getBody());
+        assertEquals(convertToDtoHabitacionList(habitaciones), response.getBody());
     }
 
     @Test
@@ -128,7 +145,7 @@ public class HabitacionControllerTest {
             habitacionController.getHabitacionesByNumero("101", 10);
         });
 
-        assertEquals(HttpStatus.NO_CONTENT, exception.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
         assertEquals("No se encontró ninguna habitación con el número '101'", exception.getReason());
     }
 
@@ -168,12 +185,13 @@ public class HabitacionControllerTest {
         when(habitacionRepository.getHabitacionesByTipoHabitacion(TipoHabitacion.DOBLE, PageRequest.of(0, 10)))
                 .thenReturn(page);
 
-        ResponseEntity<?> responseEntity = habitacionController.getHabitacionesByTipoHabitacion(TipoHabitacion.DOBLE, 10);
+        ResponseEntity<?> responseEntity = habitacionController.getHabitacionesByTipoHabitacion(TipoHabitacion.DOBLE,
+                10);
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        List<Habitacion> result = (List<Habitacion>) responseEntity.getBody();
+        List<HabitacionDTO> result = (List<HabitacionDTO>) responseEntity.getBody();
         assertNotNull(result);
-        assertEquals(habitaciones, result);
+        assertEquals(convertToDtoHabitacionList(habitaciones), result);
     }
 
     @Test
@@ -196,7 +214,7 @@ public class HabitacionControllerTest {
             habitacionController.getHabitacionesByTipoHabitacion(TipoHabitacion.DOBLE, 10);
         });
 
-        assertEquals(HttpStatus.NO_CONTENT, exception.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
         assertEquals("No se encontró ninguna habitación del tipo 'DOBLE'", exception.getReason());
     }
 
@@ -212,11 +230,10 @@ public class HabitacionControllerTest {
         ResponseEntity<?> responseEntity = habitacionController.getHabitacionesByPrecioPorNoche("100", 10);
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        List<Habitacion> result = (List<Habitacion>) responseEntity.getBody();
+        List<HabitacionDTO> result = (List<HabitacionDTO>) responseEntity.getBody();
         assertNotNull(result);
-        assertEquals(habitaciones, result);
+        assertEquals(convertToDtoHabitacionList(habitaciones), result);
     }
-
 
     @Test
     public void testGetHabitacionesByPrecioPorNocheNullPrecio() {
@@ -247,7 +264,7 @@ public class HabitacionControllerTest {
             habitacionController.getHabitacionesByPrecioPorNoche("100", 10);
         });
 
-        assertEquals(HttpStatus.NO_CONTENT, exception.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
         assertEquals("No se encontró ninguna habitación con precio '" + 100 + "€'", exception.getReason());
     }
 
@@ -263,8 +280,8 @@ public class HabitacionControllerTest {
         ResponseEntity<?> response = habitacionController.put(id, inputHabitacion);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        Habitacion savedHabitacion = (Habitacion) response.getBody();
-        assertEquals(inputHabitacion, savedHabitacion);
+        HabitacionDTO savedHabitacion = (HabitacionDTO) response.getBody();
+        assertEquals(inputHabitacion.getId(), savedHabitacion.getId());
     }
 
     @Test
@@ -292,7 +309,7 @@ public class HabitacionControllerTest {
         assertEquals("El ID debe ser un número entero positivo", exception.getMessage());
     }
 
-    /*@Test
+    @Test
     void testPostWithValidInput() {
         Habitacion inputHabitacion = new Habitacion(1, "101", TipoHabitacion.DOBLE, 100);
         Habitacion savedHabitacion = new Habitacion(1, "101", TipoHabitacion.DOBLE, 100);
@@ -302,9 +319,9 @@ public class HabitacionControllerTest {
         ResponseEntity<?> response = habitacionController.post(inputHabitacion);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        Habitacion returnedHabitacion = (Habitacion) response.getBody();
-        assertEquals(savedHabitacion, returnedHabitacion);
-    }*/
+        HabitacionDTO returnedHabitacion = (HabitacionDTO) response.getBody();
+        assertEquals(convertToDtoHabitacion(savedHabitacion), returnedHabitacion);
+    }
 
     @Test
     void testPostWithNullTipoHabitacion() {
@@ -316,7 +333,7 @@ public class HabitacionControllerTest {
         assertEquals("Debes introducir el tipo de habitación", exception.getMessage());
     }
 
-    /*@Test
+    @Test
     void testAnadirHuespedWithValidInput() {
         int habitacionId = 1;
         Huesped huesped = new Huesped(1, "Nombre", "12345678A", "correo@ejemplo.com");
@@ -327,9 +344,9 @@ public class HabitacionControllerTest {
         ResponseEntity<?> response = habitacionController.anadirHuesped(habitacionId, huesped);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        Habitacion returnedHabitacion = (Habitacion) response.getBody();
-        assertEquals(habitacion, returnedHabitacion);
-    }*/
+        HabitacionDTO returnedHabitacion = (HabitacionDTO) response.getBody();
+        assertEquals(convertToDtoHabitacion(habitacion), returnedHabitacion);
+    }
 
     @Test
     void testAnadirHuespedWithInvalidId() {
@@ -343,13 +360,14 @@ public class HabitacionControllerTest {
         assertEquals("El ID debe ser un número entero positivo", exception.getMessage());
     }
 
-    /*@Test
+    @Test
     void testAnadirHuespedWithNotFoundHabitacion() {
         int habitacionId = 1;
         Huesped huesped = new Huesped(1, "Nombre", "12345678A", "correo@ejemplo.com");
 
         when(servicioHoteles.anadirHuesped(habitacionId, huesped))
-            .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ninguna habitacion por el ID proporcionado"));
+                .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "No se encontró ninguna habitacion por el ID proporcionado"));
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
             habitacionController.anadirHuesped(habitacionId, huesped);
@@ -357,7 +375,7 @@ public class HabitacionControllerTest {
 
         assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
         assertEquals("No se encontró ninguna habitacion por el ID proporcionado", exception.getReason());
-    }*/
+    }
 
     @Test
     void testDeleteExistingHabitacion() {

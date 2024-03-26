@@ -73,5 +73,17 @@ public class Hotel {
         this.email = email;
         this.sitioWeb = sitioWeb;
     }
+
+    @Override
+    public String toString() {
+        return "Hotel{" +
+                "id=" + id +
+                ", nombre='" + nombre + '\'' +
+                ", direccion='" + direccion + '\'' +
+                ", telefono='" + telefono + '\'' +
+                ", email='" + email + '\'' +
+                ", sitioWeb='" + sitioWeb + '\'' +
+                '}';
+    }
     
 }

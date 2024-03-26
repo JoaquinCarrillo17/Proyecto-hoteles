@@ -10,12 +10,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -23,6 +25,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.server.ResponseStatusException;
 
 import gz.hoteles.controller.HotelController;
+import gz.hoteles.dto.HotelDTO;
 import gz.hoteles.entities.Hotel;
 import gz.hoteles.repositories.HotelRepository;
 import gz.hoteles.servicio.ServicioHoteles;
@@ -35,8 +38,20 @@ public class HotelControllerTest {
 
     @InjectMocks
     HotelController hotelController;
-    @InjectMocks
+    @Mock
     ServicioHoteles servicioHoteles;
+
+    private static final ModelMapper modelMapper = new ModelMapper();
+
+    public static HotelDTO convertToDtoHotel(Hotel hotel) {
+        return modelMapper.map(hotel, HotelDTO.class);
+    }
+
+    public static List<HotelDTO> convertToDtoHotelList(List<Hotel> hoteles) {
+        return hoteles.stream()
+                .map(hotel -> convertToDtoHotel(hotel))
+                .collect(Collectors.toList());
+    }
 
     @Test
     void testListWithHotels() {
@@ -47,7 +62,7 @@ public class HotelControllerTest {
         ResponseEntity<?> response = hotelController.list();
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(hoteles, response.getBody());
+        assertEquals(convertToDtoHotelList(hoteles), response.getBody());
     }
 
     @Test
@@ -70,7 +85,7 @@ public class HotelControllerTest {
         ResponseEntity<?> response = hotelController.get(1);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(hotel, response.getBody());
+        assertEquals(convertToDtoHotel(hotel), response.getBody());
     }
 
     @Test
@@ -105,7 +120,7 @@ public class HotelControllerTest {
         ResponseEntity<?> response = hotelController.getHotelByNombre(nombre, 10);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(hoteles, response.getBody());
+        assertEquals(convertToDtoHotelList(hoteles), response.getBody());
     }
 
     @Test
@@ -126,7 +141,7 @@ public class HotelControllerTest {
             hotelController.getHotelByNombre(nombre, 10);
         });
 
-        assertEquals(HttpStatus.NO_CONTENT, exception.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
     }
 
     @Test
@@ -140,7 +155,7 @@ public class HotelControllerTest {
         ResponseEntity<?> response = hotelController.getHotelByDireccion(direccion, 10);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(hoteles, response.getBody());
+        assertEquals(convertToDtoHotelList(hoteles), response.getBody());
     }
 
     @Test
@@ -173,7 +188,7 @@ public class HotelControllerTest {
             hotelController.getHotelByDireccion(direccion, 10);
         });
 
-        assertEquals(HttpStatus.NO_CONTENT, exception.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
     }
 
     @Test
@@ -187,7 +202,7 @@ public class HotelControllerTest {
         ResponseEntity<?> response = hotelController.getHotelByTelefono(telefono, 10);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(hoteles, response.getBody());
+        assertEquals(convertToDtoHotelList(hoteles), response.getBody());
     }
 
     @Test
@@ -220,7 +235,7 @@ public class HotelControllerTest {
             hotelController.getHotelByTelefono(telefono, 10);
         });
 
-        assertEquals(HttpStatus.NO_CONTENT, exception.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
     }
 
     @Test
@@ -234,7 +249,7 @@ public class HotelControllerTest {
         ResponseEntity<?> response = hotelController.getHotelByEmail(email, 10);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(hoteles, response.getBody());
+        assertEquals(convertToDtoHotelList(hoteles), response.getBody());
     }
 
     @Test
@@ -267,7 +282,7 @@ public class HotelControllerTest {
             hotelController.getHotelByEmail(email, 10);
         });
 
-        assertEquals(HttpStatus.NO_CONTENT, exception.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
     }
 
     @Test
@@ -281,7 +296,7 @@ public class HotelControllerTest {
         ResponseEntity<?> response = hotelController.getHotelBySitioWeb(sitioWeb, 10);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(hoteles, response.getBody());
+        assertEquals(convertToDtoHotelList(hoteles), response.getBody());
     }
 
     @Test
@@ -314,10 +329,10 @@ public class HotelControllerTest {
             hotelController.getHotelBySitioWeb(sitioWeb, 10);
         });
 
-        assertEquals(HttpStatus.NO_CONTENT, exception.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
     }
 
-    /*@Test
+    @Test
     void testPutWithValidId() {
         int id = 1;
         Hotel inputHotel = new Hotel(1, "Nuevo Hotel", "Nueva Dirección", "987654321", "nuevo_hotel@example.com",
@@ -331,12 +346,12 @@ public class HotelControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(inputHotel, response.getBody());
-    }*/
+    }
 
-    /*@Test
+    @Test
     void testPutWithInvalidId() {
         int id = -1;
-        Hotel inputHotel = new Hotel(1, "Nuevo Hotel", "Nueva Dirección", "987654321", "nuevo_hotel@example.com",
+        Hotel inputHotel = new Hotel(id, "Nuevo Hotel", "Nueva Dirección", "987654321", "nuevo_hotel@example.com",
                 "www.nuevohotel.com");
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
@@ -344,7 +359,7 @@ public class HotelControllerTest {
         });
 
         assertEquals("El ID debe ser un número entero positivo", exception.getMessage());
-    }*/
+    }
 
     @Test
     void testPutWithNonExistingHotel() {
@@ -362,7 +377,7 @@ public class HotelControllerTest {
         assertEquals("No se encontró ningún hotel con el ID proporcionado", exception.getReason());
     }
 
-    /*@Test
+    @Test
     void testPostWithValidInput() {
         Hotel inputHotel = new Hotel(1, "Nuevo Hotel", "Nueva Dirección", "987654321", "nuevo_hotel@example.com",
                 "www.nuevohotel.com");
@@ -371,7 +386,7 @@ public class HotelControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(inputHotel, response.getBody());
-    }*/
+    }
 
     @Test
     void testPostWithMissingName() {

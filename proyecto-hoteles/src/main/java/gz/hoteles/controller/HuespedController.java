@@ -1,6 +1,5 @@
 package gz.hoteles.controller;
 
-import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -232,7 +231,7 @@ public class HuespedController {
         int pageIndex = searchRequest.getPage().getPageIndex();
 
         Specification<Huesped> spec = Specification.where(null);
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
         for (SearchCriteria criteria : searchCriteriaList) {
             Date date;
             if (criteria.getKey().equals("fechaCheckIn") || criteria.getKey().equals("fechaCheckOut")) {
@@ -408,8 +407,8 @@ public class HuespedController {
     @GetMapping("/filteredByEverythingWithDateRange")
     public ResponseEntity<?> getFilteredByEverythingWithDateRange(@RequestParam(required = false) String nombre,
             @RequestParam(required = false) String email, @RequestParam(required = false) String dni,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date fechaEntrada,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date fechaSalida,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date fechaEntrada,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date fechaSalida,
             @RequestParam int pages) {
 
         Page<Huesped> page = null;

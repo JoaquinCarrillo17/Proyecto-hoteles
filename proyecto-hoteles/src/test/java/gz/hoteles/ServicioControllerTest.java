@@ -11,12 +11,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -25,6 +27,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.server.ResponseStatusException;
 
 import gz.hoteles.controller.ServicioController;
+import gz.hoteles.dto.ServicioDTO;
 import gz.hoteles.entities.CategoriaServicio;
 import gz.hoteles.entities.Servicio;
 import gz.hoteles.repositories.ServicioRepository;
@@ -38,6 +41,18 @@ public class ServicioControllerTest {
     @InjectMocks
     ServicioController servicioController;
 
+    private static final ModelMapper modelMapper = new ModelMapper();
+
+    public static ServicioDTO convertToDtoServicio(Servicio servicio) {
+        return modelMapper.map(servicio, ServicioDTO.class);
+    }
+
+    public static List<ServicioDTO> convertToDtoServicioList(List<Servicio> servicios) {
+        return servicios.stream()
+                .map(servicio -> convertToDtoServicio(servicio))
+                .collect(Collectors.toList());
+    }
+
     @Test
     void testListWithExistingServicios() {
         List<Servicio> servicios = new ArrayList<>();
@@ -49,7 +64,7 @@ public class ServicioControllerTest {
         ResponseEntity<?> response = servicioController.list();
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(servicios, response.getBody());
+        assertEquals(convertToDtoServicioList(servicios), response.getBody());
     }
 
     @Test
@@ -73,7 +88,7 @@ public class ServicioControllerTest {
         ResponseEntity<?> response = servicioController.get(1);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(servicio, response.getBody());
+        assertEquals(convertToDtoServicio(servicio), response.getBody());
     }
 
     @Test
@@ -114,7 +129,7 @@ public class ServicioControllerTest {
         ResponseEntity<?> response = servicioController.getServicioByNombre(nombre, 10);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(servicios, response.getBody());
+        assertEquals(convertToDtoServicioList(servicios), response.getBody());
     }
 
     @Test
@@ -140,7 +155,7 @@ public class ServicioControllerTest {
             servicioController.getServicioByNombre(nombre, 10);
         });
 
-        assertEquals(HttpStatus.NO_CONTENT, exception.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
     }
 
     @Test
@@ -156,7 +171,7 @@ public class ServicioControllerTest {
         ResponseEntity<?> response = servicioController.getServicioByCategoria(categoria, 10);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(servicios, response.getBody());
+        assertEquals(convertToDtoServicioList(servicios), response.getBody());
     }
 
     @Test
@@ -182,7 +197,7 @@ public class ServicioControllerTest {
             servicioController.getServicioByCategoria(categoria, 10);
         });
 
-        assertEquals(HttpStatus.NO_CONTENT, exception.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
     }
 
     @Test
@@ -198,7 +213,7 @@ public class ServicioControllerTest {
         ResponseEntity<?> response = servicioController.getServicioByDescripcion(descripcion, 10);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(servicios, response.getBody());
+        assertEquals(convertToDtoServicioList(servicios), response.getBody());
     }
 
     @Test
@@ -224,7 +239,7 @@ public class ServicioControllerTest {
             servicioController.getServicioByDescripcion(descripcion, 10);
         });
 
-        assertEquals(HttpStatus.NO_CONTENT, exception.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
     }
 
     @Test
@@ -239,7 +254,7 @@ public class ServicioControllerTest {
         ResponseEntity<?> response = servicioController.put(id, inputServicio);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(existingServicio, response.getBody());
+        assertEquals(convertToDtoServicio(existingServicio), response.getBody());
     }
 
     @Test
@@ -278,8 +293,8 @@ public class ServicioControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
-        Servicio savedServicio = (Servicio) response.getBody();
-        assertEquals(inputServicio, savedServicio);
+        ServicioDTO savedServicio = (ServicioDTO) response.getBody();
+        assertEquals(convertToDtoServicio(inputServicio), savedServicio);
     }
 
     @Test

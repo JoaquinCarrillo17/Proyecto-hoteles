@@ -299,6 +299,9 @@ public class HotelController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> put(@PathVariable(name = "id") int id, @RequestBody Hotel input) {
+        if (id <= 0) {
+            throw new IllegalArgumentException("El ID debe ser un número entero positivo");
+        }
         Hotel find = hotelRepository.findById(id).orElse(null);
         if (find != null) {
             find.setDireccion(input.getDireccion());
@@ -310,6 +313,7 @@ public class HotelController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "No se encontró ningún hotel con el ID proporcionado");
         Hotel save = hotelRepository.save(find);
+        System.out.println("PUT: " + save);
         return ResponseEntity.ok(convertToDtoHotel(save));
     }
 
@@ -354,6 +358,7 @@ public class HotelController {
     /* ====== MAPPER ====== */
 
     public static HotelDTO convertToDtoHotel(Hotel hotel) {
+        System.out.println("CONVERT: " + hotel);
         return modelMapper.map(hotel, HotelDTO.class);
     }
 
