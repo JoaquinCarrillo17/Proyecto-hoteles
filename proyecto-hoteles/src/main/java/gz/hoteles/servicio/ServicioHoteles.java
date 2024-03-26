@@ -49,7 +49,6 @@ public class ServicioHoteles implements IServicioHoteles {
                 huespedRepository.save(huesped);
             }
         }
-
         return h;
     }
 

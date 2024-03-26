@@ -313,7 +313,6 @@ public class HotelController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "No se encontró ningún hotel con el ID proporcionado");
         Hotel save = hotelRepository.save(find);
-        System.out.println("PUT: " + save);
         return ResponseEntity.ok(convertToDtoHotel(save));
     }
 
@@ -358,7 +357,10 @@ public class HotelController {
     /* ====== MAPPER ====== */
 
     public static HotelDTO convertToDtoHotel(Hotel hotel) {
-        System.out.println("CONVERT: " + hotel);
+        if (hotel == null) {
+            throw new IllegalArgumentException("El hotel no puede ser nulo");
+        }
+        
         return modelMapper.map(hotel, HotelDTO.class);
     }
 
