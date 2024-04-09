@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import gz.hoteles.dto.HotelDTO;
+import gz.hoteles.entities.CategoriaServicio;
 import gz.hoteles.entities.Habitacion;
 import gz.hoteles.entities.Hotel;
 import gz.hoteles.entities.Servicio;
@@ -70,6 +71,20 @@ public class HotelController {
         }
     }
 
+    @GetMapping("/{id}/full")
+    public ResponseEntity<?> getHotelFull(@PathVariable(name = "id") int id) {
+        if (id <= 0) {
+            throw new IllegalArgumentException("El ID debe ser un número entero positivo");
+        }
+        Hotel hotel = hotelRepository.findById(id).orElse(null);
+        if (hotel == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No se encontró ningún hotel por el ID proporcionado");
+        } else {
+            return ResponseEntity.ok(hotel);
+        }
+    }
+
     @GetMapping("/filteredByName")
     public ResponseEntity<?> getHotelByNombre(@RequestParam String nombre, @RequestParam int pages) {
         if (nombre == null || nombre.isEmpty()) {
@@ -89,7 +104,7 @@ public class HotelController {
     @GetMapping("/filteredByAddress")
     public ResponseEntity<?> getHotelByDireccion(@RequestParam String direccion, @RequestParam int pages) {
         if (direccion == null || direccion.isEmpty()) {
-            throw new IllegalArgumentException("El parámetro 'nombre' no puede estar vacío");
+            throw new IllegalArgumentException("El parámetro 'dirección' no puede estar vacío");
         }
         Pageable pageable = PageRequest.of(0, pages);
         Page<Hotel> page = hotelRepository.getHotelByDireccion(direccion, pageable);
@@ -105,7 +120,7 @@ public class HotelController {
     @GetMapping("/filteredByPhoneNumber")
     public ResponseEntity<?> getHotelByTelefono(@RequestParam String telefono, @RequestParam int pages) {
         if (telefono == null || telefono.isEmpty()) {
-            throw new IllegalArgumentException("El parámetro 'nombre' no puede estar vacío");
+            throw new IllegalArgumentException("El parámetro 'telefono' no puede estar vacío");
         }
         Pageable pageable = PageRequest.of(0, pages);
         Page<Hotel> page = hotelRepository.getHotelByTelefono(telefono, pageable);
@@ -121,7 +136,7 @@ public class HotelController {
     @GetMapping("/filteredByEmail")
     public ResponseEntity<?> getHotelByEmail(@RequestParam String email, @RequestParam int pages) {
         if (email == null || email.isEmpty()) {
-            throw new IllegalArgumentException("El parámetro 'nombre' no puede estar vacío");
+            throw new IllegalArgumentException("El parámetro 'email' no puede estar vacío");
         }
         Pageable pageable = PageRequest.of(0, pages);
         Page<Hotel> page = hotelRepository.getHotelByEmail(email, pageable);
@@ -137,7 +152,7 @@ public class HotelController {
     @GetMapping("/filteredByWebsite")
     public ResponseEntity<?> getHotelBySitioWeb(@RequestParam String sitioWeb, @RequestParam int pages) {
         if (sitioWeb == null || sitioWeb.isEmpty()) {
-            throw new IllegalArgumentException("El parámetro 'nombre' no puede estar vacío");
+            throw new IllegalArgumentException("El parámetro 'sitio web' no puede estar vacío");
         }
         Pageable pageable = PageRequest.of(0, pages);
         Page<Hotel> page = hotelRepository.getHotelBySitioWeb(sitioWeb, pageable);
@@ -148,6 +163,45 @@ public class HotelController {
         } else
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "No se encontró ningún hotel por el sitio web '" + sitioWeb + "'");
+    }
+
+    @GetMapping("/filteredByTypeOfService")
+    public ResponseEntity<?> getHotelByServiceType(@RequestParam String categoria, @RequestParam int pages) {
+        if (categoria == null || categoria.isEmpty()) {
+            throw new IllegalArgumentException("El parámetro 'categoria' no puede estar vacío");
+        }
+
+        CategoriaServicio c = null;
+        switch (categoria.toUpperCase()) {
+            case "GIMNASIO":
+                c = CategoriaServicio.GIMNASIO;
+                break;
+            case "BAR":
+                c = CategoriaServicio.BAR;
+                break;
+            case "KARAOKE":
+                c = CategoriaServicio.KARAOKE;
+                break;
+            case "LAVANDERIA":
+                c = CategoriaServicio.LAVANDERIA;
+                break;
+            case "CASINO":
+                c = CategoriaServicio.CASINO;
+                break;
+            default:
+                throw new IllegalArgumentException("La categoría introducida no existe");
+        }
+        
+
+        Pageable pageable = PageRequest.of(0, pages);
+        Page<Hotel> page = hotelRepository.findByCategoriaServicio(c, pageable);
+        List<Hotel> hoteles = page.getContent();
+        List<HotelDTO> hotelesDTO = convertToDtoHotelList(hoteles);
+        if (hotelesDTO.size() > 0) {
+            return ResponseEntity.ok(hotelesDTO);
+        } else
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No se encontró ningún hotel por la categoria '" + categoria + "'");
     }
 
     @PostMapping("/dynamicSearch")
@@ -208,6 +262,8 @@ public class HotelController {
                     "No se encontraron hoteles por los parámetros proporcionados");
 
     }
+
+
 
     @Operation(summary = "Filtrado con GET por todos sus parámetros")
     @GetMapping("/filteredByEverything")

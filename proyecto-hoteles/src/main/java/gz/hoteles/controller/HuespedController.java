@@ -79,6 +79,7 @@ public class HuespedController {
             return ResponseEntity.ok(convertToDtoHuesped(huesped));
     }
 
+
     @GetMapping("/filteredByName")
     public ResponseEntity<?> getHuespedesByNombre(@RequestParam String nombre, @RequestParam int pages) {
         if (nombre == null || nombre.isEmpty()) {

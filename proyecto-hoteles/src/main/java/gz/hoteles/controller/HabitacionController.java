@@ -65,6 +65,17 @@ public class HabitacionController {
         } else return ResponseEntity.ok(convertToDtoHabitacion(habitacion));
     }
 
+    @GetMapping("/{id}/full")
+    public ResponseEntity<?> getHabitacionFull(@PathVariable(name = "id") int id) {
+        if (id <= 0) {
+            throw new IllegalArgumentException("El ID debe ser un número entero positivo");
+        } 
+        Habitacion habitacion = habitacionRepository.findById(id).orElse(null);
+        if (habitacion == null) {
+           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ninguna habitación con el ID proporcionado");
+        } else return ResponseEntity.ok(habitacion);
+    }
+
     @GetMapping("/filteredByNumber")
     public ResponseEntity<?> getHabitacionesByNumero(@RequestParam String numero, @RequestParam int pages) {
         if (numero == null || numero.isEmpty()) {
