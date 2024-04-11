@@ -212,27 +212,31 @@ public class ServicioController {
                     spec = spec.and((root, query, cb) -> cb.notEqual(root.get(criteria.getKey()), criteria.getValue()));
                     break;
                 case "contains":
-                    spec = spec.and((root, query, cb) -> cb.like(root.get(criteria.getKey()), "%" + criteria.getValue() + "%"));
+                    spec = spec.and(
+                            (root, query, cb) -> cb.like(root.get(criteria.getKey()), "%" + criteria.getValue() + "%"));
                     break;
                 case "greater than":
-                    spec = spec.and((root, query, cb) -> cb.greaterThan(root.get(criteria.getKey()), criteria.getValue()));
+                    spec = spec
+                            .and((root, query, cb) -> cb.greaterThan(root.get(criteria.getKey()), criteria.getValue()));
                     break;
                 case "less than":
                     spec = spec.and((root, query, cb) -> cb.lessThan(root.get(criteria.getKey()), criteria.getValue()));
                     break;
                 case "greater or equals than":
-                    spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get(criteria.getKey()), criteria.getValue()));
+                    spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get(criteria.getKey()),
+                            criteria.getValue()));
                     break;
                 case "less or equals than":
-                    spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get(criteria.getKey()), criteria.getValue()));
+                    spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get(criteria.getKey()),
+                            criteria.getValue()));
                     break;
                 default:
                     throw new IllegalArgumentException("Operador de búsqueda no válido: " + criteria.getOperation());
             }
         }
 
-        String sortByField = orderCriteriaList.getValueSortOrder();
-        String sortDirection = orderCriteriaList.getSortBy().equalsIgnoreCase("asc") ? "ASC" : "DESC";
+        String sortByField = orderCriteriaList.getSortBy();
+        String sortDirection = orderCriteriaList.getValueSortOrder().equalsIgnoreCase("asc") ? "ASC" : "DESC";
         Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortByField);
 
         Page<Servicio> page = servicioRepository.findAll(spec, PageRequest.of(pageIndex, pageSize, sort));
@@ -246,6 +250,59 @@ public class ServicioController {
                     "No se encontraron servicios con los criterios proporcionados");
         }
 
+    }
+
+    @Operation(summary = "Filtrado de servicios por todos sus parámetros a través de un solo String")
+    @GetMapping("/magicFilter")
+    public ResponseEntity<?> getServicioByMagicFilter(
+            @RequestParam("query") String query,
+            @RequestParam("pagina") int pagina,
+            @RequestParam("itemsPorPagina") int itemsPorPagina) {
+
+        // Crear un objeto Pageable para la paginación
+        Pageable pageable = PageRequest.of(pagina, itemsPorPagina);
+
+        // Convertir el valor de query a CategoriaServicio
+        CategoriaServicio categoriaServicio = null;
+        switch (query.toUpperCase()) {
+            case "GIMNASIO":
+                categoriaServicio = CategoriaServicio.GIMNASIO;
+                break;
+            case "LAVANDERIA":
+                categoriaServicio = CategoriaServicio.LAVANDERIA;
+                break;
+            case "BAR":
+                categoriaServicio = CategoriaServicio.BAR;
+                break;
+            case "CASINO":
+                categoriaServicio = CategoriaServicio.CASINO;
+                break;
+            case "KARAOKE":
+                categoriaServicio = CategoriaServicio.KARAOKE;
+                break;
+            default:
+                // Si no coincide con ninguna categoría de servicio, se ignora y se busca con la
+                // cadena directamente
+        }
+
+        // Realizar la búsqueda en la base de datos
+        Page<Servicio> page;
+        if (categoriaServicio != null) {
+            page = servicioRepository.findByNombreContainingIgnoreCaseOrDescripcionContainingIgnoreCaseOrCategoria(
+                    query, query, categoriaServicio, pageable);
+        } else {
+            page = servicioRepository.findByNombreContainingIgnoreCaseOrDescripcionContainingIgnoreCase(
+                    query, query, pageable);
+        }
+
+        List<Servicio> servicios = page.getContent();
+        List<ServicioDTO> serviciosDTO = convertToDtoServicioList(servicios);
+        if (serviciosDTO.size() > 0) {
+            return ResponseEntity.ok(serviciosDTO);
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No se encontraron servicios por los parámetros proporcionados");
+        }
     }
 
     @Operation(summary = "Filtrado con GET por todos sus parámetros")

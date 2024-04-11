@@ -50,6 +50,12 @@ public interface ServicioRepository extends JpaRepository<Servicio, Integer>{
     /* Fin funciones GET tocho */
 
     Page<Servicio> findAll(Specification<Servicio> spec, Pageable pageable); // Para el dynamic search tocho
+
+    /* Para el magic filter */
+
+    Page<Servicio> findByNombreContainingIgnoreCaseOrDescripcionContainingIgnoreCase(String nombre, String descripcion, Pageable pageable);
+
+    Page<Servicio> findByNombreContainingIgnoreCaseOrDescripcionContainingIgnoreCaseOrCategoria(String nombre, String descripcion, CategoriaServicio categoria, Pageable pageable);
     
 }
 

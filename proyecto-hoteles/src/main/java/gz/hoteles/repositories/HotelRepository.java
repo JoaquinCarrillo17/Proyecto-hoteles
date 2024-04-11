@@ -105,4 +105,7 @@ public interface HotelRepository extends JpaRepository<Hotel, Integer>{
     @Query("SELECT DISTINCT h FROM Hotel h JOIN h.servicios s WHERE s.categoria = :categoria")
     Page<Hotel> findByCategoriaServicio(CategoriaServicio categoria, Pageable pageable); // Filtrar hoteles por tipo de servicio
 
+    Page<Hotel> findByNombreContainingIgnoreCaseOrDireccionContainingIgnoreCaseOrTelefonoContainingIgnoreCaseOrEmailContainingIgnoreCaseOrSitioWebContainingIgnoreCase(
+            String nombre, String direccion, String telefono, String email, String sitioWeb, Pageable pageable); // Para el magic filter
+
 }

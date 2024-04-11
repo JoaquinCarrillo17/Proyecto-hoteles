@@ -312,8 +312,8 @@ public class HuespedController {
             }
         }
 
-        String sortByField = orderCriteriaList.getValueSortOrder();
-        String sortDirection = orderCriteriaList.getSortBy().equalsIgnoreCase("asc") ? "ASC" : "DESC";
+        String sortByField = orderCriteriaList.getSortBy();
+        String sortDirection = orderCriteriaList.getValueSortOrder().equalsIgnoreCase("asc") ? "ASC" : "DESC";
         Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortByField);
 
         Page<Huesped> page = huespedRepository.findAll(spec, PageRequest.of(pageIndex, pageSize, sort));
@@ -327,6 +327,43 @@ public class HuespedController {
                     "No se encontraron huéspedes con los parámetros proporcionados");
         }
 
+    }
+
+    @GetMapping("/huespedes/magicFilter")
+    public ResponseEntity<?> getHuespedesByMagicFilter(
+            @RequestParam("query") String query,
+            @RequestParam("pagina") int pagina,
+            @RequestParam("itemsPorPagina") int itemsPorPagina) {
+
+        // Intentar parsear el parámetro 'query' como fecha
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+        Date fechaQuery = null;
+        try {
+            fechaQuery = dateFormat.parse(query);
+        } catch (ParseException e) {
+            // Si no se puede parsear como fecha, se ignora y se busca sin tener en cuenta las fechas
+        }
+
+        // Crear un objeto Pageable para la paginación
+        Pageable pageable = PageRequest.of(pagina, itemsPorPagina);
+
+        // Realizar la búsqueda en la base de datos
+        Page<Huesped> page;
+        if (fechaQuery != null) {
+            // Si se pudo parsear como fecha, se realiza la búsqueda teniendo en cuenta la fecha
+            page = huespedRepository.findByQueryAndDate(query, fechaQuery, pageable);
+        } else {
+            // Si no se pudo parsear como fecha, se realiza la búsqueda sin tener en cuenta las fechas
+            page = huespedRepository.findByNombreCompletoContainingIgnoreCaseOrDniContainingIgnoreCaseOrEmailContainingIgnoreCase(
+                    query, query, query, pageable);
+        }
+
+        List<Huesped> huespedes = page.getContent();
+        if (!huespedes.isEmpty()) {
+            return ResponseEntity.ok(huespedes);
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontraron huéspedes por los parámetros proporcionados");
+        }
     }
 
     @PostMapping("/dynamicSearchWithDateRange")

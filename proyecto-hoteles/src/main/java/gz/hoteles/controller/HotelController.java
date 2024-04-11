@@ -247,8 +247,8 @@ public class HotelController {
             }
         }
 
-        String sortByField = orderCriteriaList.getValueSortOrder();
-        String sortDirection = orderCriteriaList.getSortBy().equalsIgnoreCase("asc") ? "ASC" : "DESC";
+        String sortByField = orderCriteriaList.getSortBy();
+        String sortDirection = orderCriteriaList.getValueSortOrder().equalsIgnoreCase("asc") ? "ASC" : "DESC";
         Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortByField);
 
         Page<Hotel> page = hotelRepository.findAll(spec, PageRequest.of(pageIndex, pageSize, sort));
@@ -351,6 +351,31 @@ public class HotelController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "No se encontraron hoteles por los parámetros proporcionados");
 
+    }
+
+    @Operation(summary = "Filtrado por todos sus parámetros a través de un solo String")
+    @GetMapping("/magicFilter")
+    public ResponseEntity<?> getHotelByMagicFilter(
+            @RequestParam("query") String query,
+            @RequestParam("pagina") int pagina,
+            @RequestParam("itemsPorPagina") int itemsPorPagina) {
+
+        // query = "%" + query.toLowerCase() + "%";
+        // Crear un objeto Pageable para la paginación
+        Pageable pageable = PageRequest.of(pagina, itemsPorPagina);
+
+        // Realizar la búsqueda en la base de datos
+        Page<Hotel> page = hotelRepository
+                .findByNombreContainingIgnoreCaseOrDireccionContainingIgnoreCaseOrTelefonoContainingIgnoreCaseOrEmailContainingIgnoreCaseOrSitioWebContainingIgnoreCase(
+                        query, query, query, query, query, pageable);
+
+        List<Hotel> hoteles = page.getContent();
+        List<HotelDTO> hotelesDTO = convertToDtoHotelList(hoteles);
+        if (hotelesDTO.size() > 0) {
+            return ResponseEntity.ok(hotelesDTO);
+        } else
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No se encontraron hoteles por los parámetros proporcionados");
     }
 
     @PutMapping("/{id}")

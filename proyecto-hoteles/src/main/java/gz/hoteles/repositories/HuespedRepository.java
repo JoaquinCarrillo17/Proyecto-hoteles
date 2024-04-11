@@ -141,4 +141,16 @@ public interface HuespedRepository extends JpaRepository<Huesped, Integer> {
 
         Page<Huesped> findAll(Specification<Huesped> spec, Pageable pageable); // Para el dynamic search tocho
 
+        /* Para el magic filter */
+
+        Page<Huesped> findByNombreCompletoContainingIgnoreCaseOrDniContainingIgnoreCaseOrEmailContainingIgnoreCase(String nombre, String dni, String email, Pageable pageable);
+
+        @Query("SELECT h FROM Huesped h WHERE " +
+           "LOWER(h.nombreCompleto) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(h.dni) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(h.email) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "h.fechaCheckIn = :fecha OR " +
+           "h.fechaCheckOut = :fecha")
+    Page<Huesped> findByQueryAndDate(String query, Date fecha, Pageable pageable);
+
 }
