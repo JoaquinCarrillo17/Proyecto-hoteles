@@ -197,8 +197,8 @@ public class HabitacionController {
     @GetMapping("/magicFilter")
     public ResponseEntity<?> getHabitacionesByMagicFilter(
             @RequestParam("query") String query,
-            @RequestParam("pagina") int pagina,
-            @RequestParam("itemsPorPagina") int itemsPorPagina) {
+            @RequestParam("pageNumber") int pagina,
+            @RequestParam("itemsPerPage") int itemsPorPagina) {
 
         Pageable pageable = PageRequest.of(pagina, itemsPorPagina);
 

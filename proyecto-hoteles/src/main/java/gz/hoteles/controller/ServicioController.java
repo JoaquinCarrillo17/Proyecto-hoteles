@@ -256,8 +256,8 @@ public class ServicioController {
     @GetMapping("/magicFilter")
     public ResponseEntity<?> getServicioByMagicFilter(
             @RequestParam("query") String query,
-            @RequestParam("pagina") int pagina,
-            @RequestParam("itemsPorPagina") int itemsPorPagina) {
+            @RequestParam("pageNumber") int pagina,
+            @RequestParam("itemsPerPage") int itemsPorPagina) {
 
         // Crear un objeto Pageable para la paginación
         Pageable pageable = PageRequest.of(pagina, itemsPorPagina);

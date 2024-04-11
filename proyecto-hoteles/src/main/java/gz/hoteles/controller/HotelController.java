@@ -191,7 +191,6 @@ public class HotelController {
             default:
                 throw new IllegalArgumentException("La categoría introducida no existe");
         }
-        
 
         Pageable pageable = PageRequest.of(0, pages);
         Page<Hotel> page = hotelRepository.findByCategoriaServicio(c, pageable);
@@ -228,19 +227,23 @@ public class HotelController {
                     spec = spec.and((root, query, cb) -> cb.notEqual(root.get(criteria.getKey()), criteria.getValue()));
                     break;
                 case "contains":
-                    spec = spec.and((root, query, cb) -> cb.like(root.get(criteria.getKey()), "%" + criteria.getValue() + "%"));
+                    spec = spec.and(
+                            (root, query, cb) -> cb.like(root.get(criteria.getKey()), "%" + criteria.getValue() + "%"));
                     break;
                 case "greater than":
-                    spec = spec.and((root, query, cb) -> cb.greaterThan(root.get(criteria.getKey()), criteria.getValue()));
+                    spec = spec
+                            .and((root, query, cb) -> cb.greaterThan(root.get(criteria.getKey()), criteria.getValue()));
                     break;
                 case "less than":
                     spec = spec.and((root, query, cb) -> cb.lessThan(root.get(criteria.getKey()), criteria.getValue()));
                     break;
                 case "greater or equals than":
-                    spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get(criteria.getKey()), criteria.getValue()));
+                    spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get(criteria.getKey()),
+                            criteria.getValue()));
                     break;
                 case "less or equals than":
-                    spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get(criteria.getKey()), criteria.getValue()));
+                    spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get(criteria.getKey()),
+                            criteria.getValue()));
                     break;
                 default:
                     throw new IllegalArgumentException("Operador de búsqueda no válido: " + criteria.getOperation());
@@ -263,13 +266,12 @@ public class HotelController {
 
     }
 
-
-
     @Operation(summary = "Filtrado con GET por todos sus parámetros")
     @GetMapping("/filteredByEverything")
     public ResponseEntity<?> getFilteredByEverything(@RequestParam(required = false) String nombre,
             @RequestParam(required = false) String direccion, @RequestParam(required = false) String telefono,
-            @RequestParam(required = false) String email, @RequestParam(required = false) String sitioWeb, @RequestParam int pages) {
+            @RequestParam(required = false) String email, @RequestParam(required = false) String sitioWeb,
+            @RequestParam int pages) {
 
         Page<Hotel> page = null;
 
@@ -356,26 +358,31 @@ public class HotelController {
     @Operation(summary = "Filtrado por todos sus parámetros a través de un solo String")
     @GetMapping("/magicFilter")
     public ResponseEntity<?> getHotelByMagicFilter(
-            @RequestParam("query") String query,
-            @RequestParam("pagina") int pagina,
-            @RequestParam("itemsPorPagina") int itemsPorPagina) {
+            @RequestParam(value = "query", required = false) String query,
+            @RequestParam("pageNumber") int pageNumber,
+            @RequestParam("itemsPerPage") int itemsPerPage) {
 
-        // query = "%" + query.toLowerCase() + "%";
-        // Crear un objeto Pageable para la paginación
-        Pageable pageable = PageRequest.of(pagina, itemsPorPagina);
+        Pageable pageable = PageRequest.of(pageNumber, itemsPerPage);
 
-        // Realizar la búsqueda en la base de datos
-        Page<Hotel> page = hotelRepository
-                .findByNombreContainingIgnoreCaseOrDireccionContainingIgnoreCaseOrTelefonoContainingIgnoreCaseOrEmailContainingIgnoreCaseOrSitioWebContainingIgnoreCase(
-                        query, query, query, query, query, pageable);
+        Page<Hotel> page;
+        if (query == null || query.isEmpty()) {
+            // Si query es nulo o vacío, obtener todos los hoteles sin filtrar
+            page = hotelRepository.findAll(pageable);
+        } else {
+            // Filtrar por query en los campos relevantes
+            page = hotelRepository
+                    .findByNombreContainingIgnoreCaseOrDireccionContainingIgnoreCaseOrTelefonoContainingIgnoreCaseOrEmailContainingIgnoreCaseOrSitioWebContainingIgnoreCase(
+                            query, query, query, query, query, pageable);
+        }
 
         List<Hotel> hoteles = page.getContent();
         List<HotelDTO> hotelesDTO = convertToDtoHotelList(hoteles);
         if (hotelesDTO.size() > 0) {
             return ResponseEntity.ok(hotelesDTO);
-        } else
+        } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "No se encontraron hoteles por los parámetros proporcionados");
+        }
     }
 
     @PutMapping("/{id}")
@@ -441,7 +448,7 @@ public class HotelController {
         if (hotel == null) {
             throw new IllegalArgumentException("El hotel no puede ser nulo");
         }
-        
+
         return modelMapper.map(hotel, HotelDTO.class);
     }
 

@@ -332,8 +332,8 @@ public class HuespedController {
     @GetMapping("/huespedes/magicFilter")
     public ResponseEntity<?> getHuespedesByMagicFilter(
             @RequestParam("query") String query,
-            @RequestParam("pagina") int pagina,
-            @RequestParam("itemsPorPagina") int itemsPorPagina) {
+            @RequestParam("pageNumber") int pagina,
+            @RequestParam("itemsPerPage") int itemsPorPagina) {
 
         // Intentar parsear el parámetro 'query' como fecha
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
