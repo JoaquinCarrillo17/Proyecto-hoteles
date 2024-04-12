@@ -196,41 +196,46 @@ public class HabitacionController {
     @Operation(summary = "Filtrado de habitaciones por todos sus parámetros a través de un solo String")
     @GetMapping("/magicFilter")
     public ResponseEntity<?> getHabitacionesByMagicFilter(
-            @RequestParam("query") String query,
+            @RequestParam(value = "query", required = false) String query,
             @RequestParam("pageNumber") int pagina,
             @RequestParam("itemsPerPage") int itemsPorPagina) {
 
         Pageable pageable = PageRequest.of(pagina, itemsPorPagina);
 
-        // Intenta convertir el valor de query a TipoHabitacion
-        TipoHabitacion tipoHabitacion = null;
-        switch (query.toUpperCase()) {
-            case "INDIVIDUAL":
-                tipoHabitacion = TipoHabitacion.INDIVIDUAL;
-                break;
-            case "DOBLE":
-                tipoHabitacion = TipoHabitacion.DOBLE;
-                break;
-            case "CUADRUPLE":
-                tipoHabitacion = TipoHabitacion.CUADRUPLE;
-                break;
-            case "SUITE":
-                tipoHabitacion = TipoHabitacion.SUITE;
-                break;
-            default:
-                // Si no coincide con ningún tipo de habitación, se ignora y se busca con la
-                // cadena directamente
-        }
-
         Page<Habitacion> page;
-        if (tipoHabitacion != null) {
-            page = habitacionRepository
-                    .findByNumeroContainingIgnoreCaseOrTipoHabitacionOrPrecioNoche(
-                            query, tipoHabitacion, Float.parseFloat(query), pageable);
+        if (query == null || query.isEmpty()) {
+            page = habitacionRepository.findAll(pageable);
         } else {
-            page = habitacionRepository
-                    .findByNumeroContainingIgnoreCaseOrPrecioNoche(
-                            query, Float.parseFloat(query), pageable);
+
+            // Intenta convertir el valor de query a TipoHabitacion
+            TipoHabitacion tipoHabitacion = null;
+            switch (query.toUpperCase()) {
+                case "INDIVIDUAL":
+                    tipoHabitacion = TipoHabitacion.INDIVIDUAL;
+                    break;
+                case "DOBLE":
+                    tipoHabitacion = TipoHabitacion.DOBLE;
+                    break;
+                case "CUADRUPLE":
+                    tipoHabitacion = TipoHabitacion.CUADRUPLE;
+                    break;
+                case "SUITE":
+                    tipoHabitacion = TipoHabitacion.SUITE;
+                    break;
+                default:
+                    // Si no coincide con ningún tipo de habitación, se ignora y se busca con la
+                    // cadena directamente
+            }
+
+            if (tipoHabitacion != null) {
+                page = habitacionRepository
+                        .findByNumeroContainingIgnoreCaseOrTipoHabitacion(
+                                query, tipoHabitacion, pageable);
+            } else {
+                page = habitacionRepository
+                        .findByNumeroContainingIgnoreCaseOrPrecioNoche(
+                                query, Float.parseFloat(query), pageable);
+            }
         }
 
         List<Habitacion> habitaciones = page.getContent();

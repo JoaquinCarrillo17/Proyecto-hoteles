@@ -79,7 +79,6 @@ public class HuespedController {
             return ResponseEntity.ok(convertToDtoHuesped(huesped));
     }
 
-
     @GetMapping("/filteredByName")
     public ResponseEntity<?> getHuespedesByNombre(@RequestParam String nombre, @RequestParam int pages) {
         if (nombre == null || nombre.isEmpty()) {
@@ -129,13 +128,14 @@ public class HuespedController {
     }
 
     @GetMapping("/filteredByCheckInDate")
-    public ResponseEntity<?> getHuespedesByFechaEntrada(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date fecha, @RequestParam int pages) {
+    public ResponseEntity<?> getHuespedesByFechaEntrada(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date fecha, @RequestParam int pages) {
         if (fecha == null) {
             throw new IllegalArgumentException("El parámetro 'fecha' no puede estar vacío");
         }
-    
+
         System.out.println(fecha);
-        
+
         Pageable pageable = PageRequest.of(0, pages);
         Page<Huesped> page = huespedRepository.getHuespedesByFechaEntrada(fecha, pageable);
         List<Huesped> huespedes = page.getContent();
@@ -186,13 +186,13 @@ public class HuespedController {
 
         Date date = null;
         if (field.equals("fecha entrada") || field.equals("fecha salida")) {
-        try {
-            date = dateFormat.parse(value);
-            System.out.println(date);
-        } catch (ParseException e) {
-            throw new IllegalArgumentException("Error al parsear la fecha: " + e.getMessage());
+            try {
+                date = dateFormat.parse(value);
+                System.out.println(date);
+            } catch (ParseException e) {
+                throw new IllegalArgumentException("Error al parsear la fecha: " + e.getMessage());
+            }
         }
-    }
 
         Page<Huesped> page = switch (field) {
             case "nombre" -> huespedRepository.findByNombreCompletoContainingIgnoreCase(value,
@@ -329,40 +329,59 @@ public class HuespedController {
 
     }
 
-    @GetMapping("/huespedes/magicFilter")
+    // TODO: SI LE PASO UNA FECHA DE TIPO YYYY-MM-DD NO ME ENCUENTRA A LOS HUESPEDES
+    @GetMapping("/magicFilter")
     public ResponseEntity<?> getHuespedesByMagicFilter(
-            @RequestParam("query") String query,
+            @RequestParam(value = "query", required = false) String query,
             @RequestParam("pageNumber") int pagina,
             @RequestParam("itemsPerPage") int itemsPorPagina) {
-
-        // Intentar parsear el parámetro 'query' como fecha
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
-        Date fechaQuery = null;
-        try {
-            fechaQuery = dateFormat.parse(query);
-        } catch (ParseException e) {
-            // Si no se puede parsear como fecha, se ignora y se busca sin tener en cuenta las fechas
-        }
 
         // Crear un objeto Pageable para la paginación
         Pageable pageable = PageRequest.of(pagina, itemsPorPagina);
 
         // Realizar la búsqueda en la base de datos
         Page<Huesped> page;
-        if (fechaQuery != null) {
-            // Si se pudo parsear como fecha, se realiza la búsqueda teniendo en cuenta la fecha
-            page = huespedRepository.findByQueryAndDate(query, fechaQuery, pageable);
+        if (query == null || query.isEmpty()) {
+            page = huespedRepository.findAll(pageable);
         } else {
-            // Si no se pudo parsear como fecha, se realiza la búsqueda sin tener en cuenta las fechas
-            page = huespedRepository.findByNombreCompletoContainingIgnoreCaseOrDniContainingIgnoreCaseOrEmailContainingIgnoreCase(
-                    query, query, query, pageable);
+
+            // Intentar parsear el parámetro 'query' como fecha
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+            Date fechaQuery = null;
+            try {
+                // Intenta parsear la fecha completa
+                fechaQuery = dateFormat.parse(query);
+            } catch (ParseException e) {
+                try {
+                    // Si falla, intenta parsear solo la fecha sin la hora
+                    dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                    fechaQuery = dateFormat.parse(query);
+                } catch (ParseException ex) {
+                    // Si tampoco se puede parsear como fecha, se ignora y se busca sin tener en
+                    // cuenta las fechas
+                }
+            }
+
+            if (fechaQuery != null) {
+                // Si se pudo parsear como fecha, se realiza la búsqueda teniendo en cuenta la
+                // fecha
+                page = huespedRepository.findByQueryAndDate(query, fechaQuery, pageable);
+            } else {
+                // Si no se pudo parsear como fecha, se realiza la búsqueda sin tener en cuenta
+                // las fechas
+                page = huespedRepository
+                        .findByNombreCompletoContainingIgnoreCaseOrDniContainingIgnoreCaseOrEmailContainingIgnoreCase(
+                                query, query, query, pageable);
+            }
         }
 
         List<Huesped> huespedes = page.getContent();
-        if (!huespedes.isEmpty()) {
-            return ResponseEntity.ok(huespedes);
+        List<HuespedDTO> huespedesDTO = convertToDtoHuespedList(huespedes);
+        if (!huespedesDTO.isEmpty()) {
+            return ResponseEntity.ok(huespedesDTO);
         } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontraron huéspedes por los parámetros proporcionados");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No se encontraron huéspedes por los parámetros proporcionados");
         }
     }
 

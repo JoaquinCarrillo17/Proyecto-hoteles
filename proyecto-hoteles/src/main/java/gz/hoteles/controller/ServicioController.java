@@ -255,44 +255,50 @@ public class ServicioController {
     @Operation(summary = "Filtrado de servicios por todos sus parámetros a través de un solo String")
     @GetMapping("/magicFilter")
     public ResponseEntity<?> getServicioByMagicFilter(
-            @RequestParam("query") String query,
+            @RequestParam(value = "query", required = false) String query,
             @RequestParam("pageNumber") int pagina,
             @RequestParam("itemsPerPage") int itemsPorPagina) {
 
         // Crear un objeto Pageable para la paginación
         Pageable pageable = PageRequest.of(pagina, itemsPorPagina);
 
-        // Convertir el valor de query a CategoriaServicio
-        CategoriaServicio categoriaServicio = null;
-        switch (query.toUpperCase()) {
-            case "GIMNASIO":
-                categoriaServicio = CategoriaServicio.GIMNASIO;
-                break;
-            case "LAVANDERIA":
-                categoriaServicio = CategoriaServicio.LAVANDERIA;
-                break;
-            case "BAR":
-                categoriaServicio = CategoriaServicio.BAR;
-                break;
-            case "CASINO":
-                categoriaServicio = CategoriaServicio.CASINO;
-                break;
-            case "KARAOKE":
-                categoriaServicio = CategoriaServicio.KARAOKE;
-                break;
-            default:
-                // Si no coincide con ninguna categoría de servicio, se ignora y se busca con la
-                // cadena directamente
-        }
-
         // Realizar la búsqueda en la base de datos
         Page<Servicio> page;
-        if (categoriaServicio != null) {
-            page = servicioRepository.findByNombreContainingIgnoreCaseOrDescripcionContainingIgnoreCaseOrCategoria(
-                    query, query, categoriaServicio, pageable);
+        if (query == null || query.isEmpty()) {
+            page = servicioRepository.findAll(pageable);
         } else {
-            page = servicioRepository.findByNombreContainingIgnoreCaseOrDescripcionContainingIgnoreCase(
-                    query, query, pageable);
+
+            // Convertir el valor de query a CategoriaServicio
+            CategoriaServicio categoriaServicio = null;
+            switch (query.toUpperCase()) {
+                case "GIMNASIO":
+                    categoriaServicio = CategoriaServicio.GIMNASIO;
+                    break;
+                case "LAVANDERIA":
+                    categoriaServicio = CategoriaServicio.LAVANDERIA;
+                    break;
+                case "BAR":
+                    categoriaServicio = CategoriaServicio.BAR;
+                    break;
+                case "CASINO":
+                    categoriaServicio = CategoriaServicio.CASINO;
+                    break;
+                case "KARAOKE":
+                    categoriaServicio = CategoriaServicio.KARAOKE;
+                    break;
+                default:
+                    // Si no coincide con ninguna categoría de servicio, se ignora y se busca con la
+                    // cadena directamente
+            }
+
+            if (categoriaServicio != null) {
+                page = servicioRepository.findByNombreContainingIgnoreCaseOrDescripcionContainingIgnoreCaseOrCategoria(
+                        query, query, categoriaServicio, pageable);
+            } else {
+                page = servicioRepository.findByNombreContainingIgnoreCaseOrDescripcionContainingIgnoreCase(
+                        query, query, pageable);
+            }
+
         }
 
         List<Servicio> servicios = page.getContent();

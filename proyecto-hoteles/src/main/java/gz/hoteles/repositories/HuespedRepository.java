@@ -81,37 +81,38 @@ public interface HuespedRepository extends JpaRepository<Huesped, Integer> {
         Page<Huesped> findByDni(String dni, PageRequest of);
 
         Page<Huesped> findByNombreCompletoAndEmailAndDniAndFechaCheckInAfterAndFechaCheckOutBefore(
-                String nombreCompleto, String email, String dni, Date fechaCheckIn, Date fechaCheckOut, PageRequest of);
+                        String nombreCompleto, String email, String dni, Date fechaCheckIn, Date fechaCheckOut,
+                        PageRequest of);
 
         Page<Huesped> findByNombreCompletoAndEmailAndFechaCheckInAfterAndFechaCheckOutBefore(String nombreCompleto,
-                String email, Date fechaCheckIn, Date fechaCheckOut, PageRequest of);
+                        String email, Date fechaCheckIn, Date fechaCheckOut, PageRequest of);
 
         Page<Huesped> findByNombreCompletoAndFechaCheckInAfterAndFechaCheckOutBefore(String nombreCompleto,
-                Date fechaCheckIn, Date fechaCheckOut, PageRequest of);
+                        Date fechaCheckIn, Date fechaCheckOut, PageRequest of);
 
         Page<Huesped> findByEmailAndDniAndFechaCheckInAfterAndFechaCheckOutBefore(String email, String dni,
-                Date fechaCheckIn, Date fechaCheckOut, PageRequest of);
+                        Date fechaCheckIn, Date fechaCheckOut, PageRequest of);
 
         Page<Huesped> findByEmailAndFechaCheckInAfterAndFechaCheckOutBefore(String email, Date fechaCheckIn,
-                Date fechaCheckOut, PageRequest of);
+                        Date fechaCheckOut, PageRequest of);
 
         Page<Huesped> findByDniAndFechaCheckInAfterAndFechaCheckOutBefore(String dni, Date fechaCheckIn,
-                Date fechaCheckOut, PageRequest of);
+                        Date fechaCheckOut, PageRequest of);
 
         Page<Huesped> findByFechaCheckInAfterAndFechaCheckOutBefore(Date fechaCheckIn, Date fechaCheckOut,
-                PageRequest of);
+                        PageRequest of);
 
         Page<Huesped> findByNombreCompletoAndEmailAndDniAndFechaCheckInAfter(String nombreCompleto, String email,
-                String dni, Date fechaCheckIn, PageRequest of);
+                        String dni, Date fechaCheckIn, PageRequest of);
 
         Page<Huesped> findByNombreCompletoAndEmailAndFechaCheckInAfter(String nombreCompleto, String email,
-                Date fechaCheckIn, PageRequest of);
+                        Date fechaCheckIn, PageRequest of);
 
         Page<Huesped> findByNombreCompletoAndFechaCheckInAfter(String nombreCompleto, Date fechaCheckIn,
-                PageRequest of);
+                        PageRequest of);
 
         Page<Huesped> findByEmailAndDniAndFechaCheckInAfter(String email, String dni, Date fechaCheckIn,
-                PageRequest of);
+                        PageRequest of);
 
         Page<Huesped> findByEmailAndFechaCheckInAfter(String email, Date fechaCheckIn, PageRequest of);
 
@@ -120,16 +121,16 @@ public interface HuespedRepository extends JpaRepository<Huesped, Integer> {
         Page<Huesped> findByFechaCheckInAfter(Date fechaCheckIn, PageRequest of);
 
         Page<Huesped> findByNombreCompletoAndEmailAndDniAndFechaCheckOutBefore(String nombreCompleto, String email,
-                String dni, Date fechaCheckOut, PageRequest of);
+                        String dni, Date fechaCheckOut, PageRequest of);
 
         Page<Huesped> findByNombreCompletoAndEmailAndFechaCheckOutBefore(String nombreCompleto, String email,
-                Date fechaCheckOut, PageRequest of);
+                        Date fechaCheckOut, PageRequest of);
 
         Page<Huesped> findByNombreCompletoAndFechaCheckOutBefore(String nombreCompleto, Date fechaCheckOut,
-                PageRequest of);
+                        PageRequest of);
 
         Page<Huesped> findByEmailAndDniAndFechaCheckOutBefore(String email, String dni, Date fechaCheckOut,
-                PageRequest of);
+                        PageRequest of);
 
         Page<Huesped> findByEmailAndFechaCheckOutBefore(String email, Date fechaCheckOut, PageRequest of);
 
@@ -143,14 +144,15 @@ public interface HuespedRepository extends JpaRepository<Huesped, Integer> {
 
         /* Para el magic filter */
 
-        Page<Huesped> findByNombreCompletoContainingIgnoreCaseOrDniContainingIgnoreCaseOrEmailContainingIgnoreCase(String nombre, String dni, String email, Pageable pageable);
+        Page<Huesped> findByNombreCompletoContainingIgnoreCaseOrDniContainingIgnoreCaseOrEmailContainingIgnoreCase(
+                        String nombre, String dni, String email, Pageable pageable);
 
         @Query("SELECT h FROM Huesped h WHERE " +
-           "LOWER(h.nombreCompleto) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
-           "LOWER(h.dni) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
-           "LOWER(h.email) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
-           "h.fechaCheckIn = :fecha OR " +
-           "h.fechaCheckOut = :fecha")
-    Page<Huesped> findByQueryAndDate(String query, Date fecha, Pageable pageable);
+                        "LOWER(h.nombreCompleto) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+                        "LOWER(h.dni) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+                        "LOWER(h.email) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+                        "DATE(h.fechaCheckIn) = DATE(:fecha) OR " +
+                        "DATE(h.fechaCheckOut) = DATE(:fecha)")
+        Page<Huesped> findByQueryAndDate(String query, Date fecha, Pageable pageable);
 
 }

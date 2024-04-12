@@ -51,8 +51,8 @@ public interface HabitacionRepository extends JpaRepository<Habitacion, Integer>
 
         /* Para el magic filter */
 
-        Page<Habitacion> findByNumeroContainingIgnoreCaseOrTipoHabitacionOrPrecioNoche(
-                        String numero, TipoHabitacion tipoHabitacion, Float precioNoche, Pageable pageable);
+        Page<Habitacion> findByNumeroContainingIgnoreCaseOrTipoHabitacion(
+                        String numero, TipoHabitacion tipoHabitacion, Pageable pageable);
 
         Page<Habitacion> findByNumeroContainingIgnoreCaseOrPrecioNoche(
                         String numero, Float precioNoche, Pageable pageable);

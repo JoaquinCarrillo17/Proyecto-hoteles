@@ -1,6 +1,7 @@
 package gz.hoteles;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,6 +81,8 @@ public class ProyectoHotelesApplication {
             huesped.setNombreCompleto("Huesped " + nombre);
             huesped.setDni("12345678A");
             huesped.setEmail("huesped@" + nombre.replace(" ", "").toLowerCase() + ".com");
+            huesped.setFechaCheckIn(new Date());
+            huesped.setFechaCheckOut(new Date());
             huespedes.add(huesped);
             habitacion.setHuespedes(huespedes);
             habitaciones.add(habitacion);
