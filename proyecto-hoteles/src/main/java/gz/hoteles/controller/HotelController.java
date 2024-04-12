@@ -1,6 +1,8 @@
 package gz.hoteles.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
@@ -362,23 +364,37 @@ public class HotelController {
             @RequestParam("pageNumber") int pageNumber,
             @RequestParam("itemsPerPage") int itemsPerPage) {
 
+        // Definir la paginación
         Pageable pageable = PageRequest.of(pageNumber, itemsPerPage);
 
         Page<Hotel> page;
+        long totalItems; // Variable para almacenar el número total de elementos coincidentes
+
         if (query == null || query.isEmpty()) {
             // Si query es nulo o vacío, obtener todos los hoteles sin filtrar
             page = hotelRepository.findAll(pageable);
+            totalItems = hotelRepository.count(); // Obtener el número total de hoteles en la base de datos
         } else {
             // Filtrar por query en los campos relevantes
             page = hotelRepository
                     .findByNombreContainingIgnoreCaseOrDireccionContainingIgnoreCaseOrTelefonoContainingIgnoreCaseOrEmailContainingIgnoreCaseOrSitioWebContainingIgnoreCase(
                             query, query, query, query, query, pageable);
+            totalItems = page.getTotalElements(); // Obtener el número total de elementos coincidentes
         }
 
         List<Hotel> hoteles = page.getContent();
+
+        // Convertir la lista de hoteles a lista de hotelesDTO
         List<HotelDTO> hotelesDTO = convertToDtoHotelList(hoteles);
-        if (hotelesDTO.size() > 0) {
-            return ResponseEntity.ok(hotelesDTO);
+
+        // Crear un objeto JSON para la respuesta que incluya tanto la lista de
+        // hotelesDTO como el número total de elementos
+        Map<String, Object> response = new HashMap<>();
+        response.put("hoteles", hotelesDTO);
+        response.put("totalItems", totalItems);
+
+        if (!hotelesDTO.isEmpty()) {
+            return ResponseEntity.ok(response);
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "No se encontraron hoteles por los parámetros proporcionados");

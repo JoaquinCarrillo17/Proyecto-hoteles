@@ -3,7 +3,9 @@ package gz.hoteles.controller;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
@@ -341,8 +343,11 @@ public class HuespedController {
 
         // Realizar la búsqueda en la base de datos
         Page<Huesped> page;
+        long totalItems; // Variable para almacenar el número total de elementos coincidentes
+
         if (query == null || query.isEmpty()) {
             page = huespedRepository.findAll(pageable);
+            totalItems = huespedRepository.count(); // Obtener el número total de huéspedes en la base de datos
         } else {
 
             // Intentar parsear el parámetro 'query' como fecha
@@ -373,12 +378,21 @@ public class HuespedController {
                         .findByNombreCompletoContainingIgnoreCaseOrDniContainingIgnoreCaseOrEmailContainingIgnoreCase(
                                 query, query, query, pageable);
             }
+
+            totalItems = page.getTotalElements(); // Obtener el número total de elementos coincidentes
         }
 
         List<Huesped> huespedes = page.getContent();
         List<HuespedDTO> huespedesDTO = convertToDtoHuespedList(huespedes);
+
+        // Crear un objeto JSON para la respuesta que incluya tanto la lista de
+        // huespedesDTO como el número total de elementos
+        Map<String, Object> response = new HashMap<>();
+        response.put("huespedes", huespedesDTO);
+        response.put("totalItems", totalItems);
+
         if (!huespedesDTO.isEmpty()) {
-            return ResponseEntity.ok(huespedesDTO);
+            return ResponseEntity.ok(response);
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "No se encontraron huéspedes por los parámetros proporcionados");

@@ -49,6 +49,15 @@ public class ProyectoHotelesApplication {
             hoteles.add(crearHotel("Hotel Juan", "Calle Juan", "258145648", "JCjuanhotel@hotel.com", "www.juanhotel.com"));
             hoteles.add(crearHotel("Hotel Pepe", "Calle Pepejc", "912345678", "info@pepehotel.com", "www.pepehotel.com"));
 
+            for (int i = 1; i <= 10; i++) {
+                String nombre = "Hotel " + i;
+                String direccion = "Calle " + i;
+                String telefono = "9" + String.valueOf(12345678 + i);
+                String email = "info@hotel" + i + ".com";
+                String sitioWeb = "www.hotel" + i + ".com";
+                hoteles.add(crearHotel(nombre, direccion, telefono, email, sitioWeb));
+            }
+
             return hoteles;
         }
 

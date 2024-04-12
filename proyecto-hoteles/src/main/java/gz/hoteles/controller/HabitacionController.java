@@ -1,6 +1,8 @@
 package gz.hoteles.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
@@ -203,8 +205,11 @@ public class HabitacionController {
         Pageable pageable = PageRequest.of(pagina, itemsPorPagina);
 
         Page<Habitacion> page;
+        long totalItems; // Variable para almacenar el número total de elementos coincidentes
+
         if (query == null || query.isEmpty()) {
             page = habitacionRepository.findAll(pageable);
+            totalItems = habitacionRepository.count(); // Obtener el número total de habitaciones en la base de datos
         } else {
 
             // Intenta convertir el valor de query a TipoHabitacion
@@ -236,12 +241,21 @@ public class HabitacionController {
                         .findByNumeroContainingIgnoreCaseOrPrecioNoche(
                                 query, Float.parseFloat(query), pageable);
             }
+
+            totalItems = page.getTotalElements(); // Obtener el número total de elementos coincidentes
         }
 
         List<Habitacion> habitaciones = page.getContent();
         List<HabitacionDTO> habitacionesDTO = convertToDtoHabitacionList(habitaciones);
-        if (habitacionesDTO.size() > 0) {
-            return ResponseEntity.ok(habitacionesDTO);
+
+        // Crear un objeto JSON para la respuesta que incluya tanto la lista de
+        // habitacionesDTO como el número total de elementos
+        Map<String, Object> response = new HashMap<>();
+        response.put("habitaciones", habitacionesDTO);
+        response.put("totalItems", totalItems);
+
+        if (!habitacionesDTO.isEmpty()) {
+            return ResponseEntity.ok(response);
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "No se encontraron habitaciones por los parámetros proporcionados");

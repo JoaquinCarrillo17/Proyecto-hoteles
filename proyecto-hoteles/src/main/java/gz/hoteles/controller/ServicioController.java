@@ -1,6 +1,8 @@
 package gz.hoteles.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
@@ -264,8 +266,11 @@ public class ServicioController {
 
         // Realizar la búsqueda en la base de datos
         Page<Servicio> page;
+        long totalItems; // Variable para almacenar el número total de elementos coincidentes
+
         if (query == null || query.isEmpty()) {
             page = servicioRepository.findAll(pageable);
+            totalItems = servicioRepository.count(); // Obtener el número total de servicios en la base de datos
         } else {
 
             // Convertir el valor de query a CategoriaServicio
@@ -299,12 +304,20 @@ public class ServicioController {
                         query, query, pageable);
             }
 
+            totalItems = page.getTotalElements(); // Obtener el número total de elementos coincidentes
         }
 
         List<Servicio> servicios = page.getContent();
         List<ServicioDTO> serviciosDTO = convertToDtoServicioList(servicios);
-        if (serviciosDTO.size() > 0) {
-            return ResponseEntity.ok(serviciosDTO);
+
+        // Crear un objeto JSON para la respuesta que incluya tanto la lista de
+        // serviciosDTO como el número total de elementos
+        Map<String, Object> response = new HashMap<>();
+        response.put("servicios", serviciosDTO);
+        response.put("totalItems", totalItems);
+
+        if (!serviciosDTO.isEmpty()) {
+            return ResponseEntity.ok(response);
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "No se encontraron servicios por los parámetros proporcionados");
