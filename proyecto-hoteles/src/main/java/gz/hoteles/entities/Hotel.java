@@ -49,12 +49,12 @@ public class Hotel {
 
     public void addHabitacion(Habitacion habitacion) {
         this.habitaciones.add(habitacion);
-        numeroHabitaciones++;
         updateHabitaciones(Collections.singletonList(habitacion));
     }
 
     public void updateHabitaciones(List<Habitacion> habitaciones) {
         for (Habitacion habitacion : habitaciones) {
+            this.numeroHabitaciones++;
             if (habitacion.getHuespedes().size() > 0) {
                 this.numeroHabitacionesReservadas++;
             } else this.numeroHabitacionesDisponibles++;

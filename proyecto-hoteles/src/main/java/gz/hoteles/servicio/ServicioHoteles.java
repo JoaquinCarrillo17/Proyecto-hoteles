@@ -40,7 +40,6 @@ public class ServicioHoteles implements IServicioHoteles {
         }
         hotel.updateHabitaciones(hotel.getHabitaciones());
         Hotel h = hotelRepository.save(hotel);
-        h.setNumeroHabitaciones(h.getHabitaciones().size());
         for (Habitacion habitacion : h.getHabitaciones()) {
             habitacion.setHotel(h);
             habitacionRepository.save(habitacion);
