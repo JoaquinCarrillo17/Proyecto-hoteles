@@ -365,7 +365,7 @@ public class HotelController {
             @RequestParam("itemsPerPage") int itemsPerPage) {
 
         // Definir la paginación
-        Pageable pageable = PageRequest.of(pageNumber, itemsPerPage);
+        Pageable pageable = PageRequest.of(pageNumber, itemsPerPage, Sort.by("id").ascending());
 
         Page<Hotel> page;
         long totalItems; // Variable para almacenar el número total de elementos coincidentes

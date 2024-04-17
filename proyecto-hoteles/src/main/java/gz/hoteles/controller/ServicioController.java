@@ -262,7 +262,7 @@ public class ServicioController {
             @RequestParam("itemsPerPage") int itemsPorPagina) {
 
         // Crear un objeto Pageable para la paginación
-        Pageable pageable = PageRequest.of(pagina, itemsPorPagina);
+        Pageable pageable = PageRequest.of(pagina, itemsPorPagina, Sort.by("id").ascending());
 
         // Realizar la búsqueda en la base de datos
         Page<Servicio> page;

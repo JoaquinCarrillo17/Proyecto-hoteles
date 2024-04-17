@@ -202,7 +202,7 @@ public class HabitacionController {
             @RequestParam("pageNumber") int pagina,
             @RequestParam("itemsPerPage") int itemsPorPagina) {
 
-        Pageable pageable = PageRequest.of(pagina, itemsPorPagina);
+        Pageable pageable = PageRequest.of(pagina, itemsPorPagina, Sort.by("id").ascending());
 
         Page<Habitacion> page;
         long totalItems; // Variable para almacenar el número total de elementos coincidentes
