@@ -1,5 +1,7 @@
 package gz.hoteles.entities;
 
+import java.util.Date;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -20,6 +22,7 @@ public class Historico {
     private int habitacionesReservadas;
     private int huespedesTotales;
     private int serviciosTotales;
+    private Date fecha;
 
 
     
