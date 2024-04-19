@@ -1,8 +1,10 @@
 package gz.hoteles;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -12,10 +14,12 @@ import org.springframework.stereotype.Component;
 
 import gz.hoteles.entities.CategoriaServicio;
 import gz.hoteles.entities.Habitacion;
+import gz.hoteles.entities.Historico;
 import gz.hoteles.entities.Hotel;
 import gz.hoteles.entities.Huesped;
 import gz.hoteles.entities.Servicio;
 import gz.hoteles.entities.TipoHabitacion;
+import gz.hoteles.repositories.HistoricoRepository;
 import gz.hoteles.servicio.IServicioHoteles;
 
 @SpringBootApplication
@@ -31,12 +35,43 @@ public class ProyectoHotelesApplication {
         @Autowired
         IServicioHoteles servicioHoteles;
 
+        @Autowired
+        HistoricoRepository historicoRepository;
+
         @Override
         public void run(String... args) throws Exception {
             List<Hotel> hoteles = generarHoteles();
             for (Hotel hotel : hoteles) {
                 servicioHoteles.crearHotel(hotel);
             }
+            Date fechaBase = new Date(); // Fecha inicial
+            for (int i = 0; i < 5; i++) {
+                Historico historico = generarHistoricoAleatorio(fechaBase);
+                historicoRepository.save(historico);
+                // Ajustar la fecha base para el siguiente historico
+                fechaBase = sumarDias(fechaBase, 5);
+            }
+        }
+
+        public static Historico generarHistoricoAleatorio(Date fecha) {
+            Random random = new Random();
+            Historico historico = new Historico();
+            historico.setHotelesTotales(random.nextInt(100) + 1);
+            historico.setHabitacionesTotales(random.nextInt(500) + 1);
+            int habitacionesDisponibles = random.nextInt(historico.getHabitacionesTotales() + 1);
+            historico.setHabitacionesDisponibles(habitacionesDisponibles);
+            historico.setHabitacionesReservadas(historico.getHabitacionesTotales() - habitacionesDisponibles);
+            historico.setHuespedesTotales(random.nextInt(1000) + 1);
+            historico.setServiciosTotales(random.nextInt(100) + 1);
+            historico.setFecha(fecha);
+            return historico;
+        }
+
+        public static Date sumarDias(Date fecha, int dias) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(fecha);
+            calendar.add(Calendar.DAY_OF_MONTH, dias);
+            return calendar.getTime();
         }
 
         private List<Hotel> generarHoteles() {
@@ -44,10 +79,13 @@ public class ProyectoHotelesApplication {
 
             // Crear hoteles con datos inventados pero coherentes
             hoteles.add(crearHotel("Hotel Paco", "Calle Paco", "912345678", "info@hotelpaco.com", "www.hotelpaco.com"));
-            hoteles.add(crearHotel("JC Hotel Miguel", "Calle Miguel", "564821548", "info@miguelhotel.com", "www.miguelhotel.com"));
+            hoteles.add(crearHotel("JC Hotel Miguel", "Calle Miguel", "564821548", "info@miguelhotel.com",
+                    "www.miguelhotel.com"));
             hoteles.add(crearHotel("Hotel Luis", "Calle Luis", "912345678", "info@hotelluis.com", "www.hotelluis.com"));
-            hoteles.add(crearHotel("Hotel Juan", "Calle Juan", "258145648", "JCjuanhotel@hotel.com", "www.juanhotel.com"));
-            hoteles.add(crearHotel("Hotel Pepe", "Calle Pepejc", "912345678", "info@pepehotel.com", "www.pepehotel.com"));
+            hoteles.add(
+                    crearHotel("Hotel Juan", "Calle Juan", "258145648", "JCjuanhotel@hotel.com", "www.juanhotel.com"));
+            hoteles.add(
+                    crearHotel("Hotel Pepe", "Calle Pepejc", "912345678", "info@pepehotel.com", "www.pepehotel.com"));
 
             for (int i = 1; i <= 10; i++) {
                 String nombre = "Hotel " + i;
