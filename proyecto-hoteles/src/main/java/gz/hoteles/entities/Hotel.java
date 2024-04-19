@@ -31,7 +31,7 @@ public class Hotel {
     
     //@JsonIgnore
     @ManyToMany
-    @JoinTable(name = "hotel_servicio", joinColumns = {@JoinColumn(name = "hotel_fk")}, inverseJoinColumns = {@JoinColumn(name = "servicio_fk") })
+    @JoinTable(name = "hotel_servicio", joinColumns = {@JoinColumn(name = "hotel_id")}, inverseJoinColumns = {@JoinColumn(name = "servicio_id") })
     private List<Servicio> servicios = new ArrayList<Servicio>();
     //@JsonIgnore
     @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, orphanRemoval = true)

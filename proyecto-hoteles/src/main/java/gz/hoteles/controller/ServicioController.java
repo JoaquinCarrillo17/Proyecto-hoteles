@@ -55,7 +55,7 @@ public class ServicioController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> get(@PathVariable(name = "id") int id) {
-        if (id <= 0) {
+        if (id <= 0  || Integer.valueOf(id) == null) {
             throw new IllegalArgumentException("El ID debe ser un número entero positivo");
         }
         Servicio servicio = servicioRepository.findById(id).orElse(null);
@@ -366,7 +366,7 @@ public class ServicioController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> put(@PathVariable(name = "id") int id, @RequestBody Servicio input) {
-        if (id <= 0) {
+        if (id <= 0  || Integer.valueOf(id) == null) {
             throw new IllegalArgumentException("El ID debe ser un número entero positivo");
         }
         Servicio find = servicioRepository.findById(id).orElse(null);
@@ -392,6 +392,9 @@ public class ServicioController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable(name = "id") int id) {
+        if (id <= 0  || Integer.valueOf(id) == null) {
+            throw new IllegalArgumentException("El ID debe ser un número entero positivo");
+        }
         Servicio findById = servicioRepository.findById(id).orElse(null);
         if (findById != null) {
             servicioRepository.delete(findById);

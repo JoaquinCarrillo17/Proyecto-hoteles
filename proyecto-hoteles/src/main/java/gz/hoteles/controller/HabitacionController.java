@@ -59,7 +59,7 @@ public class HabitacionController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> get(@PathVariable(name = "id") int id) {
-        if (id <= 0) {
+        if (id <= 0  || Integer.valueOf(id) == null) {
             throw new IllegalArgumentException("El ID debe ser un número entero positivo");
         }
         Habitacion habitacion = habitacionRepository.findById(id).orElse(null);
@@ -72,7 +72,7 @@ public class HabitacionController {
 
     @GetMapping("/{id}/full")
     public ResponseEntity<?> getHabitacionFull(@PathVariable(name = "id") int id) {
-        if (id <= 0) {
+        if (id <= 0  || Integer.valueOf(id) == null) {
             throw new IllegalArgumentException("El ID debe ser un número entero positivo");
         }
         Habitacion habitacion = habitacionRepository.findById(id).orElse(null);
@@ -306,7 +306,7 @@ public class HabitacionController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> put(@PathVariable(name = "id") int id, @RequestBody Habitacion input) {
-        if (id <= 0) {
+        if (id <= 0  || Integer.valueOf(id) == null) {
             throw new IllegalArgumentException("El ID debe ser un número entero positivo");
         }
         Habitacion find = habitacionRepository.findById(id).orElse(null);
@@ -333,7 +333,7 @@ public class HabitacionController {
     @Operation(summary = "Añadir huésped a la habitación")
     @PostMapping("/{id}/huespedes")
     public ResponseEntity<?> anadirHuesped(@PathVariable(name = "id") int id, @RequestBody Huesped huesped) {
-        if (id <= 0) {
+        if (id <= 0  || Integer.valueOf(id) == null) {
             throw new IllegalArgumentException("El ID debe ser un número entero positivo");
         }
         Habitacion h = servicioHoteles.anadirHuesped(id, huesped); // Contemplo el NOT_FOUND en el servicioHoteles
@@ -342,6 +342,9 @@ public class HabitacionController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable(name = "id") int id) {
+        if (id <= 0  || Integer.valueOf(id) == null) {
+            throw new IllegalArgumentException("El ID debe ser un número entero positivo");
+        }
         Habitacion findById = habitacionRepository.findById(id).orElse(null);
         if (findById != null) {
             habitacionRepository.delete(findById);

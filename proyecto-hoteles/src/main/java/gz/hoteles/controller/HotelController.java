@@ -60,7 +60,7 @@ public class HotelController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> get(@PathVariable(name = "id") int id) {
-        if (id <= 0) {
+        if (id <= 0 || Integer.valueOf(id) == null) {
             throw new IllegalArgumentException("El ID debe ser un número entero positivo");
         }
         Hotel hotel = hotelRepository.findById(id).orElse(null);
@@ -75,7 +75,7 @@ public class HotelController {
 
     @GetMapping("/{id}/full")
     public ResponseEntity<?> getHotelFull(@PathVariable(name = "id") int id) {
-        if (id <= 0) {
+        if (id <= 0  || Integer.valueOf(id) == null) {
             throw new IllegalArgumentException("El ID debe ser un número entero positivo");
         }
         Hotel hotel = hotelRepository.findById(id).orElse(null);
@@ -406,7 +406,7 @@ public class HotelController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> put(@PathVariable(name = "id") int id, @RequestBody Hotel input) {
-        if (id <= 0) {
+        if (id <= 0  || Integer.valueOf(id) == null) {
             throw new IllegalArgumentException("El ID debe ser un número entero positivo");
         }
         Hotel find = hotelRepository.findById(id).orElse(null);
@@ -436,6 +436,9 @@ public class HotelController {
     @Operation(summary = "Añadir servicio al hotel")
     @PostMapping("/{id}/servicios")
     public ResponseEntity<?> anadirServicio(@PathVariable(name = "id") int id, @RequestBody Servicio input) {
+        if (id <= 0  || Integer.valueOf(id) == null) {
+            throw new IllegalArgumentException("El ID debe ser un número entero positivo");
+        }
         Hotel h = servicioHoteles.anadirServicio(id, input); // Comprobacion NOT_FOUND en la funcion
         return ResponseEntity.ok(convertToDtoHotel(h));
     }
@@ -443,13 +446,16 @@ public class HotelController {
     @Operation(summary = "Añadir habitación al hotel")
     @PostMapping("/{id}/habitaciones")
     public ResponseEntity<?> anadirHabitacion(@PathVariable(name = "id") int id, @RequestBody Habitacion input) {
+        if (id <= 0  || Integer.valueOf(id) == null) {
+            throw new IllegalArgumentException("El ID debe ser un número entero positivo");
+        }
         Hotel h = servicioHoteles.anadirHabitacion(id, input); // Comprobacion NOT_FOUND en la funcion
         return ResponseEntity.ok(convertToDtoHotel(h));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable(name = "id") int id) {
-        if (id <= 0) {
+        if (id <= 0  || Integer.valueOf(id) == null) {
             throw new IllegalArgumentException("El ID debe ser un número entero positivo");
         }
         Hotel findById = hotelRepository.findById(id).orElse(null);

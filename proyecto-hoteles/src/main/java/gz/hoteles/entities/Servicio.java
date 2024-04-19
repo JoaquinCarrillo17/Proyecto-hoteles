@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -27,7 +26,7 @@ public class Servicio {
     @Enumerated(EnumType.STRING)
     private CategoriaServicio categoria;
     @JsonIgnore
-    @ManyToMany(mappedBy = "servicios", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(mappedBy = "servicios")
     private List<Hotel> hoteles = new ArrayList<Hotel>();
     
     public void addHotel(Hotel hotel) {

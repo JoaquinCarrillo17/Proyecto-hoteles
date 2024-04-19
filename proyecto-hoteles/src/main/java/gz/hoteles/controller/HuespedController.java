@@ -70,7 +70,7 @@ public class HuespedController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> get(@PathVariable(name = "id") int id) {
-        if (id <= 0) {
+        if (id <= 0  || Integer.valueOf(id) == null) {
             throw new IllegalArgumentException("El ID debe ser un número entero positivo");
         }
         Huesped huesped = huespedRepository.findById(id).orElse(null);
@@ -616,6 +616,9 @@ public class HuespedController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> put(@PathVariable(name = "id") int id, @RequestBody Huesped input) {
+        if (id <= 0  || Integer.valueOf(id) == null) {
+            throw new IllegalArgumentException("El ID debe ser un número entero positivo");
+        }
         Huesped find = huespedRepository.findById(id).orElse(null);
         if (find != null) {
             find.setNombreCompleto(input.getNombreCompleto());
@@ -643,7 +646,7 @@ public class HuespedController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable(name = "id") int id) {
-        if (id <= 0) {
+        if (id <= 0  || Integer.valueOf(id) == null) {
             throw new IllegalArgumentException("El ID debe ser un número entero positivo");
         }
         Huesped findById = huespedRepository.findById(id).orElse(null);
