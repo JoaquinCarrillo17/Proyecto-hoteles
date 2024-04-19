@@ -362,10 +362,13 @@ public class HotelController {
     public ResponseEntity<?> getHotelByMagicFilter(
             @RequestParam(value = "query", required = false) String query,
             @RequestParam("pageNumber") int pageNumber,
-            @RequestParam("itemsPerPage") int itemsPerPage) {
+            @RequestParam("itemsPerPage") int itemsPerPage,
+            @RequestParam(value = "valueSortOrder") String valueSortOrder,
+            @RequestParam(value = "sortBy") String sortBy) {
 
-        // Definir la paginación
-        Pageable pageable = PageRequest.of(pageNumber, itemsPerPage, Sort.by("id").ascending());
+        // Definir la paginación y clasificación
+        Sort.Direction direction = Sort.Direction.fromString(valueSortOrder.toUpperCase());
+        Pageable pageable = PageRequest.of(pageNumber, itemsPerPage, Sort.by(direction, sortBy));
 
         Page<Hotel> page;
         long totalItems; // Variable para almacenar el número total de elementos coincidentes

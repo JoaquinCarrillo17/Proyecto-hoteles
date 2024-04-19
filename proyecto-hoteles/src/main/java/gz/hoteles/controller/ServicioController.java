@@ -259,10 +259,13 @@ public class ServicioController {
     public ResponseEntity<?> getServicioByMagicFilter(
             @RequestParam(value = "query", required = false) String query,
             @RequestParam("pageNumber") int pagina,
-            @RequestParam("itemsPerPage") int itemsPorPagina) {
+            @RequestParam("itemsPerPage") int itemsPorPagina,
+            @RequestParam(value = "valueSortOrder") String valueSortOrder,
+            @RequestParam(value = "sortBy") String sortBy) {
 
-        // Crear un objeto Pageable para la paginación
-        Pageable pageable = PageRequest.of(pagina, itemsPorPagina, Sort.by("id").ascending());
+        // Definir la paginación y clasificación
+        Sort.Direction direction = Sort.Direction.fromString(valueSortOrder.toUpperCase());
+        Pageable pageable = PageRequest.of(pagina, itemsPorPagina, Sort.by(direction, sortBy));
 
         // Realizar la búsqueda en la base de datos
         Page<Servicio> page;

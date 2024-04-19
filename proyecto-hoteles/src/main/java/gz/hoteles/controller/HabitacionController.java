@@ -200,9 +200,13 @@ public class HabitacionController {
     public ResponseEntity<?> getHabitacionesByMagicFilter(
             @RequestParam(value = "query", required = false) String query,
             @RequestParam("pageNumber") int pagina,
-            @RequestParam("itemsPerPage") int itemsPorPagina) {
+            @RequestParam("itemsPerPage") int itemsPorPagina,
+            @RequestParam(value = "valueSortOrder") String valueSortOrder,
+            @RequestParam(value = "sortBy") String sortBy) {
 
-        Pageable pageable = PageRequest.of(pagina, itemsPorPagina, Sort.by("id").ascending());
+        // Definir la paginación y clasificación
+        Sort.Direction direction = Sort.Direction.fromString(valueSortOrder.toUpperCase());
+        Pageable pageable = PageRequest.of(pagina, itemsPorPagina, Sort.by(direction, sortBy));
 
         Page<Habitacion> page;
         long totalItems; // Variable para almacenar el número total de elementos coincidentes
