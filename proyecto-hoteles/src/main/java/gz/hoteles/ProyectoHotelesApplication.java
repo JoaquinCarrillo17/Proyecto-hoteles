@@ -1,7 +1,7 @@
 package gz.hoteles;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -29,7 +29,7 @@ public class ProyectoHotelesApplication {
         SpringApplication.run(ProyectoHotelesApplication.class, args);
     }
 
-    @Component
+    /*@Component
     class HotelDataInitializer implements CommandLineRunner {
 
         @Autowired
@@ -44,7 +44,10 @@ public class ProyectoHotelesApplication {
             for (Hotel hotel : hoteles) {
                 servicioHoteles.crearHotel(hotel);
             }
-            Date fechaBase = new Date(); // Fecha inicial
+            // Obtener la fecha de hace 3 semanas
+            LocalDate fechaBase = LocalDate.now().minusWeeks(3);
+
+            // Convertir LocalDate a Date
             for (int i = 0; i < 5; i++) {
                 Historico historico = generarHistoricoAleatorio(fechaBase);
                 historicoRepository.save(historico);
@@ -53,7 +56,7 @@ public class ProyectoHotelesApplication {
             }
         }
 
-        public static Historico generarHistoricoAleatorio(Date fecha) {
+        public static Historico generarHistoricoAleatorio(LocalDate fecha) {
             Random random = new Random();
             Historico historico = new Historico();
             historico.setHotelesTotales(random.nextInt(100) + 1);
@@ -67,11 +70,8 @@ public class ProyectoHotelesApplication {
             return historico;
         }
 
-        public static Date sumarDias(Date fecha, int dias) {
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(fecha);
-            calendar.add(Calendar.DAY_OF_MONTH, dias);
-            return calendar.getTime();
+        public static LocalDate sumarDias(LocalDate fecha, int dias) {
+            return fecha.plusDays(dias);
         }
 
         private List<Hotel> generarHoteles() {
@@ -137,5 +137,5 @@ public class ProyectoHotelesApplication {
 
             return hotel;
         }
-    }
+    }*/
 }

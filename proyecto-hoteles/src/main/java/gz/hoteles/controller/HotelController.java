@@ -57,6 +57,7 @@ public class HotelController {
         } else
             throw new ResponseStatusException(HttpStatus.NO_CONTENT);
     }
+    
 
     @GetMapping("/{id}")
     public ResponseEntity<?> get(@PathVariable(name = "id") int id) {
