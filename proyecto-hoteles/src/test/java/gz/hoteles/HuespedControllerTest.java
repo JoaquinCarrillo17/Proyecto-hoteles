@@ -91,7 +91,7 @@ public class HuespedControllerTest {
         });
 
         // Verificar el estado de la excepción
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
         assertEquals("No se encontró ningún huésped con el ID proporcionado", exception.getReason());
     }
 
@@ -151,7 +151,7 @@ public class HuespedControllerTest {
             huespedController.getHuespedesByNombre(nombre, pages);
         });
 
-        assertEquals(HttpStatus.NO_CONTENT, exception.getStatusCode());
+        assertEquals(HttpStatus.NO_CONTENT, exception.getStatus());
         assertEquals("No se encontró ningún huésped con nombre '" + nombre + "'", exception.getReason());
     }
 
@@ -200,7 +200,7 @@ public class HuespedControllerTest {
             huespedController.getHuespedesByDni(dni, pages);
         });
 
-        assertEquals(HttpStatus.NO_CONTENT, exception.getStatusCode());
+        assertEquals(HttpStatus.NO_CONTENT, exception.getStatus());
         assertEquals("No se encontró ningún huésped con dni '" + dni + "'", exception.getReason());
     }
 
@@ -249,7 +249,7 @@ public class HuespedControllerTest {
             huespedController.getHuespedesByEmail(email, pages);
         });
 
-        assertEquals(HttpStatus.NO_CONTENT, exception.getStatusCode());
+        assertEquals(HttpStatus.NO_CONTENT, exception.getStatus());
         assertEquals("No se encontró ningún huésped con email '" + email + "'", exception.getReason());
     }
 
@@ -298,7 +298,7 @@ public class HuespedControllerTest {
             huespedController.getHuespedesByFechaEntrada(fecha, pages);
         });
 
-        assertEquals(HttpStatus.NO_CONTENT, exception.getStatusCode());
+        assertEquals(HttpStatus.NO_CONTENT, exception.getStatus());
         assertEquals("No se encontró ningún huésped con fecha de entrada '" + fecha + "'", exception.getReason());
     }
 
@@ -347,7 +347,7 @@ public class HuespedControllerTest {
             huespedController.getHuespedesByFechaSalida(fecha, pages);
         });
 
-        assertEquals(HttpStatus.NO_CONTENT, exception.getStatusCode());
+        assertEquals(HttpStatus.NO_CONTENT, exception.getStatus());
         assertEquals("No se encontró ningún huésped con fecha de salida '" + fecha + "'", exception.getReason());
     }
 
@@ -377,7 +377,7 @@ public class HuespedControllerTest {
             huespedController.put(id, updatedHuesped);
         });
 
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
         assertEquals("No se encontró ningún huésped con el ID proporcionado", exception.getReason());
     }
 
@@ -473,7 +473,7 @@ public class HuespedControllerTest {
             huespedController.delete(nonExistingId);
         });
 
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
         assertEquals("No se encontró ningún huésped con el ID proporcionado", exception.getReason());
     }
 

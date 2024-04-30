@@ -70,7 +70,7 @@ public class HuespedController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> get(@PathVariable(name = "id") int id) {
-        if (id <= 0  || Integer.valueOf(id) == null) {
+        if (id <= 0 || Integer.valueOf(id) == null) {
             throw new IllegalArgumentException("El ID debe ser un número entero positivo");
         }
         Huesped huesped = huespedRepository.findById(id).orElse(null);
@@ -196,19 +196,36 @@ public class HuespedController {
             }
         }
 
-        Page<Huesped> page = switch (field) {
-            case "nombre" -> huespedRepository.findByNombreCompletoContainingIgnoreCase(value,
-                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-            case "dni" -> huespedRepository.findByDniEquals(value,
-                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-            case "email" -> huespedRepository.findByEmailEquals(value,
-                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-            case "fecha entrada" -> huespedRepository.findByFechaCheckInEquals(date,
-                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-            case "fecha salida" -> huespedRepository.findByFechaCheckOutEquals(date,
-                    PageRequest.of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-            default -> throw new IllegalArgumentException("No se puede filtrar por '" + field + "'");
-        };
+        Page<Huesped> page;
+        switch (field) {
+            case "nombre":
+                page = huespedRepository.findByNombreCompletoContainingIgnoreCase(value,
+                        PageRequest.of(0, json.getPages(),
+                                Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+                break;
+            case "dni":
+                page = huespedRepository.findByDniEquals(value,
+                        PageRequest.of(0, json.getPages(),
+                                Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+                break;
+            case "email":
+                page = huespedRepository.findByEmailEquals(value,
+                        PageRequest.of(0, json.getPages(),
+                                Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+                break;
+            case "fecha entrada":
+                page = huespedRepository.findByFechaCheckInEquals(date,
+                        PageRequest.of(0, json.getPages(),
+                                Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+                break;
+            case "fecha salida":
+                page = huespedRepository.findByFechaCheckOutEquals(date,
+                        PageRequest.of(0, json.getPages(),
+                                Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+                break;
+            default:
+                throw new IllegalArgumentException("No se puede filtrar por '" + field + "'");
+        }
 
         List<Huesped> huespedes = page.getContent();
         List<HuespedDTO> huespedesDTO = convertToDtoHuespedList(huespedes);
@@ -426,44 +443,70 @@ public class HuespedController {
             return getHuespedesFilteredByParam(json);
         } else {
             if (fechaEntrada == null) {
-                page = switch (field) {
-                    case "nombre" -> huespedRepository.findByNombreCompletoContainingIgnoreCaseAndFechaCheckOutBefore(
-                            value, fechaSalida, PageRequest.of(0, json.getPages(),
-                                    Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-                    case "dni" ->
-                        huespedRepository.findByDniEqualsAndFechaCheckOutBefore(value, fechaSalida, PageRequest.of(0,
-                                json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-                    case "email" ->
-                        huespedRepository.findByEmailEqualsAndFechaCheckOutBefore(value, fechaSalida, PageRequest.of(0,
-                                json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-                    default -> throw new IllegalArgumentException("No se puede filtrar por '" + field + "'");
-                };
+                switch (field) {
+                    case "nombre":
+                        page = huespedRepository.findByNombreCompletoContainingIgnoreCaseAndFechaCheckOutBefore(
+                                value, fechaSalida, PageRequest.of(0, json.getPages(),
+                                        Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+                        break;
+                    case "dni":
+                        page = huespedRepository.findByDniEqualsAndFechaCheckOutBefore(value, fechaSalida,
+                                PageRequest.of(0,
+                                        json.getPages(),
+                                        Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+                        break;
+                    case "email":
+                        page = huespedRepository.findByEmailEqualsAndFechaCheckOutBefore(value, fechaSalida,
+                                PageRequest.of(0,
+                                        json.getPages(),
+                                        Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+                        break;
+                    default:
+                        throw new IllegalArgumentException("No se puede filtrar por '" + field + "'");
+                }
             } else if (fechaSalida == null) {
-                page = switch (field) {
-                    case "nombre" -> huespedRepository.findByNombreCompletoContainingIgnoreCaseAndFechaCheckInAfter(
-                            value, fechaEntrada, PageRequest.of(0, json.getPages(),
-                                    Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-                    case "dni" -> huespedRepository.findByDniEqualsAndFechaCheckInAfter(value, fechaEntrada, PageRequest
-                            .of(0, json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-                    case "email" ->
-                        huespedRepository.findByEmailEqualsAndFechaCheckInAfter(value, fechaEntrada, PageRequest.of(0,
-                                json.getPages(), Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-                    default -> throw new IllegalArgumentException("No se puede filtrar por '" + field + "'");
-                };
+                switch (field) {
+                    case "nombre":
+                        page = huespedRepository.findByNombreCompletoContainingIgnoreCaseAndFechaCheckInAfter(
+                                value, fechaEntrada, PageRequest.of(0, json.getPages(),
+                                        Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+                        break;
+                    case "dni":
+                        page = huespedRepository.findByDniEqualsAndFechaCheckInAfter(value, fechaEntrada, PageRequest
+                                .of(0, json.getPages(),
+                                        Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+                        break;
+                    case "email":
+                        page = huespedRepository.findByEmailEqualsAndFechaCheckInAfter(value, fechaEntrada,
+                                PageRequest.of(0,
+                                        json.getPages(),
+                                        Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+                        break;
+                    default:
+                        throw new IllegalArgumentException("No se puede filtrar por '" + field + "'");
+                }
             } else {
-                page = switch (field) {
-                    case "nombre" -> huespedRepository
-                            .findByNombreCompletoContainingIgnoreCaseAndFechaCheckInAfterAndFechaCheckOutBefore(value,
-                                    fechaEntrada, fechaSalida, PageRequest.of(0, json.getPages(),
-                                            Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-                    case "dni" -> huespedRepository.findByDniEqualsAndFechaCheckInAfterAndFechaCheckOutBefore(value,
-                            fechaEntrada, fechaSalida, PageRequest.of(0, json.getPages(),
-                                    Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-                    case "email" -> huespedRepository.findByEmailEqualsAndFechaCheckInAfterAndFechaCheckOutBefore(value,
-                            fechaEntrada, fechaSalida, PageRequest.of(0, json.getPages(),
-                                    Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
-                    default -> throw new IllegalArgumentException("No se puede filtrar por '" + field + "'");
-                };
+                switch (field) {
+                    case "nombre":
+                        page = huespedRepository
+                                .findByNombreCompletoContainingIgnoreCaseAndFechaCheckInAfterAndFechaCheckOutBefore(
+                                        value,
+                                        fechaEntrada, fechaSalida, PageRequest.of(0, json.getPages(),
+                                                Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+                        break;
+                    case "dni":
+                        page = huespedRepository.findByDniEqualsAndFechaCheckInAfterAndFechaCheckOutBefore(value,
+                                fechaEntrada, fechaSalida, PageRequest.of(0, json.getPages(),
+                                        Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+                        break;
+                    case "email":
+                        page = huespedRepository.findByEmailEqualsAndFechaCheckInAfterAndFechaCheckOutBefore(value,
+                                fechaEntrada, fechaSalida, PageRequest.of(0, json.getPages(),
+                                        Sort.by(Sort.Direction.fromString(sortDirection), sortByField)));
+                        break;
+                    default:
+                        throw new IllegalArgumentException("No se puede filtrar por '" + field + "'");
+                }
             }
         }
 
@@ -616,7 +659,7 @@ public class HuespedController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> put(@PathVariable(name = "id") int id, @RequestBody Huesped input) {
-        if (id <= 0  || Integer.valueOf(id) == null) {
+        if (id <= 0 || Integer.valueOf(id) == null) {
             throw new IllegalArgumentException("El ID debe ser un número entero positivo");
         }
         Huesped find = huespedRepository.findById(id).orElse(null);
@@ -646,7 +689,7 @@ public class HuespedController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable(name = "id") int id) {
-        if (id <= 0  || Integer.valueOf(id) == null) {
+        if (id <= 0 || Integer.valueOf(id) == null) {
             throw new IllegalArgumentException("El ID debe ser un número entero positivo");
         }
         Huesped findById = huespedRepository.findById(id).orElse(null);

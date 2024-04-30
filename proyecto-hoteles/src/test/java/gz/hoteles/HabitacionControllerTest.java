@@ -85,7 +85,7 @@ public class HabitacionControllerTest {
             habitacionController.list();
         });
 
-        assertEquals(HttpStatus.NO_CONTENT, exception.getStatusCode());
+        assertEquals(HttpStatus.NO_CONTENT, exception.getStatus());
         assertEquals("No se ha encontrado ninguna habitación", exception.getReason());
     }
 
@@ -108,7 +108,7 @@ public class HabitacionControllerTest {
             habitacionController.get(1);
         });
 
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
         assertEquals("No se encontró ninguna habitación con el ID proporcionado", exception.getReason());
     }
 
@@ -145,7 +145,7 @@ public class HabitacionControllerTest {
             habitacionController.getHabitacionesByNumero("101", 10);
         });
 
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
         assertEquals("No se encontró ninguna habitación con el número '101'", exception.getReason());
     }
 
@@ -214,7 +214,7 @@ public class HabitacionControllerTest {
             habitacionController.getHabitacionesByTipoHabitacion(TipoHabitacion.DOBLE, 10);
         });
 
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
         assertEquals("No se encontró ninguna habitación del tipo 'DOBLE'", exception.getReason());
     }
 
@@ -264,7 +264,7 @@ public class HabitacionControllerTest {
             habitacionController.getHabitacionesByPrecioPorNoche("100", 10);
         });
 
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
         assertEquals("No se encontró ninguna habitación con precio '" + 100 + "€'", exception.getReason());
     }
 
@@ -294,7 +294,7 @@ public class HabitacionControllerTest {
         ResponseStatusException exception = assertThrows(ResponseStatusException.class,
                 () -> habitacionController.put(id, inputHabitacion));
 
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
         assertEquals("No se encontró ninguna habitación por el ID proporcionado", exception.getReason());
     }
 
@@ -373,7 +373,7 @@ public class HabitacionControllerTest {
             habitacionController.anadirHuesped(habitacionId, huesped);
         });
 
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
         assertEquals("No se encontró ninguna habitacion por el ID proporcionado", exception.getReason());
     }
 
@@ -400,7 +400,7 @@ public class HabitacionControllerTest {
             habitacionController.delete(habitacionId);
         });
 
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
         assertEquals("No se encontró ninguna habitacion por el ID proporcionado", exception.getReason());
         verify(habitacionRepository, never()).delete(any());
     }

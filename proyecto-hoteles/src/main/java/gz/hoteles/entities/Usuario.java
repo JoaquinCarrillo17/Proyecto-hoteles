@@ -7,24 +7,23 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+
 import lombok.Data;
 
 @Data
 @Entity
-public class Historico {
-
+public class Usuario {
+    
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
-
     private int id;
-    private int hotelesTotales;
-    private int habitacionesTotales;
-    private int habitacionesDisponibles;
-    private int habitacionesReservadas;
-    private int huespedesTotales;
-    private int serviciosTotales;
-    private LocalDate fecha;
+    private String nombre;
+    private String username;
+    private String password;
+    private String email;
+    @JsonFormat(pattern = "dd-MM-yyyy")
+    private LocalDate fechaNacimiento;
 
-
-    
 }

@@ -75,7 +75,7 @@ public class ServicioControllerTest {
             servicioController.list();
         });
 
-        assertEquals(HttpStatus.NO_CONTENT, exception.getStatusCode());
+        assertEquals(HttpStatus.NO_CONTENT, exception.getStatus());
         assertEquals("No se ha encontrado ningún servicio", exception.getReason());
     }
 
@@ -112,7 +112,7 @@ public class ServicioControllerTest {
             servicioController.get(nonExistingId);
         });
 
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
         assertEquals("No se encontró ningún servicio con el ID proporcionado", exception.getReason());
     }
 
@@ -155,7 +155,7 @@ public class ServicioControllerTest {
             servicioController.getServicioByNombre(nombre, 10);
         });
 
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
     }
 
     @Test
@@ -197,7 +197,7 @@ public class ServicioControllerTest {
             servicioController.getServicioByCategoria(categoria, 10);
         });
 
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
     }
 
     @Test
@@ -239,7 +239,7 @@ public class ServicioControllerTest {
             servicioController.getServicioByDescripcion(descripcion, 10);
         });
 
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
     }
 
     @Test
@@ -280,7 +280,7 @@ public class ServicioControllerTest {
             servicioController.put(id, inputServicio);
         });
 
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
         assertEquals("No se encontró ningun servicio por el ID proporcionado", exception.getReason());
     }
     
@@ -350,7 +350,7 @@ public class ServicioControllerTest {
             servicioController.delete(id);
         });
 
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
         assertEquals("No se encontró ningun servicio por el ID proporcionado", exception.getReason());
     }
 

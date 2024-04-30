@@ -20,8 +20,8 @@ public class CustomExceptionHandler {
 
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<Object> handleResponseStatusException(ResponseStatusException ex) {
-        ErrorResponse errorResponse = new ErrorResponse((HttpStatus) ex.getStatusCode(), ex.getReason());
-        return new ResponseEntity<>(errorResponse, ex.getStatusCode());
+        ErrorResponse errorResponse = new ErrorResponse((HttpStatus) ex.getStatus(), ex.getReason());
+        return new ResponseEntity<>(errorResponse, ex.getStatus());
     }
 
     @ExceptionHandler(value = IllegalArgumentException.class)
