@@ -23,7 +23,7 @@ public class Usuario {
     private String username;
     private String password;
     private String email;
-    @JsonFormat(pattern = "dd-MM-yyyy")
+    //@JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate fechaNacimiento;
 
 }

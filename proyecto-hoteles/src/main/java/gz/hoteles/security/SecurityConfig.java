@@ -8,7 +8,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-//@EnableWebSecurity
+// @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
@@ -17,14 +17,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
-            .antMatchers("/auth/signUp", "/auth/login", "/auth").permitAll() // Rutas públicas
-            .anyRequest().authenticated() // Todas las demás rutas requieren autenticación
-            .and()
-            .csrf().disable(); // Deshabilitar CSRF (puedes habilitarlo en producción)
+                .antMatchers("/auth/signUp", "/auth/login", "/auth", "/historicos/**", "/swagger-ui.html",
+                        "/swagger-ui/**")
+                .permitAll() // Rutas públicas
+                .anyRequest().authenticated() // Todas las demás rutas requieren autenticación
+                .and()
+                .csrf().disable(); // Deshabilitar CSRF (puedes habilitarlo en producción)
 
-       // Agregar filtro JWT antes del filtro de autenticación de usuario y contraseña
-        http.addFilterBefore(new JwtTokenFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);     
+        // Agregar filtro JWT antes del filtro de autenticación de usuario y contraseña
+        http.addFilterBefore(new JwtTokenFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
     }
-    
-}
 
+}

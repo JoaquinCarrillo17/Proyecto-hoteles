@@ -50,7 +50,8 @@ public class AuthController {
     @PostMapping("/signUp")
     public ResponseEntity<?> signUp(@RequestBody Usuario usuario) {
         servicioUsuarios.signUp(usuario);
-        return ResponseEntity.ok().build();
+        String token = jwtTokenProvider.createToken(usuario.getUsername());
+        return ResponseEntity.ok(token);
     }
 
     @PostMapping("/login")
@@ -61,19 +62,5 @@ public class AuthController {
         } else
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Contraseña incorrecta");
     }
-
-    /*private String generarToken(String username) {
-        String key = secretKey;
-        Date caducidad = Date.from(Instant.now().plusSeconds(3600));// 1 hora de validez
-
-        // Generar el token JWT
-        String token = Jwts.builder()
-                .setSubject(username)
-                .setExpiration(caducidad)
-                .signWith(SignatureAlgorithm.HS256, key)
-                .compact();
-
-        return token;
-    }*/
 
 }

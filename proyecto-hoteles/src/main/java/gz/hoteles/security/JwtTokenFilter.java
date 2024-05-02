@@ -26,7 +26,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 jwtTokenProvider.validateToken(token); // Compruebo si esta caducado
             } catch (Exception e) {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "El token está caducado"); 
-                return; // ! No para aqui, sigue por OncePerRequestFilter
+                return; // ! No para aqui, sigue por OncePerRequestFilter y da forbidden
             }
             UsernamePasswordAuthenticationToken authentication = jwtTokenProvider.getAuthentication(token);
             if (authentication != null) {
