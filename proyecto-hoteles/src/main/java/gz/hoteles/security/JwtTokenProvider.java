@@ -21,7 +21,7 @@ public class JwtTokenProvider {
 
     public String createToken(Usuario usuario) {
         Date now = new Date();
-        Date validity = new Date(now.getTime() + 400000); // 10 mins de validez, esta puesto en 40 segundos para pruebas
+        Date validity = new Date(now.getTime() + 40000); // 10 mins de validez, esta puesto en 40 segundos para pruebas
 
         Map<String, Object> claims = crearClaims(usuario);
 
