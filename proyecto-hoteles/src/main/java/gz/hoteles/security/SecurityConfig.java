@@ -2,6 +2,7 @@ package gz.hoteles.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -20,6 +21,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/auth/signUp", "/auth/login", "/auth", "/historicos/**", "/swagger-ui.html",
                         "/swagger-ui/**")
                 .permitAll() // Rutas públicas
+                .antMatchers(HttpMethod.DELETE, "/hoteles/{id}").hasRole("ADMIN")
+                .antMatchers(HttpMethod.DELETE, "/habitaciones/{id}").hasRole("ADMIN")
+                .antMatchers(HttpMethod.DELETE, "/servicios/{id}").hasRole("ADMIN")  
+                .antMatchers(HttpMethod.DELETE, "/huespedes/{id}").hasRole("ADMIN")                                                              
                 .anyRequest().authenticated() // Todas las demás rutas requieren autenticación
                 .and()
                 .csrf().disable(); // Deshabilitar CSRF (puedes habilitarlo en producción)

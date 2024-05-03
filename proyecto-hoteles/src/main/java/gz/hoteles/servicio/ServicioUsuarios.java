@@ -16,6 +16,7 @@ public class ServicioUsuarios implements IServicioUsuarios{
 
     @Override
     public void signUp(Usuario usuario) {
+        usuario.getRoles().add("ROLE_ADMIN");
         usuarioRepository.save(usuario);
     }
 
