@@ -17,7 +17,7 @@ public class JwtTokenProvider {
 
     public String createToken(String username) {
         Date now = new Date();
-        Date validity = new Date(now.getTime() + 3600000); // 1 hora de validez
+        Date validity = new Date(now.getTime() + 40000); // 10 mins de validez, esta puesto en 40 segundos para pruebas
 
         return Jwts.builder()
                 .setSubject(username)

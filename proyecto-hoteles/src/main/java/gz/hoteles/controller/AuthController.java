@@ -3,7 +3,6 @@ package gz.hoteles.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,9 +33,6 @@ public class AuthController {
     @Autowired
     JwtTokenProvider jwtTokenProvider;
 
-    @Value("${jwt.secret}")
-    private String secretKey;
-
     @GetMapping()
     public ResponseEntity<?> list() {
         List<Usuario> usuarios = usuariosRepository.findAll();
@@ -63,4 +59,9 @@ public class AuthController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Contraseña incorrecta");
     }
 
+
+    @PostMapping("/createToken")
+    public ResponseEntity<?> createToken(@RequestParam String username) {
+        return ResponseEntity.ok(jwtTokenProvider.createToken(username));
+    }
 }
