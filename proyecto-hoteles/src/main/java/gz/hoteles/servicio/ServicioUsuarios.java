@@ -29,5 +29,15 @@ public class ServicioUsuarios implements IServicioUsuarios{
             return usuario.getPassword().equals(password);
         }
     }
+
+	@Override
+	public Usuario getUsuarioByUsername(String username) {
+        Usuario u = usuarioRepository.findByUsername(username);
+        if (u != null) {
+            return u;
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario no existe");
+        }
+	}
     
 }

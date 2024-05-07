@@ -8,4 +8,6 @@ public interface IServicioUsuarios {
 
     boolean verificarCredenciales(String username, String password);
 
+    Usuario getUsuarioByUsername(String username);
+
 }

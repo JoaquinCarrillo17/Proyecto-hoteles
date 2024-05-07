@@ -1,7 +1,6 @@
 package gz.hoteles.security;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
 import gz.hoteles.entities.Usuario;
 import io.jsonwebtoken.Claims;
@@ -21,7 +20,7 @@ public class JwtTokenProvider {
 
     public String createToken(Usuario usuario) {
         Date now = new Date();
-        Date validity = new Date(now.getTime() + 40000); // 10 mins de validez, esta puesto en 40 segundos para pruebas
+        Date validity = new Date(now.getTime() + 400000); // 10 mins de validez, esta puesto en 40 segundos para pruebas
 
         Map<String, Object> claims = crearClaims(usuario);
 
