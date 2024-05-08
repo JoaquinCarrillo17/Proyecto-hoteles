@@ -1,16 +1,14 @@
 package gz.hoteles.entities;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 
-import javax.persistence.ElementCollection;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import javax.persistence.ManyToMany;
 
 import lombok.Data;
 
@@ -27,8 +25,11 @@ public class Usuario {
     private String email;
     //@JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate fechaNacimiento;
-    @JsonIgnore
+    /*@JsonIgnore
     @ElementCollection
-    private List<String> roles = new ArrayList<String>();
+    private List<String> roles = new ArrayList<String>();*/
+
+    @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
+    private Set<Rol> roles; 
 
 }

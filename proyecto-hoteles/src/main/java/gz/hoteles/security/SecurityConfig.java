@@ -18,7 +18,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
-                .antMatchers("/auth/signUp", "/auth/login", "/auth", "/swagger-ui.html",
+                .antMatchers("/auth/signUp", "/auth/login", "/auth", "/usuarios/**", "/roles", "/swagger-ui.html",
                         "/swagger-ui/**")
                 .permitAll() // Rutas públicas
                 .antMatchers(HttpMethod.DELETE, "/hoteles/{id}").hasRole("ADMIN")

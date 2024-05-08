@@ -14,10 +14,17 @@ public class ServicioUsuarios implements IServicioUsuarios{
     @Autowired
     UsuarioRepository usuarioRepository;
 
+    @Autowired
+    IServicioRoles servicioRoles;
+
     @Override
     public void signUp(Usuario usuario) {
-        usuario.getRoles().add("ROLE_USUARIO");
         usuarioRepository.save(usuario);
+        añadirRol(usuario);
+    }
+
+    private void añadirRol(Usuario usuario) {
+        servicioRoles.añadirRolAUsuario(usuario.getId(), "ROLE_USUARIO");
     }
 
     @Override
