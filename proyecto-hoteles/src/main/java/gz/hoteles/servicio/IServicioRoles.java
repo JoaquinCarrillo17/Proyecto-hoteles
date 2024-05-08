@@ -3,6 +3,7 @@ package gz.hoteles.servicio;
 import java.util.List;
 
 import gz.hoteles.entities.Rol;
+import gz.hoteles.entities.Usuario;
 
 public interface IServicioRoles {
     
@@ -12,7 +13,7 @@ public interface IServicioRoles {
 
     List<Rol> getAll();
 
-    void añadirRolAUsuario(int idUsuario, String rolName);
+    void añadirRolAUsuario(Usuario usuario, String rolName);
 
     void añadirRolIndirecto(int idRol, String rol);
 

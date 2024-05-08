@@ -21,7 +21,6 @@ public class CustomExceptionHandler {
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<Object> handleResponseStatusException(ResponseStatusException ex) {
         ErrorResponse errorResponse = new ErrorResponse((HttpStatus) ex.getStatus(), ex.getReason());
-        ex.printStackTrace();
         return new ResponseEntity<>(errorResponse, ex.getStatus());
     }
 

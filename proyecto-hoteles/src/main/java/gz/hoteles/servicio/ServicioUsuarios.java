@@ -19,12 +19,13 @@ public class ServicioUsuarios implements IServicioUsuarios{
 
     @Override
     public void signUp(Usuario usuario) {
-        usuarioRepository.save(usuario);
+        //usuarioRepository.save(usuario); // ? Lo meto en bbdd para que tenga id
         añadirRol(usuario);
+        usuarioRepository.save(usuario); 
     }
 
     private void añadirRol(Usuario usuario) {
-        servicioRoles.añadirRolAUsuario(usuario.getId(), "ROLE_USUARIO");
+        servicioRoles.añadirRolAUsuario(usuario, "ROLE_USUARIO");
     }
 
     @Override
@@ -46,5 +47,13 @@ public class ServicioUsuarios implements IServicioUsuarios{
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario no existe");
         }
 	}
+
+    @Override
+    public void delete(int id) {
+        Usuario u = usuarioRepository.findById(id).orElse(null);
+        if (u != null) {
+            usuarioRepository.delete(u);
+        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario no existe");
+    }
     
 }

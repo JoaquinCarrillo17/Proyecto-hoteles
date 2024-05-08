@@ -43,13 +43,9 @@ public class ServicioRoles implements IServicioRoles {
     }
 
     @Override
-    public void añadirRolAUsuario(int idUsuario, String rolName) {
-        Usuario u = usuarioRepository.findById(idUsuario).orElse(null);
-        if (u == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe el usuario");
-        }
+    public void añadirRolAUsuario(Usuario usuario, String rolName) {
         Rol r = getRolByName(rolName);
-        u.getRoles().add(r);
+        usuario.getRoles().add(r);
     }
 
     @Override
