@@ -51,5 +51,25 @@ public class ServicioRoles implements IServicioRoles {
         Rol r = getRolByName(rolName);
         u.getRoles().add(r);
     }
+
+    @Override
+    public void añadirRolIndirecto(int idRol, String rol) {
+        Rol r = rolesRepository.findById(idRol).orElse(null);
+        if (r != null) {
+            r.getRolesIndirectos().add(rol);
+            rolesRepository.save(r);
+        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe un rol con ese id");
+    }
+
+    @Override
+    public void borrarRolIndirecto(int idRol, String rol) {
+        Rol r = rolesRepository.findById(idRol).orElse(null);
+        if (r != null) {
+            if (r.getRolesIndirectos().contains(rol)) {
+                r.getRolesIndirectos().remove(rol);
+                rolesRepository.save(r);
+            } else throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El rol no contiene el rol indirecto " + rol);
+        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe un rol con ese id");
+    }
     
 }
