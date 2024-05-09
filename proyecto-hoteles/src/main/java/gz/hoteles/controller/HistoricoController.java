@@ -35,6 +35,7 @@ public class HistoricoController {
 
     @Autowired
     HotelRepository hotelRepository;
+    
     @Autowired
     HotelController hotelController;
 

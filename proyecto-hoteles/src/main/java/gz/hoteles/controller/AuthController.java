@@ -1,7 +1,5 @@
 package gz.hoteles.controller;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +13,6 @@ import gz.hoteles.security.JwtTokenProvider;
 import gz.hoteles.servicio.IServicioUsuarios;
 
 
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -32,16 +29,6 @@ public class AuthController {
 
     @Autowired
     JwtTokenProvider jwtTokenProvider;
-
-    @GetMapping()
-    public ResponseEntity<?> list() {
-        List<Usuario> usuarios = usuariosRepository.findAll();
-        if (!usuarios.isEmpty()) {
-            return ResponseEntity.ok(usuarios);
-        } else {
-            return ResponseEntity.noContent().build();
-        }
-    }
 
     @PostMapping("/signUp")
     public ResponseEntity<?> signUp(@RequestBody Usuario usuario) {
