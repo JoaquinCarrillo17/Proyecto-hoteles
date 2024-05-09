@@ -19,7 +19,6 @@ public class ServicioUsuarios implements IServicioUsuarios{
 
     @Override
     public void signUp(Usuario usuario) {
-        //usuarioRepository.save(usuario); // ? Lo meto en bbdd para que tenga id
         añadirRol(usuario);
         usuarioRepository.save(usuario); 
     }

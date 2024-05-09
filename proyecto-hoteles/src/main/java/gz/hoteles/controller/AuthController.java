@@ -52,7 +52,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestParam String username, @RequestParam String password) {
-        Usuario usuario = usuariosRepository.findByUsername(username);
+        Usuario usuario = servicioUsuarios.getUsuarioByUsername(username);
         if (servicioUsuarios.verificarCredenciales(username, password)) {
             String token = jwtTokenProvider.createToken(usuario);
             return ResponseEntity.ok(token);

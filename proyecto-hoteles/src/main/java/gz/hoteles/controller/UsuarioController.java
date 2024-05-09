@@ -27,11 +27,11 @@ public class UsuarioController {
     @Autowired
     IServicioUsuarios servicioUsuarios;
 
-    @GetMapping("/getUsuarioByUsername")
+    /*@GetMapping("/getUsuarioByUsername")
     public ResponseEntity<?> getUsuarioByUsername(@RequestParam String username) {
         Usuario u = servicioUsuarios.getUsuarioByUsername(username);
         return ResponseEntity.ok(u);
-    }
+    }*/
 
     @PutMapping("/{id}")
     public ResponseEntity<?> put(@PathVariable(name = "id") int id, @RequestBody Usuario input) {
