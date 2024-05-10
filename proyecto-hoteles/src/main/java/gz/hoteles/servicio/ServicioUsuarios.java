@@ -24,7 +24,7 @@ public class ServicioUsuarios implements IServicioUsuarios{
     }
 
     private void añadirRol(Usuario usuario) {
-        servicioRoles.añadirRolAUsuario(usuario, "ADMIN");
+        servicioRoles.añadirRolAUsuario(usuario, "USUARIO");
     }
 
     @Override
@@ -40,6 +40,16 @@ public class ServicioUsuarios implements IServicioUsuarios{
 	@Override
 	public Usuario getUsuarioByUsername(String username) {
         Usuario u = usuarioRepository.findByUsername(username);
+        if (u != null) {
+            return u;
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario no existe");
+        }
+	}
+
+    @Override
+	public Usuario getUsuarioById(int id) {
+        Usuario u = usuarioRepository.findById(id).orElse(null);
         if (u != null) {
             return u;
         } else {

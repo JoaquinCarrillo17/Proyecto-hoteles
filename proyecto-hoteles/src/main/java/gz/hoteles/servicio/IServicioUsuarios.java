@@ -10,6 +10,8 @@ public interface IServicioUsuarios {
 
     Usuario getUsuarioByUsername(String username);
 
+    Usuario getUsuarioById(int id);
+
     void delete(int id);
 
 }

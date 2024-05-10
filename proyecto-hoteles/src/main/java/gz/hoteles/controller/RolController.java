@@ -46,18 +46,6 @@ public class RolController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/{id}")
-    public ResponseEntity<?> añadirRolIndirecto(@PathVariable(name = "id") int idRol, @RequestParam String rol) {
-        servicioRoles.añadirRolIndirecto(idRol, rol);
-        return ResponseEntity.ok().build();
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> borrarRolIndirecto(@PathVariable(name = "id") int idRol, @RequestParam String rol) {
-        servicioRoles.borrarRolIndirecto(idRol, rol);
-        return ResponseEntity.ok().build();
-    }
-
     @GetMapping()
     public ResponseEntity<?> getAll() {
         List<Rol> roles = servicioRoles.getAll();

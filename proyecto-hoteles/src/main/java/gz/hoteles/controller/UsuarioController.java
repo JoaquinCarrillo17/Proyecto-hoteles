@@ -58,6 +58,12 @@ public class UsuarioController {
         return ResponseEntity.ok(u);
     }
 
+    @GetMapping("/{id}") 
+    public ResponseEntity<?> getUsuarioById(@PathVariable (name="id") int id) {
+        Usuario u = servicioUsuarios.getUsuarioById(id);
+        return ResponseEntity.ok(u);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<?> put(@PathVariable(name = "id") int id, @RequestBody Usuario input) {
         if (id <= 0 || Integer.valueOf(id) == null) {

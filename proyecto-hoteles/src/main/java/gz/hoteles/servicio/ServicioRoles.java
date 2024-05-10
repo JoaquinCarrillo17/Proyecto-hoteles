@@ -63,31 +63,6 @@ public class ServicioRoles implements IServicioRoles {
         usuario.getRoles().add(r);
     }
 
-    /*
-     * @Override
-     * public void añadirPermiso(int idRol, String rol) {
-     * Rol r = rolesRepository.findById(idRol).orElse(null);
-     * if (r != null) {
-     * r.getRolesIndirectos().add(rol);
-     * rolesRepository.save(r);
-     * } else throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-     * "No existe un rol con ese id");
-     * }
-     * 
-     * @Override
-     * public void borrarPermiso(int idRol, String rol) {
-     * Rol r = rolesRepository.findById(idRol).orElse(null);
-     * if (r != null) {
-     * if (r.getRolesIndirectos().contains(rol)) {
-     * r.getRolesIndirectos().remove(rol);
-     * rolesRepository.save(r);
-     * } else throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-     * "El rol no contiene el rol indirecto " + rol);
-     * } else throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-     * "No existe un rol con ese id");
-     * }
-     */
-
     @Override
     public Rol getById(int id) {
         Rol r = rolesRepository.findById(id).orElse(null);
@@ -95,18 +70,6 @@ public class ServicioRoles implements IServicioRoles {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe un rol con ese ID");
         } else
             return r;
-    }
-
-    @Override
-    public void añadirRolIndirecto(int idRol, String rol) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'añadirRolIndirecto'");
-    }
-
-    @Override
-    public void borrarRolIndirecto(int idRol, String rol) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'borrarRolIndirecto'");
     }
 
 }

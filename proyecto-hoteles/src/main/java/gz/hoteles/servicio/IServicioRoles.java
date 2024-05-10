@@ -15,10 +15,6 @@ public interface IServicioRoles {
 
     void añadirRolAUsuario(Usuario usuario, String rolName);
 
-    void añadirRolIndirecto(int idRol, String rol);
-
-    void borrarRolIndirecto(int idRol, String rol);
-
     Rol getById(int id);
 
 }
