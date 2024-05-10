@@ -3,6 +3,7 @@ package gz.hoteles.security;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import gz.hoteles.entities.Permiso;
 import gz.hoteles.entities.Rol;
 import gz.hoteles.entities.Usuario;
 import io.jsonwebtoken.Claims;
@@ -11,8 +12,10 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Set;
 
 @Component
 public class JwtTokenProvider {
@@ -35,11 +38,11 @@ public class JwtTokenProvider {
 
     private Map<String, Object> crearClaims(Usuario usuario){
         Map<String, Object> claims = new HashMap<>();
-		LinkedList<String> roles = new LinkedList<String>();
+		Set<String> roles = new HashSet<String>();
 
         for (Rol rol : usuario.getRoles()) {
-            for (String r : rol.getRolesIndirectos()) {
-                roles.add(r);
+            for (Permiso p : rol.getPermisos()) {
+                roles.add(p.getNombre());
             }
         }
 

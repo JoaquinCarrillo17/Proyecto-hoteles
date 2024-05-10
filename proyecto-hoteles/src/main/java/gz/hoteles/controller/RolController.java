@@ -64,6 +64,15 @@ public class RolController {
         return ResponseEntity.ok(roles); 
     }
 
+    @DeleteMapping() 
+    public ResponseEntity<?> removeAll() {
+        List<Rol> roles = servicioRoles.getAll();
+        for (Rol r : roles) {
+            rolesRepository.delete(r);
+        }
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getRolById(@PathVariable (name="id") int id) {
         Rol r = servicioRoles.getById(id);
@@ -122,7 +131,7 @@ public class RolController {
         if (find != null) {
             find.setNombre(input.getNombre());
             find.setDescripcion(input.getDescripcion());
-            find.setRolesIndirectos(input.getRolesIndirectos());
+            find.setPermisos(input.getPermisos());
         } else
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "No se encontró ningún rol por el ID proporcionado");

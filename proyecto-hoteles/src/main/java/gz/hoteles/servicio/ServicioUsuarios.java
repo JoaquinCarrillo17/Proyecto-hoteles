@@ -24,7 +24,7 @@ public class ServicioUsuarios implements IServicioUsuarios{
     }
 
     private void añadirRol(Usuario usuario) {
-        servicioRoles.añadirRolAUsuario(usuario, "ROLE_USUARIO");
+        servicioRoles.añadirRolAUsuario(usuario, "ADMIN");
     }
 
     @Override
