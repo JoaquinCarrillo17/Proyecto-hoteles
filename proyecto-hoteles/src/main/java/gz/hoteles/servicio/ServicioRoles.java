@@ -67,5 +67,13 @@ public class ServicioRoles implements IServicioRoles {
             } else throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El rol no contiene el rol indirecto " + rol);
         } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe un rol con ese id");
     }
+
+    @Override
+    public Rol getById(int id) {
+        Rol r = rolesRepository.findById(id).orElse(null);
+        if (r == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe un rol con ese ID");
+        } else return r;
+    }
     
 }

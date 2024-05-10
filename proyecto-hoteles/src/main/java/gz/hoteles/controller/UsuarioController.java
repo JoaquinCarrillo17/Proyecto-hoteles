@@ -70,6 +70,9 @@ public class UsuarioController {
             find.setPassword(input.getPassword());
             find.setEmail(input.getEmail());
             find.setFechaNacimiento(input.getFechaNacimiento());
+            if (!input.getRoles().isEmpty()) {
+                find.setRoles(input.getRoles());
+            }
         } else
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "No se encontró ningún usuario con el ID proporcionado");

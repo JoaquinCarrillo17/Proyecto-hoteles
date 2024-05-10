@@ -14,8 +14,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Data;
 
 @Data
@@ -31,12 +29,7 @@ public class Usuario {
     private String email;
     // @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate fechaNacimiento;
-    /*
-     * @JsonIgnore
-     * 
-     * @ElementCollection
-     * private List<String> roles = new ArrayList<String>();
-     */
+    
    // @JsonIgnore
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "usuario_rol", joinColumns = @JoinColumn(name = "usuario_id"), inverseJoinColumns = @JoinColumn(name = "rol_id"))

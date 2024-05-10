@@ -26,6 +26,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+
 
 
 @RestController
@@ -60,6 +62,12 @@ public class RolController {
     public ResponseEntity<?> getAll() {
         List<Rol> roles = servicioRoles.getAll();
         return ResponseEntity.ok(roles); 
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getRolById(@PathVariable (name="id") int id) {
+        Rol r = servicioRoles.getById(id);
+        return ResponseEntity.ok(r);
     }
 
     @Operation(summary = "Filtrado de roles por todos sus parámetros a través de un solo String")
@@ -103,6 +111,23 @@ public class RolController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "No se encontraron roles por los parámetros proporcionados");
         }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> put(@PathVariable(name = "id") int id, @RequestBody Rol input) {
+        if (id <= 0  || Integer.valueOf(id) == null) {
+            throw new IllegalArgumentException("El ID debe ser un número entero positivo");
+        }
+        Rol find = rolesRepository.findById(id).orElse(null);
+        if (find != null) {
+            find.setNombre(input.getNombre());
+            find.setDescripcion(input.getDescripcion());
+            find.setRolesIndirectos(input.getRolesIndirectos());
+        } else
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No se encontró ningún rol por el ID proporcionado");
+        Rol save = rolesRepository.save(find);
+        return ResponseEntity.ok(save);
     }
 
 

@@ -19,4 +19,6 @@ public interface IServicioRoles {
 
     void borrarRolIndirecto(int idRol, String rol);
 
+    Rol getById(int id);
+
 }
