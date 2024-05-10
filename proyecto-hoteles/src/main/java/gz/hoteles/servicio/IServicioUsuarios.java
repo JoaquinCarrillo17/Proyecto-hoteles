@@ -14,4 +14,6 @@ public interface IServicioUsuarios {
 
     void delete(int id);
 
+    void crearUsuario(Usuario usuario);
+
 }

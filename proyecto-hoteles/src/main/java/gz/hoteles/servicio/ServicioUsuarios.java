@@ -17,6 +17,8 @@ public class ServicioUsuarios implements IServicioUsuarios{
     @Autowired
     IServicioRoles servicioRoles;
 
+    
+
     @Override
     public void signUp(Usuario usuario) {
         añadirRol(usuario);
@@ -63,6 +65,11 @@ public class ServicioUsuarios implements IServicioUsuarios{
         if (u != null) {
             usuarioRepository.delete(u);
         } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario no existe");
+    }
+
+    @Override
+    public void crearUsuario(Usuario usuario) {
+        usuarioRepository.save(usuario);
     }
     
 }
