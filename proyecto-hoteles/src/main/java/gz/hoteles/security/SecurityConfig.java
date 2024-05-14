@@ -18,7 +18,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
-                .antMatchers("/auth/signUp", "/auth/login", "/auth", "/permisos",  "/roles", "/roles/**",
+                .antMatchers("/auth/signUp", "/auth/login", "/auth", "/permisos",
                         "/swagger-ui.html",
                         "/swagger-ui/**")
                 .permitAll() // Rutas públicas
@@ -98,7 +98,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .hasRole("ROLES_W")
 
                  .antMatchers("/hoteles", "/hoteles/**", "/habitaciones", "/habitaciones/**", "/servicios",
-                        "/servicios/**", "/huespedes", "/huespedes**" /* "/roles", "/roles**"*/, "/usuarios", "/usuarios/**").authenticated()
+                        "/servicios/**", "/huespedes", "/huespedes**" , "/roles", "/roles**", "/usuarios", "/usuarios/**").authenticated()
 
                 .anyRequest().authenticated() // Todas las demás rutas requieren autenticación
                 .and()

@@ -9,7 +9,7 @@ import gz.hoteles.entities.Usuario;
 import gz.hoteles.repositories.UsuarioRepository;
 
 @Service
-public class ServicioUsuarios implements IServicioUsuarios{
+public class ServicioUsuarios implements IServicioUsuarios {
 
     @Autowired
     UsuarioRepository usuarioRepository;
@@ -17,12 +17,19 @@ public class ServicioUsuarios implements IServicioUsuarios{
     @Autowired
     IServicioRoles servicioRoles;
 
-    
+    @Autowired
+    IServicioEmails servicioEmails;
 
     @Override
     public void signUp(Usuario usuario) {
         añadirRol(usuario);
-        usuarioRepository.save(usuario); 
+
+        String destinatario = usuario.getEmail();
+        String asunto = "Registro exitoso";
+        String contenido = "¡Hola " + usuario.getNombre() + ", tu registro en JC Hotel Group ha sido exitoso!";
+        servicioEmails.enviarCorreo(destinatario, asunto, contenido);
+
+        usuarioRepository.save(usuario);
     }
 
     private void añadirRol(Usuario usuario) {
@@ -39,37 +46,38 @@ public class ServicioUsuarios implements IServicioUsuarios{
         }
     }
 
-	@Override
-	public Usuario getUsuarioByUsername(String username) {
+    @Override
+    public Usuario getUsuarioByUsername(String username) {
         Usuario u = usuarioRepository.findByUsername(username);
         if (u != null) {
             return u;
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario no existe");
         }
-	}
+    }
 
     @Override
-	public Usuario getUsuarioById(int id) {
+    public Usuario getUsuarioById(int id) {
         Usuario u = usuarioRepository.findById(id).orElse(null);
         if (u != null) {
             return u;
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario no existe");
         }
-	}
+    }
 
     @Override
     public void delete(int id) {
         Usuario u = usuarioRepository.findById(id).orElse(null);
         if (u != null) {
             usuarioRepository.delete(u);
-        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario no existe");
+        } else
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario no existe");
     }
 
     @Override
     public void crearUsuario(Usuario usuario) {
         usuarioRepository.save(usuario);
     }
-    
+
 }
