@@ -15,9 +15,14 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class JwtTokenFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
+
+    private static final Logger logger = LoggerFactory.getLogger(JwtTokenFilter.class);
 
     public JwtTokenFilter(JwtTokenProvider jwtTokenProvider) {
         this.jwtTokenProvider = jwtTokenProvider;
@@ -26,6 +31,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+        logger.info("Entro al do filter...");
         String token = jwtTokenProvider.extraerToken(request);
         if (token != null) {
             Claims claims;
@@ -33,6 +39,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                claims = jwtTokenProvider.validateToken(token); // Compruebo si esta caducado
             } catch (Exception e) {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "El token está caducado"); 
+                logger.error("El token está caducado", e);
                 return; // ! No para aqui, sigue por OncePerRequestFilter y da forbidden
             }
             @SuppressWarnings("unchecked")

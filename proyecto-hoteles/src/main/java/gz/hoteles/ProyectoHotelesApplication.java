@@ -3,6 +3,26 @@ package gz.hoteles;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+/*import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Random;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
+
+import gz.hoteles.entities.CategoriaServicio;
+import gz.hoteles.entities.Habitacion;
+import gz.hoteles.entities.Historico;
+import gz.hoteles.entities.Hotel;
+import gz.hoteles.entities.Huesped;
+import gz.hoteles.entities.Servicio;
+import gz.hoteles.entities.TipoHabitacion;
+import gz.hoteles.repositories.HistoricoRepository;
+import gz.hoteles.servicio.IServicioHoteles;*/
+
 
 @SpringBootApplication
 public class ProyectoHotelesApplication {
@@ -38,7 +58,7 @@ public class ProyectoHotelesApplication {
             }
         }
 
-        public static Historico generarHistoricoAleatorio(LocalDate fecha) {
+        public Historico generarHistoricoAleatorio(LocalDate fecha) {
             Random random = new Random();
             Historico historico = new Historico();
             historico.setHotelesTotales(random.nextInt(100) + 1);
@@ -52,7 +72,7 @@ public class ProyectoHotelesApplication {
             return historico;
         }
 
-        public static LocalDate sumarDias(LocalDate fecha, int dias) {
+        public LocalDate sumarDias(LocalDate fecha, int dias) {
             return fecha.plusDays(dias);
         }
 
