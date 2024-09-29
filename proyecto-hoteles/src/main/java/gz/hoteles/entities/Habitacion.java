@@ -41,7 +41,7 @@ public class Habitacion {
     @JoinColumn(name = "hotel_fk")
     private Hotel hotel;
     //@JsonIgnore
-    @OneToMany(mappedBy = "habitacion", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "habitacion", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Huesped> huespedes = new ArrayList<Huesped>();
 
     public void addHuesped(Huesped huesped) {

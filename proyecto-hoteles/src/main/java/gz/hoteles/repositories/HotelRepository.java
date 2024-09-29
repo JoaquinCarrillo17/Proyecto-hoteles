@@ -9,7 +9,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import gz.hoteles.entities.Hotel;
-import gz.hoteles.entities.ServiciosHotelEnum;
 
 public interface HotelRepository extends JpaRepository<Hotel, Integer> {
 

@@ -16,6 +16,8 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -35,12 +37,18 @@ public class Hotel {
     private String sitioWeb;
     private int idUsuario;
     
-    //@JsonIgnore
+    @JsonIgnore
     @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Habitacion> habitaciones = new HashSet<Habitacion>();
+
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
     private Set<ServiciosHotelEnum> servicios = new HashSet<>();
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "ubicacion_fk")
+    private Ubicacion ubicacion;
+
     @JsonIgnore
     private int numeroHabitaciones = habitaciones.size();
     @JsonIgnore

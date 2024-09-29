@@ -31,7 +31,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
-                .antMatchers("/auth/signUp", "/auth/login", "/auth", "/auth/**", "/permisos", "/roles", "/roles/**", "/usuarios", "/usuarios/**",
+                .antMatchers("/auth/signUp", "/auth/login", "/auth", "/auth/**", "/permisos", "/roles", "/roles/**", "/usuarios", "/usuarios/**", "/ubicaciones", "/ubicaciones**",
                         "/swagger-ui.html",
                         "/swagger-ui/**",
                         "/v3/api-docs/**")
@@ -98,7 +98,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
                  .antMatchers("/hoteles", "/hoteles/**", "/habitaciones", "/habitaciones/**", "/huespedes", "/huespedes**"  /* "/roles", "/roles**",*/ /*"/usuarios", "/usuarios/**"*/).authenticated()
 
-                .anyRequest().authenticated() // Todas las demás rutas requieren autenticación
+                //.anyRequest().authenticated() // Todas las demás rutas requieren autenticación
                 .and()
                 .csrf().disable(); // Deshabilitar CSRF (puedes habilitarlo en producción)
 

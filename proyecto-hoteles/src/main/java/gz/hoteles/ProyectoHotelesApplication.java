@@ -4,8 +4,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
+import javax.transaction.Transactional;
+
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -16,8 +20,10 @@ import gz.hoteles.entities.Habitacion;
 import gz.hoteles.entities.Hotel;
 import gz.hoteles.entities.ServiciosHabitacionEnum;
 import gz.hoteles.entities.ServiciosHotelEnum;
+import gz.hoteles.entities.Ubicacion;
 import gz.hoteles.repositories.HabitacionRepository;
 import gz.hoteles.repositories.HotelRepository;
+import gz.hoteles.repositories.UbicacionRepository;
 
 /*import java.time.LocalDate;
 import java.util.ArrayList;
