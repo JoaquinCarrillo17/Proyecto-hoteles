@@ -27,12 +27,13 @@ public interface HotelRepository extends JpaRepository<Hotel, Integer> {
         @Query("SELECT h FROM Hotel h WHERE h.sitioWeb = :sitioWeb")
         Page<Hotel> getHotelBySitioWeb(String sitioWeb, Pageable pageable);
 
-        @Query("SELECT h FROM Hotel h JOIN h.servicios s WHERE " +
+        @Query("SELECT DISTINCT h FROM Hotel h JOIN h.servicios s WHERE " +
                         "(LOWER(h.nombre) LIKE LOWER(CONCAT('%', :query, '%')) " +
                         "OR LOWER(h.direccion) LIKE LOWER(CONCAT('%', :query, '%')) " +
                         "OR LOWER(h.telefono) LIKE LOWER(CONCAT('%', :query, '%')) " +
                         "OR LOWER(h.email) LIKE LOWER(CONCAT('%', :query, '%')) " +
                         "OR LOWER(h.sitioWeb) LIKE LOWER(CONCAT('%', :query, '%')) " +
+                        "OR LOWER(h.ubicacion.ciudad) LIKE LOWER(CONCAT('%', :query, '%')) " +
                         "OR LOWER(s) LIKE LOWER(CONCAT('%', :query, '%')) " +
                         "OR CAST(h.id AS string) = :query)")
         Page<Hotel> findHotelesByAllFilters(@Param("query") String query, Pageable pageable);
