@@ -1,6 +1,10 @@
 package gz.hoteles;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -8,8 +12,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.stereotype.Component;
 
+import gz.hoteles.entities.Habitacion;
 import gz.hoteles.entities.Hotel;
-import gz.hoteles.entities.ServiciosEnum;
+import gz.hoteles.entities.ServiciosHabitacionEnum;
+import gz.hoteles.entities.ServiciosHotelEnum;
+import gz.hoteles.repositories.HabitacionRepository;
 import gz.hoteles.repositories.HotelRepository;
 
 /*import java.time.LocalDate;

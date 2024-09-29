@@ -22,12 +22,13 @@ public interface HabitacionRepository extends JpaRepository<Habitacion, Integer>
         @Query("SELECT h FROM Habitacion h WHERE h.precioNoche = :precio")
         Page<Habitacion> getHabitacionesByPrecioPorNoche(String precio, Pageable pageable);
 
-        @Query("SELECT h FROM Habitacion h JOIN h.hotel ho WHERE " +
-       "(LOWER(ho.nombre) LIKE LOWER(CONCAT('%', :query, '%')) " +
-       "OR LOWER(h.numero) LIKE LOWER(CONCAT('%', :query, '%')) " +
-       "OR CAST(h.precioNoche AS string) LIKE CONCAT('%', :query, '%') " +
-       "OR LOWER(h.tipoHabitacion) LIKE LOWER(CONCAT('%', :query, '%')) " +
-       "OR (CAST(:query AS long) = h.id))")
+        @Query("SELECT h FROM Habitacion h JOIN h.hotel ho JOIN h.servicios s WHERE " +
+                        "(LOWER(ho.nombre) LIKE LOWER(CONCAT('%', :query, '%')) " +
+                        "OR LOWER(h.numero) LIKE LOWER(CONCAT('%', :query, '%')) " +
+                        "OR CAST(h.precioNoche AS string) LIKE CONCAT('%', :query, '%') " +
+                        "OR LOWER(h.tipoHabitacion) LIKE LOWER(CONCAT('%', :query, '%')) " +
+                        "OR LOWER(s) LIKE LOWER(CONCAT('%', :query, '%')) " +
+                        "OR (CAST(:query AS long) = h.id))")
         Page<Habitacion> findHabitacionesByAllFilters(@Param("query") String query, Pageable pageable);
 
         Page<Habitacion> findByNumeroEquals(String value, PageRequest of);

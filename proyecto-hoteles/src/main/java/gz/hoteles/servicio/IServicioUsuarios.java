@@ -4,7 +4,7 @@ import gz.hoteles.entities.Usuario;
 
 public interface IServicioUsuarios {
     
-    void signUp(Usuario usuario);
+    Usuario signUp(Usuario usuario);
 
     boolean verificarCredenciales(String username, String password);
 

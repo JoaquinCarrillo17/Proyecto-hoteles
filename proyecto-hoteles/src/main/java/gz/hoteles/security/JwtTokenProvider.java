@@ -46,6 +46,7 @@ public class JwtTokenProvider {
         }
 
 		claims.put("sub", usuario.getUsername());
+        claims.put("id", usuario.getId());
 		claims.put("roles", roles);
 
 		return claims;

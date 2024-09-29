@@ -1,8 +1,11 @@
 package gz.hoteles.entities;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.ElementCollection;
@@ -13,9 +16,6 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -33,17 +33,14 @@ public class Hotel {
     private String telefono;
     private String email;
     private String sitioWeb;
+    private int idUsuario;
     
     //@JsonIgnore
-    /*@ManyToMany
-    @JoinTable(name = "hotel_servicio", joinColumns = {@JoinColumn(name = "hotel_id")}, inverseJoinColumns = {@JoinColumn(name = "servicio_id") })
-    private List<Servicio> servicios = new ArrayList<Servicio>();*/
-    //@JsonIgnore
     @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Habitacion> habitaciones = new ArrayList<Habitacion>();
+    private Set<Habitacion> habitaciones = new HashSet<Habitacion>();
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
-    private List<ServiciosEnum> servicios = new ArrayList<>();
+    private Set<ServiciosHotelEnum> servicios = new HashSet<>();
     @JsonIgnore
     private int numeroHabitaciones = habitaciones.size();
     @JsonIgnore
@@ -60,7 +57,7 @@ public class Hotel {
         updateHabitaciones(Collections.singletonList(habitacion));
     }
 
-    public void updateHabitaciones(List<Habitacion> habitaciones) {
+    public void updateHabitaciones(Collection<Habitacion> habitaciones) {
         for (Habitacion habitacion : habitaciones) {
             this.numeroHabitaciones++;
             if (habitacion.getHuespedes().size() > 0) {

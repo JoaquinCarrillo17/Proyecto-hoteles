@@ -32,16 +32,16 @@ public class AuthController {
 
     @PostMapping("/signUp")
     public ResponseEntity<?> signUp(@RequestBody Usuario usuario) {
-        servicioUsuarios.signUp(usuario);
-        String token = jwtTokenProvider.createToken(usuario);
+        Usuario u = servicioUsuarios.signUp(usuario);
+        String token = jwtTokenProvider.createToken(u);
         return ResponseEntity.ok(token);
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestParam String username, @RequestParam String password) {
-        Usuario usuario = servicioUsuarios.getUsuarioByUsername(username);
+        Usuario u = servicioUsuarios.getUsuarioByUsername(username);
         if (servicioUsuarios.verificarCredenciales(username, password)) {
-            String token = jwtTokenProvider.createToken(usuario);
+            String token = jwtTokenProvider.createToken(u);
             return ResponseEntity.ok(token);
         } else
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Contraseña incorrecta");

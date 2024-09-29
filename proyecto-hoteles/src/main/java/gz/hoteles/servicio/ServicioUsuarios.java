@@ -21,7 +21,7 @@ public class ServicioUsuarios implements IServicioUsuarios {
     IServicioEmails servicioEmails;
 
     @Override
-    public void signUp(Usuario usuario) {
+    public Usuario signUp(Usuario usuario) {
         añadirRol(usuario);
 
         String destinatario = usuario.getEmail();
@@ -29,7 +29,7 @@ public class ServicioUsuarios implements IServicioUsuarios {
         String contenido = "¡Hola " + usuario.getNombre() + ", tu registro en JC Hotel Group ha sido exitoso!";
         //servicioEmails.enviarCorreo(destinatario, asunto, contenido);
 
-        usuarioRepository.save(usuario);
+        return usuarioRepository.save(usuario);
     }
 
     private void añadirRol(Usuario usuario) {

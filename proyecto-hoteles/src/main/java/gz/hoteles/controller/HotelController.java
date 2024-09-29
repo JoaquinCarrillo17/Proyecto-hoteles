@@ -340,9 +340,7 @@ public class HotelController {
             totalItems = hotelRepository.count(); // Obtener el número total de hoteles en la base de datos
         } else {
             // Filtrar por query en los campos relevantes
-            page = hotelRepository
-                    .findByNombreContainingIgnoreCaseOrDireccionContainingIgnoreCaseOrTelefonoContainingIgnoreCaseOrEmailContainingIgnoreCaseOrSitioWebContainingIgnoreCase(
-                            query, query, query, query, query, pageable);
+            page = hotelRepository.findHotelesByAllFilters(query, pageable);
             totalItems = page.getTotalElements(); // Obtener el número total de elementos coincidentes
         }
 

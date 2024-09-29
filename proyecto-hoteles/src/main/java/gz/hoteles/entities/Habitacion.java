@@ -3,14 +3,18 @@ package gz.hoteles.entities;
 import lombok.Data;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.CascadeType;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -28,6 +32,10 @@ public class Habitacion {
     @Enumerated(EnumType.STRING)
     private TipoHabitacion tipoHabitacion;
     private float precioNoche;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Enumerated(EnumType.STRING)
+    private Set<ServiciosHabitacionEnum> servicios = new HashSet<>();
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "hotel_fk")

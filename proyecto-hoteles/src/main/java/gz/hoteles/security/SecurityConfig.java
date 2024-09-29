@@ -31,7 +31,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
-                .antMatchers("/auth/signUp", "/auth/login", "/auth", "/permisos", "/roles", "/roles/**", "/usuarios", "/usuarios/**",
+                .antMatchers("/auth/signUp", "/auth/login", "/auth", "/auth/**", "/permisos", "/roles", "/roles/**", "/usuarios", "/usuarios/**",
                         "/swagger-ui.html",
                         "/swagger-ui/**",
                         "/v3/api-docs/**")
@@ -66,21 +66,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.DELETE, "/habitaciones/{id}")
                 .hasRole("HABITACIONES_W")
 
-                // * Para Servicios
-                .antMatchers(HttpMethod.GET, "/servicios/**")
-                .hasAnyRole("SERVICIOS_R", "SERVICIOS_W")
-                .antMatchers(HttpMethod.GET, "/servicios")
-                .hasAnyRole("SERVICIOS_R", "SERVICIOS_W")
-                // * Restringir los métodos PUT, POST y DELETE a ROLE_SERVICIOS_W
-                .antMatchers(HttpMethod.PUT, "/servicios/{id}")
-                .hasRole("SERVICIOS_W")
-                .antMatchers(HttpMethod.POST, "/servicios")
-                .hasRole("SERVICIOS_W")
-                .antMatchers(HttpMethod.POST, "/servicios/**")
-                .hasRole("SERVICIOS_W")
-                .antMatchers(HttpMethod.DELETE, "/servicios/{id}")
-                .hasRole("SERVICIOS_W")
-
                 // * Para Huéspedes
                 .antMatchers(HttpMethod.GET, "/huespedes/**")
                 .hasAnyRole("HUESPEDES_R", "HUESPEDES_W")
@@ -111,8 +96,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.DELETE, "/roles/{id}")
                 .hasRole("ROLES_W")*/
 
-                 .antMatchers("/hoteles", "/hoteles/**", "/habitaciones", "/habitaciones/**", "/servicios",
-                        "/servicios/**", "/huespedes", "/huespedes**"  /* "/roles", "/roles**",*/ /*"/usuarios", "/usuarios/**"*/).authenticated()
+                 .antMatchers("/hoteles", "/hoteles/**", "/habitaciones", "/habitaciones/**", "/huespedes", "/huespedes**"  /* "/roles", "/roles**",*/ /*"/usuarios", "/usuarios/**"*/).authenticated()
 
                 .anyRequest().authenticated() // Todas las demás rutas requieren autenticación
                 .and()

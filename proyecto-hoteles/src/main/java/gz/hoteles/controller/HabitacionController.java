@@ -284,6 +284,7 @@ public class HabitacionController {
             find.setNumero(input.getNumero());
             find.setPrecioNoche(input.getPrecioNoche());
             find.setTipoHabitacion(input.getTipoHabitacion());
+            find.setServicios(input.getServicios());
         } else
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "No se encontró ninguna habitación por el ID proporcionado");
@@ -332,6 +333,7 @@ public class HabitacionController {
         // Configurar mapeo personalizado para incluir el nombre del hotel en el DTO
         modelMapper.typeMap(Habitacion.class, HabitacionDTO.class).addMappings(mapper -> {
             mapper.map(src -> src.getHotel().getNombre(), HabitacionDTO::setNombreHotel);
+            mapper.map(src -> src.getHotel().getIdUsuario(), HabitacionDTO::setIdUsuario);
         });
     
         return modelMapper.map(habitacion, HabitacionDTO.class);
