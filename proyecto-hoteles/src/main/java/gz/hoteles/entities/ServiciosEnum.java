@@ -1,5 +1,5 @@
 package gz.hoteles.entities;
 
-public enum CategoriaServicio {
+public enum ServiciosEnum {
     GIMNASIO, LAVANDERIA, BAR, CASINO, KARAOKE, WIFI, MASCOTA, COCINA, PISCINA;
 }

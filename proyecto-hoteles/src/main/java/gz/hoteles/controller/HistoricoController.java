@@ -17,7 +17,6 @@ import gz.hoteles.repositories.HabitacionRepository;
 import gz.hoteles.repositories.HistoricoRepository;
 import gz.hoteles.repositories.HotelRepository;
 import gz.hoteles.repositories.HuespedRepository;
-import gz.hoteles.repositories.ServicioRepository;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,9 +43,6 @@ public class HistoricoController {
 
     @Autowired
     HuespedRepository huespedRepository;
-
-    @Autowired
-    ServicioRepository servicioRepository;
 
     @GetMapping()
     public ResponseEntity<?> list() {
@@ -84,7 +80,6 @@ public class HistoricoController {
 
             // Obtener la cantidad total de huéspedes y servicios
             long huespedesTotales = huespedRepository.count(); // Utiliza el método correspondiente del repositorio para obtener el total de huéspedes
-            long serviciosTotales = servicioRepository.count(); // Utiliza el método correspondiente del repositorio para obtener el total de servicios
 
             // Crear un nuevo objeto Historico
             Historico nuevoHistorico = new Historico();
@@ -94,7 +89,6 @@ public class HistoricoController {
             nuevoHistorico.setHabitacionesDisponibles((int) habitacionesDisponibles);
             nuevoHistorico.setHabitacionesReservadas((int) habitacionesReservadas);
             nuevoHistorico.setHuespedesTotales((int) huespedesTotales);
-            nuevoHistorico.setServiciosTotales((int) serviciosTotales);
 
             // Guardar el nuevo historico en la base de datos
             historicoRepository.save(nuevoHistorico);

@@ -5,7 +5,11 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.persistence.CascadeType;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -31,12 +35,15 @@ public class Hotel {
     private String sitioWeb;
     
     //@JsonIgnore
-    @ManyToMany
+    /*@ManyToMany
     @JoinTable(name = "hotel_servicio", joinColumns = {@JoinColumn(name = "hotel_id")}, inverseJoinColumns = {@JoinColumn(name = "servicio_id") })
-    private List<Servicio> servicios = new ArrayList<Servicio>();
+    private List<Servicio> servicios = new ArrayList<Servicio>();*/
     //@JsonIgnore
     @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Habitacion> habitaciones = new ArrayList<Habitacion>();
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Enumerated(EnumType.STRING)
+    private List<ServiciosEnum> servicios = new ArrayList<>();
     @JsonIgnore
     private int numeroHabitaciones = habitaciones.size();
     @JsonIgnore
@@ -44,10 +51,10 @@ public class Hotel {
     @JsonIgnore
     private int numeroHabitacionesReservadas;
 
-	public void addServicio(Servicio servicio) {
+	/*public void addServicio(Servicio servicio) {
 		this.servicios.add(servicio);
 	}
-
+*/
     public void addHabitacion(Habitacion habitacion) {
         this.habitaciones.add(habitacion);
         updateHabitaciones(Collections.singletonList(habitacion));

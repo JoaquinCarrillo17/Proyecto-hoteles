@@ -26,10 +26,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import gz.hoteles.dto.HotelDTO;
-import gz.hoteles.entities.CategoriaServicio;
 import gz.hoteles.entities.Habitacion;
 import gz.hoteles.entities.Hotel;
-import gz.hoteles.entities.Servicio;
 import gz.hoteles.repositories.HotelRepository;
 import gz.hoteles.servicio.IServicioHoteles;
 import gz.hoteles.support.ListOrderCriteria;
@@ -166,44 +164,6 @@ public class HotelController {
         } else
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "No se encontró ningún hotel por el sitio web '" + sitioWeb + "'");
-    }
-
-    @GetMapping("/filteredByTypeOfService")
-    public ResponseEntity<?> getHotelByServiceType(@RequestParam String categoria, @RequestParam int pages) {
-        if (categoria == null || categoria.isEmpty()) {
-            throw new IllegalArgumentException("El parámetro 'categoria' no puede estar vacío");
-        }
-
-        CategoriaServicio c = null;
-        switch (categoria.toUpperCase()) {
-            case "GIMNASIO":
-                c = CategoriaServicio.GIMNASIO;
-                break;
-            case "BAR":
-                c = CategoriaServicio.BAR;
-                break;
-            case "KARAOKE":
-                c = CategoriaServicio.KARAOKE;
-                break;
-            case "LAVANDERIA":
-                c = CategoriaServicio.LAVANDERIA;
-                break;
-            case "CASINO":
-                c = CategoriaServicio.CASINO;
-                break;
-            default:
-                throw new IllegalArgumentException("La categoría introducida no existe");
-        }
-
-        Pageable pageable = PageRequest.of(0, pages);
-        Page<Hotel> page = hotelRepository.findByCategoriaServicio(c, pageable);
-        List<Hotel> hoteles = page.getContent();
-        List<HotelDTO> hotelesDTO = convertToDtoHotelList(hoteles);
-        if (hotelesDTO.size() > 0) {
-            return ResponseEntity.ok(hotelesDTO);
-        } else
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "No se encontró ningún hotel por la categoria '" + categoria + "'");
     }
 
     @PostMapping("/dynamicSearch")
@@ -417,6 +377,7 @@ public class HotelController {
             find.setNombre(input.getNombre());
             find.setTelefono(input.getTelefono());
             find.setSitioWeb(input.getSitioWeb());
+            find.setServicios(input.getServicios());
         } else
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "No se encontró ningún hotel con el ID proporcionado");
@@ -434,7 +395,7 @@ public class HotelController {
         return ResponseEntity.ok(convertToDtoHotel(save));
     }
 
-    @Operation(summary = "Añadir servicio al hotel")
+    /*@Operation(summary = "Añadir servicio al hotel")
     @PostMapping("/{id}/servicios")
     public ResponseEntity<?> anadirServicio(@PathVariable(name = "id") int id, @RequestBody Servicio input) {
         if (id <= 0  || Integer.valueOf(id) == null) {
@@ -442,7 +403,7 @@ public class HotelController {
         }
         Hotel h = servicioHoteles.anadirServicio(id, input); // Comprobacion NOT_FOUND en la funcion
         return ResponseEntity.ok(convertToDtoHotel(h));
-    }
+    }*/
 
     @Operation(summary = "Añadir habitación al hotel")
     @PostMapping("/{id}/habitaciones")

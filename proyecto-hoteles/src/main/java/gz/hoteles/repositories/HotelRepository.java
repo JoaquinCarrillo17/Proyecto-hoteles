@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import gz.hoteles.entities.Hotel;
-import gz.hoteles.entities.CategoriaServicio;
+import gz.hoteles.entities.ServiciosEnum;
 
 public interface HotelRepository extends JpaRepository<Hotel, Integer>{
 
@@ -101,9 +101,6 @@ public interface HotelRepository extends JpaRepository<Hotel, Integer>{
     /* Fin */
     
     Page<Hotel> findAll(Specification<Hotel> spec, Pageable pageable); // Para el dynamic search tocho
-
-    @Query("SELECT DISTINCT h FROM Hotel h JOIN h.servicios s WHERE s.categoria = :categoria")
-    Page<Hotel> findByCategoriaServicio(CategoriaServicio categoria, Pageable pageable); // Filtrar hoteles por tipo de servicio
 
     Page<Hotel> findByNombreContainingIgnoreCaseOrDireccionContainingIgnoreCaseOrTelefonoContainingIgnoreCaseOrEmailContainingIgnoreCaseOrSitioWebContainingIgnoreCase(
             String nombre, String direccion, String telefono, String email, String sitioWeb, Pageable pageable); // Para el magic filter

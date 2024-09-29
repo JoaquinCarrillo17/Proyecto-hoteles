@@ -22,7 +22,6 @@ public class Historico {
     private int habitacionesDisponibles;
     private int habitacionesReservadas;
     private int huespedesTotales;
-    private int serviciosTotales;
     private LocalDate fecha;
 
 

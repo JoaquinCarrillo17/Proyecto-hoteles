@@ -1,8 +1,5 @@
 package gz.hoteles.servicio;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -12,32 +9,27 @@ import org.springframework.web.server.ResponseStatusException;
 import gz.hoteles.entities.Habitacion;
 import gz.hoteles.entities.Hotel;
 import gz.hoteles.entities.Huesped;
-import gz.hoteles.entities.Servicio;
 import gz.hoteles.repositories.HabitacionRepository;
 import gz.hoteles.repositories.HotelRepository;
 import gz.hoteles.repositories.HuespedRepository;
-import gz.hoteles.repositories.ServicioRepository;
 
 @Service
 public class ServicioHoteles implements IServicioHoteles {
 
     @Autowired
     HabitacionRepository habitacionRepository;
+
     @Autowired
     HuespedRepository huespedRepository;
+
     @Autowired
     HotelRepository hotelRepository;
-    @Autowired
-    ServicioRepository servicioRepository;
+
 
     /* ====== FUNCIONALIDAD HOTEL ====== */
 
     @Override
     public Hotel crearHotel(Hotel hotel) {
-        List<Servicio> servicios = new ArrayList<>(hotel.getServicios());
-        for (Servicio s : servicios) {
-            servicioRepository.save(s);
-        }
         hotel.updateHabitaciones(hotel.getHabitaciones());
         Hotel h = hotelRepository.save(hotel);
         for (Habitacion habitacion : h.getHabitaciones()) {
@@ -49,19 +41,6 @@ public class ServicioHoteles implements IServicioHoteles {
             }
         }
         return h;
-    }
-
-    @Override
-    public Hotel anadirServicio(int id, Servicio servicio) {
-        servicioRepository.save(servicio);
-        Hotel hotel = hotelRepository.findById(id).orElse(null);
-        if (hotel != null) {
-            hotel.addServicio(servicio);
-            hotelRepository.save(hotel);
-            servicio.addHotel(hotel);
-            servicioRepository.save(servicio);
-        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró ningún hotel por el ID proporcionado");
-        return hotel;
     }
 
     @Override

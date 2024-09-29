@@ -1,7 +1,16 @@
 package gz.hoteles;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.stereotype.Component;
+
+import gz.hoteles.entities.Hotel;
+import gz.hoteles.entities.ServiciosEnum;
+import gz.hoteles.repositories.HotelRepository;
 
 /*import java.time.LocalDate;
 import java.util.ArrayList;
