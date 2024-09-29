@@ -10,5 +10,6 @@ public class HabitacionDTO {
     private String numero;
     private TipoHabitacion tipoHabitacion;
     private float precioNoche;
+    private String nombreHotel;
 
 }

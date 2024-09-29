@@ -394,9 +394,10 @@ public class HuespedController {
             } else {
                 // Si no se pudo parsear como fecha, se realiza la búsqueda sin tener en cuenta
                 // las fechas
-                page = huespedRepository
+                /*page = huespedRepository
                         .findByNombreCompletoContainingIgnoreCaseOrDniContainingIgnoreCaseOrEmailContainingIgnoreCase(
-                                query, query, query, pageable);
+                                query, query, query, pageable);*/
+                page = huespedRepository.findHuespedesByAllFilters(query, pageable);
             }
 
             totalItems = page.getTotalElements(); // Obtener el número total de elementos coincidentes
@@ -704,8 +705,16 @@ public class HuespedController {
     /* ====== MAPPER ====== */
 
     public static HuespedDTO convertToDtoHuesped(Huesped huesped) {
+        ModelMapper modelMapper = new ModelMapper();
+        
+        // Configurar mapeo personalizado para el campo nombreHotel
+        modelMapper.typeMap(Huesped.class, HuespedDTO.class).addMappings(mapper -> {
+            mapper.map(src -> src.getHabitacion().getHotel().getNombre(), HuespedDTO::setNombreHotel);
+        });
+    
         return modelMapper.map(huesped, HuespedDTO.class);
     }
+    
 
     public static List<HuespedDTO> convertToDtoHuespedList(List<Huesped> huespedes) {
         return huespedes.stream()

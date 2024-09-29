@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import gz.hoteles.entities.Huesped;
 
@@ -27,6 +28,14 @@ public interface HuespedRepository extends JpaRepository<Huesped, Integer> {
 
         @Query("SELECT h FROM Huesped h WHERE h.fechaCheckOut = :fecha")
         Page<Huesped> getHuespedesByFechaSalida(Date fecha, Pageable pageable);
+
+        @Query("SELECT h FROM Huesped h JOIN h.habitacion ha JOIN ha.hotel ho " +
+           "WHERE (LOWER(ho.nombre) LIKE LOWER(CONCAT('%', :query, '%')) " +
+           "OR LOWER(h.nombreCompleto) LIKE LOWER(CONCAT('%', :query, '%')) " +
+           "OR LOWER(h.dni) LIKE LOWER(CONCAT('%', :query, '%')) " +
+           "OR LOWER(h.email) LIKE LOWER(CONCAT('%', :query, '%'))) " +
+           "OR (CAST(:query AS string) = CAST(h.id AS string))")
+        Page<Huesped> findHuespedesByAllFilters(@Param("query") String query, Pageable pageable);
 
         Page<Huesped> findByNombreCompletoEquals(String value, PageRequest of);
 

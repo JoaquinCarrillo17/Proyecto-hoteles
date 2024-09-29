@@ -46,6 +46,13 @@ public class RolController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/añadirPermisoaRol")
+    public ResponseEntity<?> añadirPermisoaRol(@RequestParam String rol, @RequestParam String permiso) {
+        servicioRoles.añadirPermisoaRol(rol, permiso);
+        return ResponseEntity.ok().build();     
+    }
+    
+
     @GetMapping()
     public ResponseEntity<?> getAll() {
         List<Rol> roles = servicioRoles.getAll();

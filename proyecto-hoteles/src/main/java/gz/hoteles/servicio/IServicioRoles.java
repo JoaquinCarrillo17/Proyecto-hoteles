@@ -11,6 +11,8 @@ public interface IServicioRoles {
 
     void crearRol(Rol rol);
 
+    void añadirPermisoaRol(String rol, String permiso);
+
     List<Rol> getAll();
 
     void añadirRolAUsuario(Usuario usuario, String rolName);

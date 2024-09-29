@@ -27,7 +27,7 @@ public class ServicioUsuarios implements IServicioUsuarios {
         String destinatario = usuario.getEmail();
         String asunto = "Registro exitoso";
         String contenido = "¡Hola " + usuario.getNombre() + ", tu registro en JC Hotel Group ha sido exitoso!";
-        servicioEmails.enviarCorreo(destinatario, asunto, contenido);
+        //servicioEmails.enviarCorreo(destinatario, asunto, contenido);
 
         usuarioRepository.save(usuario);
     }

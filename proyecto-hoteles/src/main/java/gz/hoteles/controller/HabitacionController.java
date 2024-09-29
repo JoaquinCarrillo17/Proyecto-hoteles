@@ -215,37 +215,7 @@ public class HabitacionController {
             page = habitacionRepository.findAll(pageable);
             totalItems = habitacionRepository.count(); // Obtener el número total de habitaciones en la base de datos
         } else {
-
-            // Intenta convertir el valor de query a TipoHabitacion
-            TipoHabitacion tipoHabitacion = null;
-            switch (query.toUpperCase()) {
-                case "INDIVIDUAL":
-                    tipoHabitacion = TipoHabitacion.INDIVIDUAL;
-                    break;
-                case "DOBLE":
-                    tipoHabitacion = TipoHabitacion.DOBLE;
-                    break;
-                case "CUADRUPLE":
-                    tipoHabitacion = TipoHabitacion.CUADRUPLE;
-                    break;
-                case "SUITE":
-                    tipoHabitacion = TipoHabitacion.SUITE;
-                    break;
-                default:
-                    // Si no coincide con ningún tipo de habitación, se ignora y se busca con la
-                    // cadena directamente
-            }
-
-            if (tipoHabitacion != null) {
-                page = habitacionRepository
-                        .findByNumeroContainingIgnoreCaseOrTipoHabitacion(
-                                query, tipoHabitacion, pageable);
-            } else {
-                page = habitacionRepository
-                        .findByNumeroContainingIgnoreCaseOrPrecioNoche(
-                                query, Float.parseFloat(query), pageable);
-            }
-
+            page = habitacionRepository.findHabitacionesByAllFilters(query, pageable);
             totalItems = page.getTotalElements(); // Obtener el número total de elementos coincidentes
         }
 
@@ -357,8 +327,16 @@ public class HabitacionController {
     /* ====== MAPPER ====== */
 
     public static HabitacionDTO convertToDtoHabitacion(Habitacion habitacion) {
+        ModelMapper modelMapper = new ModelMapper();
+        
+        // Configurar mapeo personalizado para incluir el nombre del hotel en el DTO
+        modelMapper.typeMap(Habitacion.class, HabitacionDTO.class).addMappings(mapper -> {
+            mapper.map(src -> src.getHotel().getNombre(), HabitacionDTO::setNombreHotel);
+        });
+    
         return modelMapper.map(habitacion, HabitacionDTO.class);
     }
+    
 
     public static List<HabitacionDTO> convertToDtoHabitacionList(List<Habitacion> habitaciones) {
         return habitaciones.stream()

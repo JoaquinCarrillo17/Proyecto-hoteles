@@ -72,4 +72,12 @@ public class ServicioRoles implements IServicioRoles {
             return r;
     }
 
+    @Override
+    public void añadirPermisoaRol(String rol, String permiso) {
+        Rol r = rolesRepository.findRolByNombre(rol);
+        Permiso p = permisosRepository.findByNombre(permiso);
+        r.getPermisos().add(p);
+        rolesRepository.save(r);
+    }
+
 }

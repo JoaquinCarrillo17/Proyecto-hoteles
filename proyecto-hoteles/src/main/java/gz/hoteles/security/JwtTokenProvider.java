@@ -41,7 +41,7 @@ public class JwtTokenProvider {
 
         for (Rol rol : usuario.getRoles()) {
             for (Permiso p : rol.getPermisos()) {
-                roles.add(p.getNombre());
+                roles.add("ROLE_" + p.getNombre());
             }
         }
 
