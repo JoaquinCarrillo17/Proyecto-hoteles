@@ -196,6 +196,20 @@ public class HotelController {
         return ResponseEntity.ok(hotelDTOPage);
     }
 
+    @GetMapping("/{id}/full")
+    public ResponseEntity<?> getHotelFull(@PathVariable(name = "id") int id) {
+        if (id <= 0  || Integer.valueOf(id) == null) {
+            throw new IllegalArgumentException("El ID debe ser un número entero positivo");
+        }
+        Hotel hotel = hotelRepository.findById(id).orElse(null);
+        if (hotel == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No se encontró ningún hotel por el ID proporcionado");
+        } else {
+            return ResponseEntity.ok(hotel);
+        }
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<?> put(@PathVariable(name = "id") int id, @RequestBody Hotel input) {
         if (id <= 0 || Integer.valueOf(id) == null) {

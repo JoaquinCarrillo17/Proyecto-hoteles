@@ -3,11 +3,13 @@ package gz.hoteles.controller;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -26,8 +28,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import gz.hoteles.dto.HabitacionDTO;
+import gz.hoteles.dto.HotelDTO;
 import gz.hoteles.entities.Habitacion;
+import gz.hoteles.entities.Hotel;
 import gz.hoteles.entities.Huesped;
+import gz.hoteles.entities.ServiciosHabitacionEnum;
+import gz.hoteles.entities.ServiciosHotelEnum;
 import gz.hoteles.entities.TipoHabitacion;
 import gz.hoteles.repositories.HabitacionRepository;
 import gz.hoteles.servicio.IServicioHoteles;
@@ -44,8 +50,6 @@ public class HabitacionController {
     HabitacionRepository habitacionRepository;
     @Autowired
     IServicioHoteles servicioHoteles;
-
-    private static final ModelMapper modelMapper = new ModelMapper();
 
     @GetMapping()
     public ResponseEntity<?> list() {
@@ -68,68 +72,6 @@ public class HabitacionController {
                     "No se encontró ninguna habitación con el ID proporcionado");
         } else
             return ResponseEntity.ok(convertToDtoHabitacion(habitacion));
-    }
-
-    @GetMapping("/{id}/full")
-    public ResponseEntity<?> getHabitacionFull(@PathVariable(name = "id") int id) {
-        if (id <= 0  || Integer.valueOf(id) == null) {
-            throw new IllegalArgumentException("El ID debe ser un número entero positivo");
-        }
-        Habitacion habitacion = habitacionRepository.findById(id).orElse(null);
-        if (habitacion == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "No se encontró ninguna habitación con el ID proporcionado");
-        } else
-            return ResponseEntity.ok(habitacion);
-    }
-
-    @GetMapping("/filteredByNumber")
-    public ResponseEntity<?> getHabitacionesByNumero(@RequestParam String numero, @RequestParam int pages) {
-        if (numero == null || numero.isEmpty()) {
-            throw new IllegalArgumentException("El parámetro 'número' no puede estar vacío");
-        }
-        Pageable pageable = PageRequest.of(0, pages);
-        Page<Habitacion> page = habitacionRepository.getHabitacionesByNumero(numero, pageable);
-        List<Habitacion> habitaciones = page.getContent();
-        List<HabitacionDTO> habitacionDTO = convertToDtoHabitacionList(habitaciones);
-        if (habitacionDTO.size() > 0) {
-            return ResponseEntity.ok(habitacionDTO);
-        } else
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "No se encontró ninguna habitación con el número '" + numero + "'");
-    }
-
-    @GetMapping("/filteredByTypeOfRoom")
-    public ResponseEntity<?> getHabitacionesByTipoHabitacion(@RequestParam TipoHabitacion tipo,
-            @RequestParam int pages) {
-        if (tipo == null) {
-            throw new IllegalArgumentException("El parámetro 'tipo' no puede ser nulo");
-        }
-        Pageable pageable = PageRequest.of(0, pages);
-        Page<Habitacion> page = habitacionRepository.getHabitacionesByTipoHabitacion(tipo, pageable);
-        List<Habitacion> habitaciones = page.getContent();
-        List<HabitacionDTO> habitacionDTO = convertToDtoHabitacionList(habitaciones);
-        if (habitacionDTO.size() > 0) {
-            return ResponseEntity.ok(habitacionDTO);
-        } else
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "No se encontró ninguna habitación del tipo '" + tipo + "'");
-    }
-
-    @GetMapping("/filteredByPricePerNight")
-    public ResponseEntity<?> getHabitacionesByPrecioPorNoche(@RequestParam String precio, @RequestParam int pages) {
-        if (precio == null || precio.isEmpty()) {
-            throw new IllegalArgumentException("El parámetro 'precio' no puede ser nulo.");
-        }
-        Pageable pageable = PageRequest.of(0, pages);
-        Page<Habitacion> page = habitacionRepository.getHabitacionesByPrecioPorNoche(precio, pageable);
-        List<Habitacion> habitaciones = page.getContent();
-        List<HabitacionDTO> habitacionDTO = convertToDtoHabitacionList(habitaciones);
-        if (habitacionDTO.size() > 0) {
-            return ResponseEntity.ok(habitacionDTO);
-        } else
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "No se encontró ninguna habitación con precio '" + precio + "€'");
     }
 
     @PostMapping("/dynamicSearch")
@@ -195,83 +137,74 @@ public class HabitacionController {
 
     }
 
-    @Operation(summary = "Filtrado de habitaciones por todos sus parámetros a través de un solo String")
-    @GetMapping("/magicFilter")
-    public ResponseEntity<?> getHabitacionesByMagicFilter(
-            @RequestParam(value = "query", required = false) String query,
-            @RequestParam("pageNumber") int pagina,
-            @RequestParam("itemsPerPage") int itemsPorPagina,
-            @RequestParam(value = "valueSortOrder") String valueSortOrder,
-            @RequestParam(value = "sortBy") String sortBy) {
+    @PostMapping("/dynamicFilterOr")
+    public ResponseEntity<?> getFilteredByDynamicSearchOr(@RequestBody SearchRequest searchRequest) {
 
-        // Definir la paginación y clasificación
-        Sort.Direction direction = Sort.Direction.fromString(valueSortOrder.toUpperCase());
-        Pageable pageable = PageRequest.of(pagina, itemsPorPagina, Sort.by(direction, sortBy));
+        List<SearchCriteria> searchCriteriaList = searchRequest.getListSearchCriteria();
+        ListOrderCriteria orderCriteriaList = searchRequest.getListOrderCriteria();
+        int pageSize = searchRequest.getPage().getPageSize();
+        int pageIndex = searchRequest.getPage().getPageIndex();
 
-        Page<Habitacion> page;
-        long totalItems; // Variable para almacenar el número total de elementos coincidentes
+        Specification<Habitacion> spec = Specification.where(null);
 
-        if (query == null || query.isEmpty()) {
-            page = habitacionRepository.findAll(pageable);
-            totalItems = habitacionRepository.count(); // Obtener el número total de habitaciones en la base de datos
-        } else {
-            page = habitacionRepository.findHabitacionesByAllFilters(query, pageable);
-            totalItems = page.getTotalElements(); // Obtener el número total de elementos coincidentes
+        for (SearchCriteria criteria : searchCriteriaList) {
+            switch (criteria.getOperation()) {
+                case "equals":
+                    if (criteria.getKey().equals("hotel.idUsuario")) {
+                        // Filtrar por hotel.idUsuario
+                        spec = spec.and(
+                                (root, query, cb) -> cb.equal(root.get("hotel").get("idUsuario"), criteria.getValue()));
+                    } else if (criteria.getKey().equals("servicios")) {
+                        // Filtrar por servicios de la habitación
+                        spec = spec.or((root, query, cb) -> cb
+                                .isMember(ServiciosHabitacionEnum.valueOf(criteria.getValue()), root.get("servicios")));
+                    } else {
+                        spec = spec.or((root, query, cb) -> cb.equal(root.get(criteria.getKey()), criteria.getValue()));
+                    }
+                    break;
+                case "contains":
+                    if (criteria.getKey().equals("hotel.nombre")) {
+                        // Filtrar por hotel.nombre
+                        spec = spec.or(
+                                (root, query, cb) -> cb.like(root.get("hotel").get("nombre"), "%" + criteria.getValue() + "%"));
+                    } else
+                        spec = spec.or(
+                                (root, query, cb) -> cb.like(root.get(criteria.getKey()),
+                                        "%" + criteria.getValue() + "%"));
+                    break;
+                // Otras operaciones...
+                default:
+                    throw new IllegalArgumentException("Operador de búsqueda no válido: " + criteria.getOperation());
+            }
         }
 
-        List<Habitacion> habitaciones = page.getContent();
-        List<HabitacionDTO> habitacionesDTO = convertToDtoHabitacionList(habitaciones);
+        String sortByField = orderCriteriaList.getSortBy();
+        String sortDirection = orderCriteriaList.getValueSortOrder().equalsIgnoreCase("asc") ? "ASC" : "DESC";
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortByField);
 
-        // Crear un objeto JSON para la respuesta que incluya tanto la lista de
-        // habitacionesDTO como el número total de elementos
-        Map<String, Object> response = new HashMap<>();
-        response.put("habitaciones", habitacionesDTO);
-        response.put("totalItems", totalItems);
+        Page<Habitacion> page = habitacionRepository.findAll(spec, PageRequest.of(pageIndex, pageSize, sort));
 
-        if (!habitacionesDTO.isEmpty()) {
-            return ResponseEntity.ok(response);
-        } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "No se encontraron habitaciones por los parámetros proporcionados");
-        }
+        List<HabitacionDTO> habitacionDTOList = page.getContent().stream()
+                .map(HabitacionController::convertToDtoHabitacion)
+                .collect(Collectors.toList());
+
+        Page<HabitacionDTO> habitacionDTOPage = new PageImpl<>(habitacionDTOList, PageRequest.of(pageIndex, pageSize, sort),
+                page.getTotalElements());
+
+        return ResponseEntity.ok(habitacionDTOPage);
     }
 
-    @Operation(summary = "Filtrado con GET por todos sus parámetros")
-    @GetMapping("/filteredByEverything")
-    public ResponseEntity<?> getFilteredByEverything(@RequestParam(required = false) String numero,
-            @RequestParam(required = false) TipoHabitacion tipoHabitacion,
-            @RequestParam(required = false) Float precioNoche, @RequestParam int pages) {
-
-        Page<Habitacion> page = null;
-
-        if (numero != null && tipoHabitacion != null && precioNoche != null) {
-            page = habitacionRepository.findByNumeroAndTipoHabitacionAndPrecioNoche(numero, tipoHabitacion, precioNoche,
-                    PageRequest.of(0, pages));
-        } else if (numero != null && tipoHabitacion != null) {
-            page = habitacionRepository.findByNumeroAndTipoHabitacion(numero, tipoHabitacion, PageRequest.of(0, pages));
-        } else if (numero != null && precioNoche != null) {
-            page = habitacionRepository.findByNumeroAndPrecioNoche(numero, precioNoche, PageRequest.of(0, pages));
-        } else if (tipoHabitacion != null && precioNoche != null) {
-            page = habitacionRepository.findByTipoHabitacionAndPrecioNoche(tipoHabitacion, precioNoche,
-                    PageRequest.of(0, pages));
-        } else if (numero != null) {
-            page = habitacionRepository.findByNumero(numero, PageRequest.of(0, pages));
-        } else if (tipoHabitacion != null) {
-            page = habitacionRepository.findByTipoHabitacion(tipoHabitacion, PageRequest.of(0, pages));
-        } else if (precioNoche != null) {
-            page = habitacionRepository.findByPrecioNoche(precioNoche, PageRequest.of(0, pages));
-        } else {
-            page = habitacionRepository.findAll(PageRequest.of(0, pages));
+    @GetMapping("/{id}/full")
+    public ResponseEntity<?> getHabitacionFull(@PathVariable(name = "id") int id) {
+        if (id <= 0  || Integer.valueOf(id) == null) {
+            throw new IllegalArgumentException("El ID debe ser un número entero positivo");
         }
-
-        List<Habitacion> habitaciones = page.getContent();
-        List<HabitacionDTO> habitacionDTO = convertToDtoHabitacionList(habitaciones);
-        if (habitacionDTO.size() > 0) {
-            return ResponseEntity.ok(habitacionDTO);
-        } else
+        Habitacion habitacion = habitacionRepository.findById(id).orElse(null);
+        if (habitacion == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "No se encontraron habitaciones por los parametros proporcionados");
-
+                    "No se encontró ninguna habitación con el ID proporcionado");
+        } else
+            return ResponseEntity.ok(habitacion);
     }
 
     @PutMapping("/{id}")
