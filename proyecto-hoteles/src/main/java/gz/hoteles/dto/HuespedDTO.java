@@ -14,5 +14,6 @@ public class HuespedDTO {
     private Date fechaCheckIn;
     private Date fechaCheckOut;
     private String nombreHotel;
+    private String habitacion;
 
 }
