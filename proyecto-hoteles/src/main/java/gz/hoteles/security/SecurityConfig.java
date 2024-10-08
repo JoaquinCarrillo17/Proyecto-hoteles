@@ -111,7 +111,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.DELETE, "/usuarios/{id}")
                 .hasRole("SUPER_ADMIN")
 
-                 .antMatchers("/hoteles", "/hoteles/**", "/habitaciones", "/habitaciones/**", "/huespedes", "/huespedes**"  /* "/roles", "/roles**",*/ /*"/usuarios", "/usuarios/**"*/).authenticated()
+                 .antMatchers("/hoteles", "/hoteles/**", "/habitaciones", "/habitaciones/**", "/huespedes", "/huespedes**"/*   /* "/roles", "/roles**",*/ /*"/usuarios", "/usuarios/**"*/).authenticated()
 
                 .anyRequest().authenticated() // Todas las demás rutas requieren autenticación
                 .and()

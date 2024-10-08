@@ -1,7 +1,9 @@
 package gz.hoteles.dto;
 
+import java.util.List;
 import java.util.Set;
 
+import gz.hoteles.entities.Huesped;
 import gz.hoteles.entities.ServiciosHabitacionEnum;
 import gz.hoteles.entities.TipoHabitacion;
 import lombok.Data;
@@ -16,5 +18,6 @@ public class HabitacionDTO {
     private String nombreHotel;
     private String idUsuario;
     private Set<ServiciosHabitacionEnum> servicios;
+    private List<Huesped> huespedes;
 
 }

@@ -160,29 +160,42 @@ public class HuespedController {
         int pageIndex = searchRequest.getPage().getPageIndex();
 
         Specification<Huesped> spec = Specification.where(null);
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+        // Usamos este formato para recibir la fecha en formato dd-MM-yyyy
+        SimpleDateFormat inputDateFormat = new SimpleDateFormat("dd-MM-yyyy");
+        // Este formato es para convertir la fecha al formato yyyy-MM-dd
+        SimpleDateFormat outputDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-        for (SearchCriteria criteria : searchCriteriaList) {
-            Date date;
-            if (criteria.getKey().equals("fechaCheckIn") || criteria.getKey().equals("fechaCheckOut")) {
-                try {
-                    date = dateFormat.parse(criteria.getValue());
-                    switch (criteria.getOperation()) {
-                        case "equals":
-                            spec = spec.or((root, query, cb) -> cb.equal(root.get(criteria.getKey()), date));
-                            break;
-                        default:
-                            throw new IllegalArgumentException(
-                                    "Operador de búsqueda no válido: " + criteria.getOperation());
-                    }
-                } catch (ParseException e) {
-                    //throw new IllegalArgumentException("Error al parsear la fecha: " + e.getMessage());
-                    System.out.println("Error al parsear la fecha: " + e.getMessage());
-                }
+        if (searchCriteriaList != null && !searchCriteriaList.isEmpty()) {
 
+            String value = searchCriteriaList.get(0).getValue(); // Obtenemos el valor del primer criterio de búsqueda
+            Date parsedDate = null;
+    
+            // Intentamos parsear el valor que viene en formato dd-MM-yyyy a una fecha válida
+            try {
+                parsedDate = inputDateFormat.parse(value);
+            } catch (ParseException e) {
+                parsedDate = null;  // Si no es una fecha válida, continuamos el flujo normal
+            }
+    
+            // Si el valor es una fecha válida, realizamos la consulta nativa
+            if (parsedDate != null) {
+                // Convertimos la fecha al formato yyyy-MM-dd
+                String formattedDate = outputDateFormat.format(parsedDate);
+                Pageable pageable = PageRequest.of(pageIndex, pageSize);
+                Page<Huesped> huespedesPage = huespedRepository.findHuespedesByDateWithPagination(formattedDate, pageable);
+    
+                // Convertimos los resultados a DTO
+                List<HuespedDTO> huespedDTOList = huespedesPage.getContent().stream()
+                        .map(HuespedController::convertToDtoHuesped)
+                        .collect(Collectors.toList());
                 
-            } 
-            
+                Page<HuespedDTO> huespedDTOPage = new PageImpl<>(huespedDTOList, PageRequest.of(pageIndex, pageSize), huespedesPage.getTotalElements());
+                
+                return ResponseEntity.ok(huespedDTOPage);
+            }
+        }
+
+        for (SearchCriteria criteria : searchCriteriaList) {            
             if (criteria.getKey().startsWith("habitacion.")) {
                 switch (criteria.getKey()) {
                     case "habitacion.numero":

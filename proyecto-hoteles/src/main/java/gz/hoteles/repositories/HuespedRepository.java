@@ -1,6 +1,7 @@
 package gz.hoteles.repositories;
 
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -163,5 +164,8 @@ public interface HuespedRepository extends JpaRepository<Huesped, Integer> {
                         "DATE(h.fechaCheckIn) = DATE(:fecha) OR " +
                         "DATE(h.fechaCheckOut) = DATE(:fecha)")
         Page<Huesped> findByQueryAndDate(String query, Date fecha, Pageable pageable);
+
+        @Query("SELECT h FROM Huesped h WHERE DATE(h.fechaCheckIn) = DATE(:fecha) OR DATE(h.fechaCheckOut) = DATE(:fecha)")
+        Page<Huesped> findHuespedesByDateWithPagination(@Param("fecha") String fecha, Pageable pageable);
 
 }
