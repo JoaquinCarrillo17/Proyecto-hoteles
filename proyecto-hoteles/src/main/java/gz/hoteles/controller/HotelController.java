@@ -264,6 +264,11 @@ public class HotelController {
         return ResponseEntity.ok().build();
     }
 
+    public HotelDTO getHotelByIdUsuario(int idUsuario) {
+        Hotel hotel = hotelRepository.findByIdUsuario(idUsuario);
+        return convertToDtoHotel(hotel);
+    }
+
     /* ====== MAPPER ====== */
 
     public static HotelDTO convertToDtoHotel(Hotel hotel) {

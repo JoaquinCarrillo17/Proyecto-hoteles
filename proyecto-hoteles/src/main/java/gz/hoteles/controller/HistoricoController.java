@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import gz.hoteles.dto.HotelDTO;
+import gz.hoteles.entities.Habitacion;
 import gz.hoteles.entities.Historico;
 import gz.hoteles.repositories.HabitacionRepository;
 import gz.hoteles.repositories.HistoricoRepository;
@@ -44,22 +45,22 @@ public class HistoricoController {
     @Autowired
     HuespedRepository huespedRepository;
 
-    @GetMapping()
-    public ResponseEntity<?> list() {
-        this.crearHistoricoSiNoExiste();
-        List<Historico> historicos = historicoRepository.findAll();
+    @GetMapping("/admin/{idUsuario}")
+    public ResponseEntity<?> list(@PathVariable(name = "idUsuario") int idUsuario) {
+        this.crearHistoricoSiNoExiste(idUsuario);
+        List<Historico> historicos = historicoRepository.findByIdUsuario(idUsuario);
         if (historicos.size() > 0) {
             return ResponseEntity.ok(historicos);
         } else
             throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No se ha encontrado ningún historico");
     }
 
-    public ResponseEntity<?> crearHistoricoSiNoExiste() {
+    private ResponseEntity<?> crearHistoricoSiNoExiste(int idUsuario) {
         // Obtener la fecha de hoy sin la parte de la hora
         LocalDate today = LocalDate.now();
 
         // Verificar si hay un historico para la fecha de hoy
-        Optional<Historico> historicoExistente = historicoRepository.findByFecha(today);
+        Optional<Historico> historicoExistente = historicoRepository.findByFechaAndIdUsuario(today, idUsuario);
 
         if (!historicoExistente.isPresent()) {
             // No hay un historico para hoy, así que crearemos uno nuevo
@@ -89,6 +90,7 @@ public class HistoricoController {
             nuevoHistorico.setHabitacionesDisponibles((int) habitacionesDisponibles);
             nuevoHistorico.setHabitacionesReservadas((int) habitacionesReservadas);
             nuevoHistorico.setHuespedesTotales((int) huespedesTotales);
+            nuevoHistorico.setIdUsuario(idUsuario); // Añadir el ID del usuario al historico
 
             // Guardar el nuevo historico en la base de datos
             historicoRepository.save(nuevoHistorico);
@@ -100,17 +102,61 @@ public class HistoricoController {
         }
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<?> get(@PathVariable(name = "id") int id) {
-        if (id <= 0  || Integer.valueOf(id) == null) {
-            throw new IllegalArgumentException("El ID debe ser un número entero positivo");
-        }
-        Historico historico = historicoRepository.findById(id).orElse(null);
+    @GetMapping("/{idUsuario}")
+    public ResponseEntity<?> getHistoricoDeHotel(@PathVariable(name = "idUsuario") int idUsuario) {
+        this.crearHistoricoDeHotelSiNoExiste(idUsuario);
+        List<Historico> historico = historicoRepository.findByIdUsuario(idUsuario);
         if (historico == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "No se encontró ningún historico con el ID proporcionado");
         } else
             return ResponseEntity.ok(historico);
+    }
+
+    private ResponseEntity<?> crearHistoricoDeHotelSiNoExiste(int idUsuario) {
+        // Obtener la fecha de hoy sin la parte de la hora
+        LocalDate today = LocalDate.now();
+
+        // Verificar si hay un historico para la fecha de hoy
+        Optional<Historico> historicoExistente = historicoRepository.findByFechaAndIdUsuario(today, idUsuario);
+
+        if (!historicoExistente.isPresent()) {
+            // No hay un historico para hoy, así que crearemos uno nuevo
+
+            // Calcular las habitaciones totales, disponibles y reservadas sumando las de todos los hoteles
+            int habitacionesTotales = 0;
+            int habitacionesDisponibles = 0;
+            int habitacionesReservadas = 0;
+            HotelDTO hotel = hotelController.getHotelByIdUsuario(idUsuario);
+            habitacionesTotales += hotel.getNumeroHabitaciones();
+            habitacionesDisponibles += hotel.getNumeroHabitacionesDisponibles();
+            habitacionesReservadas += hotel.getNumeroHabitacionesReservadas();
+
+            // Obtener la cantidad total de huéspedes y servicios
+            int huespedesTotales = 0; 
+            List<Habitacion> habitaciones = habitacionRepository.findByHotelIdUsuario(idUsuario);
+            for (Habitacion habitacion : habitaciones) {
+                huespedesTotales += habitacion.getHuespedes().size();
+            }
+
+            // Crear un nuevo objeto Historico
+            Historico nuevoHistorico = new Historico();
+            nuevoHistorico.setFecha(today);
+            nuevoHistorico.setHotelesTotales(1);
+            nuevoHistorico.setHabitacionesTotales(habitacionesTotales);
+            nuevoHistorico.setHabitacionesDisponibles(habitacionesDisponibles);
+            nuevoHistorico.setHabitacionesReservadas(habitacionesReservadas);
+            nuevoHistorico.setHuespedesTotales(huespedesTotales);
+            nuevoHistorico.setIdUsuario(idUsuario);
+
+            // Guardar el nuevo historico en la base de datos
+            historicoRepository.save(nuevoHistorico);
+
+            return ResponseEntity.ok(nuevoHistorico);
+        } else {
+            // Ya existe un historico para hoy
+            return ResponseEntity.ok("Ya existe un historico para hoy.");
+        }
     }
 
     @PostMapping

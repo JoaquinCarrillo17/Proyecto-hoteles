@@ -15,7 +15,6 @@ public class Historico {
 
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
-
     private int id;
     private int hotelesTotales;
     private int habitacionesTotales;
@@ -23,6 +22,7 @@ public class Historico {
     private int habitacionesReservadas;
     private int huespedesTotales;
     private LocalDate fecha;
+    private int idUsuario;
 
 
     

@@ -1,5 +1,7 @@
 package gz.hoteles.repositories;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -8,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import gz.hoteles.entities.Historico;
 import gz.hoteles.entities.Hotel;
 
 public interface HotelRepository extends JpaRepository<Hotel, Integer> {
@@ -124,5 +127,7 @@ public interface HotelRepository extends JpaRepository<Hotel, Integer> {
         Page<Hotel> findByNombreContainingIgnoreCaseOrDireccionContainingIgnoreCaseOrTelefonoContainingIgnoreCaseOrEmailContainingIgnoreCaseOrSitioWebContainingIgnoreCase(
                         String nombre, String direccion, String telefono, String email, String sitioWeb,
                         Pageable pageable); // Para el magic filter
+
+        Hotel findByIdUsuario(int id);
 
 }
