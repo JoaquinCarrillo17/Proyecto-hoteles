@@ -1,8 +1,12 @@
 package gz.hoteles.controller;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,10 +18,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import gz.hoteles.entities.Habitacion;
-import gz.hoteles.entities.Hotel;
 import gz.hoteles.entities.Ubicacion;
 import gz.hoteles.servicio.ServicioUbicacion;
+import gz.hoteles.support.SearchRequest;
 
 @RestController
 @RequestMapping("/ubicaciones")
@@ -84,6 +87,22 @@ public class UbicacionController {
         } else {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @PostMapping("/dynamicFilterAnd")
+    public ResponseEntity<?> getFilteredByDynamicSearchAnd(@RequestBody SearchRequest searchRequest) {
+        Page<Ubicacion> page = ubicacionService.filtrarUbicaciones(searchRequest);
+
+        /*List<UbicacionDTO> ubicacionDTOList = page.getContent().stream()
+                .map(UbicacionController::convertToDtoUbicacion)
+                .collect(Collectors.toList());*/
+
+        Page<Ubicacion> ubicacionDTOPage = new PageImpl<>(page.getContent(), PageRequest.of(
+                searchRequest.getPage().getPageIndex(),
+                searchRequest.getPage().getPageSize()),
+                page.getTotalElements());
+
+        return ResponseEntity.ok(ubicacionDTOPage);
     }
 }
 

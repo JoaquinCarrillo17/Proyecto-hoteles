@@ -5,11 +5,15 @@ import java.util.Set;
 
 import javax.persistence.*;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 
 @Entity
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Ubicacion {
 
     @Id
@@ -20,14 +24,5 @@ public class Ubicacion {
     private String pais;
     private String continente;
 
-    public Ubicacion(String ciudad, String pais, String continente) {
-        this.ciudad = ciudad;
-        this.pais = pais;
-        this.continente = continente;
-    }
-
-    public Ubicacion() {
-
-    }
 }
 
