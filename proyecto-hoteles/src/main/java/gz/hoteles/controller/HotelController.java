@@ -86,8 +86,11 @@ public class HotelController {
                         spec = spec.and((root, query, cb) -> cb.equal(
                                 root.get("ubicacion").get(criteria.getKey().split("\\.")[1]), criteria.getValue()));
                     } else if (criteria.getKey().equals("servicios")) {
-                        spec = spec.and((root, query, cb) -> cb
-                                .isMember(ServiciosHotelEnum.valueOf(criteria.getValue()), root.get("servicios")));
+                        String[] serviciosArray = criteria.getValue().split(";");
+                        for (String servicio : serviciosArray) {
+                            ServiciosHotelEnum servicioEnum = ServiciosHotelEnum.valueOf(servicio);
+                            spec = spec.and((root, query, cb) -> cb.isMember(servicioEnum, root.get("servicios")));
+                        }
                     } else {
                         spec = spec
                                 .and((root, query, cb) -> cb.equal(root.get(criteria.getKey()), criteria.getValue()));
@@ -99,8 +102,11 @@ public class HotelController {
                                 root.get("ubicacion").get(criteria.getKey().split("\\.")[1]),
                                 "%" + criteria.getValue() + "%"));
                     } else if (criteria.getKey().equals("servicios")) {
-                        spec = spec.and((root, query, cb) -> cb
-                                .isMember(ServiciosHotelEnum.valueOf(criteria.getValue()), root.get("servicios")));
+                        String[] serviciosArray = criteria.getValue().split(";");
+                        for (String servicio : serviciosArray) {
+                            ServiciosHotelEnum servicioEnum = ServiciosHotelEnum.valueOf(servicio);
+                            spec = spec.and((root, query, cb) -> cb.isMember(servicioEnum, root.get("servicios")));
+                        }
                     } else {
                         spec = spec.and((root, query, cb) -> cb.like(root.get(criteria.getKey()),
                                 "%" + criteria.getValue() + "%"));

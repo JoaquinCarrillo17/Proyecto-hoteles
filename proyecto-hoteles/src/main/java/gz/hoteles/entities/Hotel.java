@@ -36,6 +36,7 @@ public class Hotel {
     private String email;
     private String sitioWeb;
     private int idUsuario;
+    private String foto;
     
     //@JsonIgnore
     @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, orphanRemoval = true)

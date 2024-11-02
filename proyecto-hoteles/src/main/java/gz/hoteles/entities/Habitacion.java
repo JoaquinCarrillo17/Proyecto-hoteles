@@ -32,6 +32,7 @@ public class Habitacion {
     @Enumerated(EnumType.STRING)
     private TipoHabitacion tipoHabitacion;
     private float precioNoche;
+    private String foto;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)

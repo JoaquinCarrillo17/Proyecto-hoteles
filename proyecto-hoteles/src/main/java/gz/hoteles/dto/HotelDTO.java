@@ -15,6 +15,7 @@ public class HotelDTO {
     private String email;
     private String sitioWeb;
     private String idUsuario;
+    private String foto;
     private Ubicacion ubicacion;
     private Set<ServiciosHotelEnum> servicios;
     private int numeroHabitaciones;

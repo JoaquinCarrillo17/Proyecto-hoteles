@@ -17,6 +17,7 @@ public class HabitacionDTO {
     private float precioNoche;
     private String nombreHotel;
     private String idUsuario;
+    private String foto;
     private Set<ServiciosHabitacionEnum> servicios;
     private List<Huesped> huespedes;
 

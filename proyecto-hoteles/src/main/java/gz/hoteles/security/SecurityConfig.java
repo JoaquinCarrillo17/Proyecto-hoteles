@@ -33,6 +33,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
                 .antMatchers("/auth/signUp", "/auth/login", "/auth", "/auth/**", "/permisos", "/roles", "/roles/**",
                         "/usuarios", "/usuarios/**", "/ubicaciones", "/ubicaciones/**", "historicos", "historicos/**",
+                        "/hoteles/dynamicFilterAnd",
+                        "/habitaciones/dynamicFilterAnd",
                         "/swagger-ui.html",
                         "/swagger-ui/**",
                         "/v3/api-docs/**")

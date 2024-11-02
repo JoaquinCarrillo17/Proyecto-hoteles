@@ -127,7 +127,12 @@ public class HistoricoController {
             int habitacionesTotales = 0;
             int habitacionesDisponibles = 0;
             int habitacionesReservadas = 0;
-            HotelDTO hotel = hotelController.getHotelByIdUsuario(idUsuario);
+            HotelDTO hotel;
+            try {
+                hotel = hotelController.getHotelByIdUsuario(idUsuario);
+            } catch (Exception e) {
+                return ResponseEntity.ok().build();
+            }
             habitacionesTotales += hotel.getNumeroHabitaciones();
             habitacionesDisponibles += hotel.getNumeroHabitacionesDisponibles();
             habitacionesReservadas += hotel.getNumeroHabitacionesReservadas();

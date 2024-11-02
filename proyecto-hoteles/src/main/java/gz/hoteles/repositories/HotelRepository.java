@@ -130,4 +130,6 @@ public interface HotelRepository extends JpaRepository<Hotel, Integer> {
 
         Hotel findByIdUsuario(int id);
 
+        boolean existsByFoto(String foto);
+
 }

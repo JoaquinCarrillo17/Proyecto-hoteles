@@ -1,5 +1,10 @@
 package gz.hoteles.servicio;
 
+import java.util.List;
+import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -25,11 +30,26 @@ public class ServicioHoteles implements IServicioHoteles {
     @Autowired
     HotelRepository hotelRepository;
 
+    private List<String> hotelPhotos = IntStream.rangeClosed(1, 20)
+            .mapToObj(i -> "hotel-" + i + ".jpg")
+            .collect(Collectors.toList());
+
+    public synchronized String getAvailablePhoto() {
+        // Encuentra la primera foto no asignada en la base de datos
+        for (String photo : hotelPhotos) {
+            if (!hotelRepository.existsByFoto(photo)) { // Método en el repositorio que verifica la existencia
+                return photo;
+            }
+        }
+        throw new RuntimeException("No hay más fotos disponibles");
+    }
+
 
     /* ====== FUNCIONALIDAD HOTEL ====== */
 
     @Override
     public Hotel crearHotel(Hotel hotel) {
+        hotel.setFoto(getAvailablePhoto());
         hotel.updateHabitaciones(hotel.getHabitaciones());
         Hotel h = hotelRepository.save(hotel);
         for (Habitacion habitacion : h.getHabitaciones()) {
@@ -64,6 +84,12 @@ public class ServicioHoteles implements IServicioHoteles {
 
     @Override
     public Habitacion crearHabitacion(Habitacion habitacion) {
+        // Generar un número aleatorio entre 1 y 5 para seleccionar una foto
+        Random random = new Random();
+        int fotoNumero = random.nextInt(5) + 1; // Genera un número entre 1 y 5
+
+        // Asignar la foto aleatoria a la habitación
+        habitacion.setFoto("habitacion-" + fotoNumero + ".jpg");
         Habitacion h = habitacionRepository.save(habitacion);
         for (Huesped huesped : habitacion.getHuespedes()) {
             huesped.setHabitacion(h);

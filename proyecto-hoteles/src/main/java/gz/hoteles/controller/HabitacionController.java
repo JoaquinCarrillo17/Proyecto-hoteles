@@ -194,6 +194,95 @@ public class HabitacionController {
         return ResponseEntity.ok(habitacionDTOPage);
     }
 
+    @PostMapping("/dynamicFilterAnd")
+    public ResponseEntity<?> getFilteredByDynamicSearchAnd(@RequestBody SearchRequest searchRequest) {
+
+        List<SearchCriteria> searchCriteriaList = searchRequest.getListSearchCriteria();
+        ListOrderCriteria orderCriteriaList = searchRequest.getListOrderCriteria();
+        int pageSize = searchRequest.getPage().getPageSize();
+        int pageIndex = searchRequest.getPage().getPageIndex();
+
+        Specification<Habitacion> spec = Specification.where(null);
+
+        for (SearchCriteria criteria : searchCriteriaList) {
+            switch (criteria.getOperation()) {
+                case "equals":
+                    if (criteria.getKey().equals("hotel.idUsuario")) {
+                        // Filtrar por hotel.idUsuario
+                        spec = spec.and(
+                                (root, query, cb) -> cb.equal(root.get("hotel").get("idUsuario"), criteria.getValue()));
+                    } else if (criteria.getKey().equals("tipoHabitacion")) {
+                        // Filtrar por hotel.idUsuario
+                        spec = spec.and(
+                                (root, query, cb) -> cb.equal(root.get(criteria.getKey()),
+                                        TipoHabitacion.valueOf(criteria.getValue())));
+                    } else if (criteria.getKey().equals("hotel.id")) {
+                        // Filtrar por hotel.id
+                        spec = spec.and(
+                                (root, query, cb) -> cb.equal(root.get("hotel").get("id"), criteria.getValue()));
+                    } else if (criteria.getKey().equals("servicios")) {
+                        String[] serviciosArray = criteria.getValue().split(";");
+                        for (String servicio : serviciosArray) {
+                            ServiciosHabitacionEnum servicioEnum = ServiciosHabitacionEnum.valueOf(servicio);
+                            spec = spec.and((root, query, cb) -> cb.isMember(servicioEnum, root.get("servicios")));
+                        }
+                    } else {
+                        spec = spec
+                                .and((root, query, cb) -> cb.equal(root.get(criteria.getKey()), criteria.getValue()));
+                    }
+                    break;
+                case "contains":
+                    if (criteria.getKey().equals("hotel.nombre")) {
+                        // Filtrar por hotel.nombre
+                        spec = spec.and(
+                                (root, query, cb) -> cb.like(root.get("hotel").get("nombre"),
+                                        "%" + criteria.getValue() + "%"));
+                    } else if (criteria.getKey().equals("servicios")) {
+                        String[] serviciosArray = criteria.getValue().split(";");
+                        for (String servicio : serviciosArray) {
+                            ServiciosHabitacionEnum servicioEnum = ServiciosHabitacionEnum.valueOf(servicio);
+                            spec = spec.and((root, query, cb) -> cb.isMember(servicioEnum, root.get("servicios")));
+                        }
+                    } else {
+                        spec = spec.and(
+                                (root, query, cb) -> cb.like(root.get(criteria.getKey()),
+                                        "%" + criteria.getValue() + "%"));
+                    }
+                    break;
+                case "greaterThanOrEqual":
+                    if (criteria.getKey().equals("precioNoche")) {
+                        spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("precioNoche"), criteria.getValue()));
+                    }
+                    break;
+                case "lessThanOrEqual":
+                    if (criteria.getKey().equals("precioNoche")) {
+                        spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("precioNoche"), criteria.getValue()));
+                    }
+                    break;
+                // Otras operaciones...
+                default:
+                    throw new IllegalArgumentException("Operador de búsqueda no válido: " + criteria.getOperation());
+            }
+        }
+
+        String sortByField = orderCriteriaList.getSortBy();
+        String sortDirection = orderCriteriaList.getValueSortOrder().equalsIgnoreCase("asc") ? "ASC" : "DESC";
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortByField);
+
+        Page<Habitacion> page = habitacionRepository.findAll(spec, PageRequest.of(pageIndex, pageSize, sort));
+
+        List<HabitacionDTO> habitacionDTOList = page.getContent().stream()
+                .map(HabitacionController::convertToDtoHabitacion)
+                .collect(Collectors.toList());
+
+        Page<HabitacionDTO> habitacionDTOPage = new PageImpl<>(habitacionDTOList,
+                PageRequest.of(pageIndex, pageSize, sort),
+                page.getTotalElements());
+
+        return ResponseEntity.ok(habitacionDTOPage);
+    }
+
+
     @GetMapping("/{id}/full")
     public ResponseEntity<?> getHabitacionFull(@PathVariable(name = "id") int id) {
         if (id <= 0  || Integer.valueOf(id) == null) {
