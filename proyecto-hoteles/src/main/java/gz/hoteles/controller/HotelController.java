@@ -28,53 +28,26 @@ import gz.hoteles.entities.Habitacion;
 import gz.hoteles.entities.Hotel;
 import gz.hoteles.entities.ServiciosHotelEnum;
 import gz.hoteles.repositories.HotelRepository;
-import gz.hoteles.servicio.IServicioHoteles;
-import gz.hoteles.support.ListOrderCriteria;
+import gz.hoteles.servicio.impl.ServicioHoteles;
+import gz.hoteles.support.OrderCriteria;
 import gz.hoteles.support.SearchCriteria;
 import gz.hoteles.support.SearchRequest;
 import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
 @RequestMapping("/hoteles")
-public class HotelController {
+public class HotelController extends ControllerDto<HotelDTO>{
 
     @Autowired
     HotelRepository hotelRepository;
     @Autowired
-    IServicioHoteles servicioHoteles;
+    ServicioHoteles servicioHoteles;
 
-    private static final ModelMapper modelMapper = new ModelMapper();
-
-    @GetMapping()
-    public ResponseEntity<?> list() {
-        List<Hotel> hoteles = hotelRepository.findAll();
-        List<HotelDTO> hotelesDTO = convertToDtoHotelList(hoteles);
-        if (hotelesDTO.size() > 0) {
-            return ResponseEntity.ok(hotelesDTO);
-        } else
-            throw new ResponseStatusException(HttpStatus.NO_CONTENT);
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<?> get(@PathVariable(name = "id") int id) {
-        if (id <= 0 || Integer.valueOf(id) == null) {
-            throw new IllegalArgumentException("El ID debe ser un número entero positivo");
-        }
-        Hotel hotel = hotelRepository.findById(id).orElse(null);
-        if (hotel == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "No se encontró ningún hotel por el ID proporcionado");
-        } else {
-            HotelDTO hotelDTO = convertToDtoHotel(hotel);
-            return ResponseEntity.ok(hotelDTO);
-        }
-    }
-
-    @PostMapping("/dynamicFilterAnd")
+   /*  @PostMapping("/dynamicFilterAnd")
     public ResponseEntity<?> getFilteredByDynamicSearchAnd(@RequestBody SearchRequest searchRequest) {
 
         List<SearchCriteria> searchCriteriaList = searchRequest.getListSearchCriteria();
-        ListOrderCriteria orderCriteriaList = searchRequest.getListOrderCriteria();
+        OrderCriteria orderCriteriaList = searchRequest.getListOrderCriteria();
         int pageSize = searchRequest.getPage().getPageSize();
         int pageIndex = searchRequest.getPage().getPageIndex();
 
@@ -138,7 +111,7 @@ public class HotelController {
     public ResponseEntity<?> getFilteredByDynamicSearchOr(@RequestBody SearchRequest searchRequest) {
 
         List<SearchCriteria> searchCriteriaList = searchRequest.getListSearchCriteria();
-        ListOrderCriteria orderCriteriaList = searchRequest.getListOrderCriteria();
+        OrderCriteria orderCriteriaList = searchRequest.getListOrderCriteria();
         int pageSize = searchRequest.getPage().getPageSize();
         int pageIndex = searchRequest.getPage().getPageIndex();
 
@@ -200,95 +173,7 @@ public class HotelController {
                 page.getTotalElements());
 
         return ResponseEntity.ok(hotelDTOPage);
-    }
+    }*/
 
-    @GetMapping("/{id}/full")
-    public ResponseEntity<?> getHotelFull(@PathVariable(name = "id") int id) {
-        if (id <= 0  || Integer.valueOf(id) == null) {
-            throw new IllegalArgumentException("El ID debe ser un número entero positivo");
-        }
-        Hotel hotel = hotelRepository.findById(id).orElse(null);
-        if (hotel == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "No se encontró ningún hotel por el ID proporcionado");
-        } else {
-            return ResponseEntity.ok(hotel);
-        }
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<?> put(@PathVariable(name = "id") int id, @RequestBody Hotel input) {
-        if (id <= 0 || Integer.valueOf(id) == null) {
-            throw new IllegalArgumentException("El ID debe ser un número entero positivo");
-        }
-        Hotel find = hotelRepository.findById(id).orElse(null);
-        if (find != null) {
-            find.setDireccion(input.getDireccion());
-            find.setEmail(input.getEmail());
-            find.setNombre(input.getNombre());
-            find.setTelefono(input.getTelefono());
-            find.setSitioWeb(input.getSitioWeb());
-            find.setServicios(input.getServicios());
-        } else
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "No se encontró ningún hotel con el ID proporcionado");
-        Hotel save = hotelRepository.save(find);
-        return ResponseEntity.ok(convertToDtoHotel(save));
-    }
-
-    @PostMapping
-    public ResponseEntity<?> post(@RequestBody Hotel input) { // Los campos nombre y direccion seran obligatorios
-        if (input.getNombre() == null || input.getNombre().isEmpty() ||
-                input.getDireccion() == null || input.getDireccion().isEmpty()) {
-            throw new IllegalArgumentException("Los campos 'nombre' y 'direccion' son obligatorios");
-        }
-        Hotel save = servicioHoteles.crearHotel(input);
-        return ResponseEntity.ok(convertToDtoHotel(save));
-    }
-
-    @Operation(summary = "Añadir habitación al hotel")
-    @PostMapping("/{id}/habitaciones")
-    public ResponseEntity<?> anadirHabitacion(@PathVariable(name = "id") int id, @RequestBody Habitacion input) {
-        if (id <= 0 || Integer.valueOf(id) == null) {
-            throw new IllegalArgumentException("El ID debe ser un número entero positivo");
-        }
-        Hotel h = servicioHoteles.anadirHabitacion(id, input); // Comprobacion NOT_FOUND en la funcion
-        return ResponseEntity.ok(convertToDtoHotel(h));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable(name = "id") int id) {
-        if (id <= 0 || Integer.valueOf(id) == null) {
-            throw new IllegalArgumentException("El ID debe ser un número entero positivo");
-        }
-        Hotel findById = hotelRepository.findById(id).orElse(null);
-        if (findById != null) {
-            hotelRepository.delete(findById);
-        } else
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "No se encontró ningún hotel por el ID proporcionado");
-        return ResponseEntity.ok().build();
-    }
-
-    public HotelDTO getHotelByIdUsuario(int idUsuario) {
-        Hotel hotel = hotelRepository.findByIdUsuario(idUsuario);
-        return convertToDtoHotel(hotel);
-    }
-
-    /* ====== MAPPER ====== */
-
-    public static HotelDTO convertToDtoHotel(Hotel hotel) {
-        if (hotel == null) {
-            throw new IllegalArgumentException("El hotel no puede ser nulo");
-        }
-
-        return modelMapper.map(hotel, HotelDTO.class);
-    }
-
-    public static List<HotelDTO> convertToDtoHotelList(List<Hotel> hoteles) {
-        return hoteles.stream()
-                .map(hotel -> convertToDtoHotel(hotel))
-                .collect(Collectors.toList());
-    }
 
 }

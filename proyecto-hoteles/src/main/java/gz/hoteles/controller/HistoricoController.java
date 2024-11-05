@@ -45,7 +45,7 @@ public class HistoricoController {
     @Autowired
     HuespedRepository huespedRepository;
 
-    @GetMapping("/admin/{idUsuario}")
+    /*@GetMapping("/admin/{idUsuario}")
     public ResponseEntity<?> list(@PathVariable(name = "idUsuario") int idUsuario) {
         this.crearHistoricoSiNoExiste(idUsuario);
         List<Historico> historicos = historicoRepository.findByIdUsuario(idUsuario);
@@ -141,7 +141,8 @@ public class HistoricoController {
             int huespedesTotales = 0; 
             List<Habitacion> habitaciones = habitacionRepository.findByHotelIdUsuario(idUsuario);
             for (Habitacion habitacion : habitaciones) {
-                huespedesTotales += habitacion.getHuespedes().size();
+                // ! MOMENTANEO
+               // huespedesTotales += habitacion.getHuespedes().size(); 
             }
 
             // Crear un nuevo objeto Historico
@@ -162,7 +163,7 @@ public class HistoricoController {
             // Ya existe un historico para hoy
             return ResponseEntity.ok("Ya existe un historico para hoy.");
         }
-    }
+    }*/
 
     @PostMapping
     public ResponseEntity<?> post(@RequestBody Historico input) {

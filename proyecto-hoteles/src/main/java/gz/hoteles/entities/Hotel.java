@@ -22,14 +22,20 @@ import javax.persistence.OneToMany;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import gz.hoteles.dto.DtoGeneral;
+import gz.hoteles.dto.HotelDTO;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
-public class Hotel {
+public class Hotel implements EntityGeneral {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
-    private int id;
+    private Long id;
     private String nombre;
     private String direccion;
     private String telefono;
@@ -38,7 +44,6 @@ public class Hotel {
     private int idUsuario;
     private String foto;
     
-    //@JsonIgnore
     @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Habitacion> habitaciones = new HashSet<Habitacion>();
 
@@ -50,54 +55,20 @@ public class Hotel {
     @JoinColumn(name = "ubicacion_fk")
     private Ubicacion ubicacion;
 
-    @JsonIgnore
-    private int numeroHabitaciones = habitaciones.size();
-    @JsonIgnore
-    private int numeroHabitacionesDisponibles;
-    @JsonIgnore
-    private int numeroHabitacionesReservadas;
-
-	/*public void addServicio(Servicio servicio) {
-		this.servicios.add(servicio);
-	}
-*/
-    public void addHabitacion(Habitacion habitacion) {
-        this.habitaciones.add(habitacion);
-        updateHabitaciones(Collections.singletonList(habitacion));
-    }
-
-    public void updateHabitaciones(Collection<Habitacion> habitaciones) {
-        for (Habitacion habitacion : habitaciones) {
-            this.numeroHabitaciones++;
-            if (habitacion.getHuespedes().size() > 0) {
-                this.numeroHabitacionesReservadas++;
-            } else this.numeroHabitacionesDisponibles++;
-        }
-    }
-
-    public Hotel() {
-        
-    }
-
-    public Hotel(int id, String nombre, String direccion, String telefono, String email, String sitioWeb) {
-        this.id = id;
-        this.nombre = nombre;
-        this.direccion = direccion;
-        this.telefono = telefono;
-        this.email = email;
-        this.sitioWeb = sitioWeb;
-    }
 
     @Override
-    public String toString() {
-        return "Hotel{" +
-                "id=" + id +
-                ", nombre='" + nombre + '\'' +
-                ", direccion='" + direccion + '\'' +
-                ", telefono='" + telefono + '\'' +
-                ", email='" + email + '\'' +
-                ", sitioWeb='" + sitioWeb + '\'' +
-                '}';
+    public DtoGeneral getDto() {
+        HotelDTO dto = new HotelDTO();
+        dto.setId(id);
+        dto.setNombre(nombre);
+        dto.setDireccion(direccion);
+        dto.setTelefono(telefono);
+        dto.setEmail(email);
+        dto.setSitioWeb(sitioWeb);
+        dto.setFoto(foto);
+        dto.setServicios(servicios);
+        return dto;
     }
-    
+
+        
 }

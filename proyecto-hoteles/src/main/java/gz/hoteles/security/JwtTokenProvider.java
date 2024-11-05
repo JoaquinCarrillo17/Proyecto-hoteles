@@ -24,7 +24,7 @@ public class JwtTokenProvider {
 
     public String createToken(Usuario usuario) {
         Date now = new Date();
-        Date validity = new Date(now.getTime() + 120000); // 2 mins
+        Date validity = new Date(now.getTime() + 1200000); // ! 2 mins, ahora mismo esta con un cero de mas
 
         Map<String, Object> claims = crearClaims(usuario);
 

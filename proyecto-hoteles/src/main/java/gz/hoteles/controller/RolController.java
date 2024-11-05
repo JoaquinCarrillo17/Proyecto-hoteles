@@ -7,7 +7,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import gz.hoteles.entities.Rol;
 import gz.hoteles.repositories.RolRepository;
-import gz.hoteles.servicio.IServicioRoles;
+import gz.hoteles.servicio.impl.ServicioRoles;
 import io.swagger.v3.oas.annotations.Operation;
 
 import java.util.HashMap;
@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 public class RolController {
 
     @Autowired
-    IServicioRoles servicioRoles;
+    ServicioRoles servicioRoles;
 
     @Autowired
     RolRepository rolesRepository;

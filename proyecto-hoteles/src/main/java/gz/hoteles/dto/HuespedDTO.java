@@ -1,19 +1,27 @@
 package gz.hoteles.dto;
 
-import java.util.Date;
 
+import gz.hoteles.entities.EntityGeneral;
+import gz.hoteles.entities.Huesped;
 import lombok.Data;
 
 @Data
-public class HuespedDTO {
+public class HuespedDTO implements DtoGeneral {
     
-    private int id;
+    private Long id;
     private String nombreCompleto;
     private String dni;
     private String email;
-    private Date fechaCheckIn;
-    private Date fechaCheckOut;
-    private String nombreHotel;
-    private String habitacion;
+
+    @Override
+    public EntityGeneral getEntity() {
+        Huesped entity = new Huesped();
+        
+        entity.setId(id);
+        entity.setNombreCompleto(nombreCompleto);
+        entity.setDni(dni);
+        entity.setEmail(email);
+        return entity;
+    }
 
 }

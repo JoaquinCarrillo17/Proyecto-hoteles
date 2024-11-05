@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 public class SearchRequest {
-    private ListOrderCriteria listOrderCriteria;
+    private OrderCriteria listOrderCriteria;
     private List<SearchCriteria> listSearchCriteria;
-    private Page page;
+    private PageDto page;
 }

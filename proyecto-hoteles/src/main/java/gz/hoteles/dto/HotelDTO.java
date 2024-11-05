@@ -2,13 +2,14 @@ package gz.hoteles.dto;
 
 import java.util.Set;
 
+import gz.hoteles.entities.EntityGeneral;
+import gz.hoteles.entities.Hotel;
 import gz.hoteles.entities.ServiciosHotelEnum;
-import gz.hoteles.entities.Ubicacion;
 import lombok.Data;
 
 @Data
-public class HotelDTO {
-    private int id;
+public class HotelDTO implements DtoGeneral {
+    private Long id;
     private String nombre;
     private String direccion;
     private String telefono;
@@ -16,10 +17,24 @@ public class HotelDTO {
     private String sitioWeb;
     private String idUsuario;
     private String foto;
-    private Ubicacion ubicacion;
+    private UbicacionDto ubicacion;
     private Set<ServiciosHotelEnum> servicios;
     private int numeroHabitaciones;
     private int numeroHabitacionesDisponibles;
     private int numeroHabitacionesReservadas;
+    
+    @Override
+    public EntityGeneral getEntity() {
+        Hotel entity = new Hotel();
+        entity.setId(id);
+        entity.setNombre(nombre);
+        entity.setDireccion(direccion);
+        entity.setTelefono(telefono);
+        entity.setEmail(email);
+        entity.setSitioWeb(sitioWeb);
+        entity.setFoto(foto);
+        entity.setServicios(servicios);
+        return entity;
+    }
 
 }

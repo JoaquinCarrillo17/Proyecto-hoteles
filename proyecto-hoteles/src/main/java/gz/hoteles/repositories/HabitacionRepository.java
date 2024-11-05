@@ -7,13 +7,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import gz.hoteles.entities.Habitacion;
 import gz.hoteles.entities.TipoHabitacion;
 
-public interface HabitacionRepository extends JpaRepository<Habitacion, Integer> {
+public interface HabitacionRepository extends JpaRepository<Habitacion, Long> , JpaSpecificationExecutor<Habitacion>{
 
         @Query("SELECT h FROM Habitacion h WHERE h.numero = :numero")
         Page<Habitacion> getHabitacionesByNumero(String numero, Pageable pageable);

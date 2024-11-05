@@ -27,7 +27,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import gz.hoteles.entities.Usuario;
 import gz.hoteles.repositories.UsuarioRepository;
-import gz.hoteles.servicio.IServicioUsuarios;
+import gz.hoteles.servicio.impl.ServicioUsuarios;
 import io.swagger.v3.oas.annotations.Operation;
 
 // ? Controlador hecho de cara a gestionar el perfil del usuario en el front 
@@ -40,7 +40,7 @@ public class UsuarioController {
     UsuarioRepository usuariosRepository;
 
     @Autowired
-    IServicioUsuarios servicioUsuarios;
+    ServicioUsuarios servicioUsuarios;
 
     @GetMapping()
     public ResponseEntity<?> list() {

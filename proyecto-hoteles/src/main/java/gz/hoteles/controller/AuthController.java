@@ -10,8 +10,7 @@ import org.springframework.web.server.ResponseStatusException;
 import gz.hoteles.entities.Usuario;
 import gz.hoteles.repositories.UsuarioRepository;
 import gz.hoteles.security.JwtTokenProvider;
-import gz.hoteles.servicio.IServicioUsuarios;
-
+import gz.hoteles.servicio.impl.ServicioUsuarios;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,7 +24,7 @@ public class AuthController {
     UsuarioRepository usuariosRepository;
 
     @Autowired
-    IServicioUsuarios servicioUsuarios;
+    ServicioUsuarios servicioUsuarios;
 
     @Autowired
     JwtTokenProvider jwtTokenProvider;
