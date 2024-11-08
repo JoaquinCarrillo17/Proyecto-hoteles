@@ -35,6 +35,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         "/usuarios", "/usuarios/**", "/ubicaciones", "/ubicaciones/**", "historicos", "historicos/**",
                         "/hoteles/dynamicFilterAnd",
                         "/habitaciones/dynamicFilterAnd",
+                        "/reservas",
+                        "/reservas/*",
                         "/swagger-ui.html",
                         "/swagger-ui/**",
                         "/v3/api-docs/**")

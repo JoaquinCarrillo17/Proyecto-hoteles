@@ -19,12 +19,9 @@ import gz.hoteles.support.SearchRequest;
 @RequestMapping("/ubicaciones")
 public class UbicacionController extends ControllerDto<UbicacionDto>{
 
-    @Autowired
-    private ServicioUbicacion ubicacionService;
-
     @PostMapping("/dynamicFilterAnd")
     public ResponseEntity<?> getFilteredByDynamicSearchAnd(@RequestBody SearchRequest searchRequest) {
-        Page<Ubicacion> page = ubicacionService.filtrarUbicaciones(searchRequest);
+        Page<Ubicacion> page = ((ServicioUbicacion) this.dtoService).filtrarUbicaciones(searchRequest);
 
         Page<Ubicacion> ubicacionDTOPage = new PageImpl<>(page.getContent(), PageRequest.of(
                 searchRequest.getPage().getPageIndex(),

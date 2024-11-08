@@ -43,9 +43,6 @@ public class Hotel implements EntityGeneral {
     private String sitioWeb;
     private int idUsuario;
     private String foto;
-    
-    @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Habitacion> habitaciones = new HashSet<Habitacion>();
 
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)

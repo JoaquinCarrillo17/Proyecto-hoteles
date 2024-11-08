@@ -72,4 +72,6 @@ public interface HabitacionRepository extends JpaRepository<Habitacion, Long> , 
 
         List<Habitacion> findByHotelIdUsuario(int idUsuario);
 
+        int countByHotelId(Long id);
+
 }
