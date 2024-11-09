@@ -15,7 +15,7 @@ public class HotelDTO implements DtoGeneral {
     private String telefono;
     private String email;
     private String sitioWeb;
-    private String idUsuario;
+    private Integer idUsuario;
     private String foto;
     private UbicacionDto ubicacion;
     private Set<ServiciosHotelEnum> servicios;
@@ -30,6 +30,7 @@ public class HotelDTO implements DtoGeneral {
         entity.setNombre(nombre);
         entity.setDireccion(direccion);
         entity.setTelefono(telefono);
+        entity.setIdUsuario(idUsuario);
         entity.setEmail(email);
         entity.setSitioWeb(sitioWeb);
         entity.setFoto(foto);

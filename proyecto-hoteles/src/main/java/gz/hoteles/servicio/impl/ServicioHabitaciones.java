@@ -1,6 +1,7 @@
 package gz.hoteles.servicio.impl;
 
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,15 +31,23 @@ public class ServicioHabitaciones extends DtoServiceImpl<HabitacionDTO, Habitaci
     HotelRepository hotelRepository;
 
     @Autowired
+    ServicioHoteles hotelService;
+
+    @Autowired
     HabitacionRepository habitacionRepository;
+
+    private String asignarFotoAleatoria() {
+        Random random = new Random();
+        int fotoIndex = random.nextInt(5) + 1; // Genera un número entre 1 y 5
+        return "habitacion-" + fotoIndex + ".jpg";
+    }
 
     @Override
     protected HabitacionDTO parseDto(Habitacion entity) {
         HabitacionDTO dto = (HabitacionDTO) entity.getDto();
 
         if (entity.getHotel() != null) {
-            dto.setNombreHotel(entity.getHotel().getNombre());
-            dto.setIdUsuario(entity.getHotel().getIdUsuario());
+            dto.setHotel(this.hotelService.parseDto(entity.getHotel()));
         }
 
         return dto;
@@ -47,12 +56,12 @@ public class ServicioHabitaciones extends DtoServiceImpl<HabitacionDTO, Habitaci
     @Override
     protected Habitacion parseEntity(HabitacionDTO dto) throws Exception {
         Habitacion entity = (Habitacion) dto.getEntity();
-        if (dto.getIdUsuario() != null) {
-            Hotel hotel = hotelRepository.findByIdUsuario(dto.getIdUsuario());
-            if (hotel!= null) {
-                entity.setHotel(hotel);
-            } 
+
+        if (dto.getHotel() != null) {
+            entity.setHotel(this.hotelService.parseEntity(dto.getHotel()));
         }
+
+        entity.setFoto(this.asignarFotoAleatoria());
         return entity;
     }
 
@@ -76,6 +85,9 @@ public class ServicioHabitaciones extends DtoServiceImpl<HabitacionDTO, Habitaci
                         // Filtrar por servicios de la habitación
                         spec = spec.or((root, query, cb) -> cb
                                 .isMember(ServiciosHabitacionEnum.valueOf(criteria.getValue()), root.get("servicios")));
+                    } else if (criteria.getKey().equals("tipoHabitacion")) {
+                        spec = spec.or((root, query, cb) -> cb
+                                .equal(root.get("tipoHabitacion"), TipoHabitacion.valueOf(criteria.getValue())));
                     } else {
                         spec = spec.or((root, query, cb) -> cb.equal(root.get(criteria.getKey()), criteria.getValue()));
                     }

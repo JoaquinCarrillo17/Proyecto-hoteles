@@ -18,9 +18,11 @@ import org.springframework.stereotype.Service;
 import gz.hoteles.dto.HotelDTO;
 import gz.hoteles.entities.Hotel;
 import gz.hoteles.entities.ServiciosHotelEnum;
+import gz.hoteles.entities.Ubicacion;
 import gz.hoteles.repositories.HabitacionRepository;
 import gz.hoteles.repositories.HotelRepository;
 import gz.hoteles.repositories.ReservasRepository;
+import gz.hoteles.repositories.UbicacionRepository;
 import gz.hoteles.support.OrderCriteria;
 import gz.hoteles.support.SearchCriteria;
 import gz.hoteles.support.SearchRequest;
@@ -39,6 +41,9 @@ public class ServicioHoteles extends DtoServiceImpl<HotelDTO, Hotel>  {
 
     @Autowired
     ServicioUbicacion ubicacionService;
+
+    @Autowired
+    UbicacionRepository ubicacionRepository;
 
     private List<String> hotelPhotos = IntStream.rangeClosed(1, 20)
             .mapToObj(i -> "hotel-" + i + ".jpg")
@@ -93,6 +98,19 @@ public class ServicioHoteles extends DtoServiceImpl<HotelDTO, Hotel>  {
         Hotel entity = (Hotel) dto.getEntity();
         String foto = getAvailablePhoto();
         entity.setFoto(foto);
+
+        if (dto.getUbicacion() != null) {
+            Ubicacion ubi = ubicacionRepository.findByCiudad(dto.getUbicacion().getCiudad());
+            if (ubi != null) {
+                entity.setUbicacion(ubi);
+            } else {
+                Ubicacion toSave = this.ubicacionService.parseEntity(dto.getUbicacion());
+                toSave.setId(null);
+                Ubicacion ubiGuardada = ubicacionRepository.save(toSave);
+                entity.setUbicacion(ubiGuardada);
+            }
+        }
+
         return entity;
     }
 

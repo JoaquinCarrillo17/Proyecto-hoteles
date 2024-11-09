@@ -11,5 +11,7 @@ import gz.hoteles.entities.Ubicacion;
 public interface UbicacionRepository extends JpaRepository<Ubicacion, Long>, JpaSpecificationExecutor<Ubicacion> {
 
     Page<Ubicacion> findAll(Specification<Ubicacion> spec, Pageable pageable);
+
+    Ubicacion findByCiudad(String ciudad);
     
 }

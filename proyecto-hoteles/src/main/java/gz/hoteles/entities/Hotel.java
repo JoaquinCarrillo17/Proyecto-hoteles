@@ -60,6 +60,7 @@ public class Hotel implements EntityGeneral {
         dto.setNombre(nombre);
         dto.setDireccion(direccion);
         dto.setTelefono(telefono);
+        dto.setIdUsuario(idUsuario);
         dto.setEmail(email);
         dto.setSitioWeb(sitioWeb);
         dto.setFoto(foto);

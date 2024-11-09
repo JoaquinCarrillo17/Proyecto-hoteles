@@ -15,9 +15,8 @@ public class HabitacionDTO implements DtoGeneral {
     private String numero;
     private TipoHabitacion tipoHabitacion;
     private float precioNoche;
-    private String nombreHotel;
-    private Integer idUsuario;
     private String foto;
+    private HotelDTO hotel;
     private Set<ServiciosHabitacionEnum> servicios;
 
     @Override
