@@ -14,6 +14,7 @@ public class ReservasDto implements DtoGeneral {
     private Integer idUsuario;
     private Date checkIn;
     private Date checkOut;
+    private Double coste;
     private HabitacionDTO habitacion;
     private HotelDTO hotel;
     private List<HuespedDTO> huespedes;
@@ -26,6 +27,7 @@ public class ReservasDto implements DtoGeneral {
         entity.setIdUsuario(idUsuario);
         entity.setCheckIn(checkIn);
         entity.setCheckOut(checkOut);
+        entity.setCoste(coste);
         return entity;
     }
     

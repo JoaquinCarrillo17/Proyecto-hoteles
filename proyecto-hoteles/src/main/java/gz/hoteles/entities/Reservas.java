@@ -28,6 +28,7 @@ public class Reservas implements EntityGeneral {
     private Integer idUsuario;
     private Date checkIn;
     private Date checkOut;
+    private Double coste;
 
     @ManyToOne
     private Habitacion habitacion;
@@ -45,6 +46,7 @@ public class Reservas implements EntityGeneral {
         dto.setIdUsuario(idUsuario);
         dto.setCheckIn(checkIn);
         dto.setCheckOut(checkOut);
+        dto.setCoste(coste);
         return dto;
     }
     

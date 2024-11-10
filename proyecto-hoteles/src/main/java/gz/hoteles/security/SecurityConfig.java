@@ -42,6 +42,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         "/v3/api-docs/**")
                 .permitAll() // Rutas públicas
 
+                .antMatchers(HttpMethod.GET, "/habitaciones/{id}")
+                .permitAll()
+
                 // * Restrinjo los hoteles
                 .antMatchers(HttpMethod.GET, "/hoteles/**")
                 .hasAnyRole("HOTELES_R", "HOTELES_W", "SUPER_ADMIN")
@@ -86,20 +89,35 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.DELETE, "/huespedes/{id}")
                 .hasAnyRole("HUESPEDES_W", "SUPER_ADMIN")
 
+                // * Para reservas
+                .antMatchers(HttpMethod.GET, "/reservas/**")
+                .hasAnyRole("RESERVAS_R", "RESERVAS_W", "SUPER_ADMIN")
+                .antMatchers(HttpMethod.GET, "/reservas")
+                .hasAnyRole("RESERVAS_R", "RESERVAS_W", "SUPER_ADMIN")
+                // * Restringir los métodos PUT, POST y DELETE a ROLE_RESERVAS_W
+                .antMatchers(HttpMethod.PUT, "/reservas/{id}")
+                .hasAnyRole("RESERVAS_W", "SUPER_ADMIN")
+                .antMatchers(HttpMethod.POST, "/reservas")
+                .hasAnyRole("RESERVAS_W", "SUPER_ADMIN")
+                .antMatchers(HttpMethod.POST, "/reservas/**")
+                .hasAnyRole("RESERVAS_W", "SUPER_ADMIN")
+                .antMatchers(HttpMethod.DELETE, "/reservas/{id}")
+                .hasAnyRole("RESERVAS_W", "SUPER_ADMIN")
+
                 // * Para Roles
-                /* .antMatchers(HttpMethod.GET, "/roles/**")
-                .hasAnyRole("ROLES_R", "ROLES_W")
+                .antMatchers(HttpMethod.GET, "/roles/**")
+                .hasRole("SUPER_ADMIN")
                 .antMatchers(HttpMethod.GET, "/roles")
-                .hasAnyRole("ROLES_R", "ROLES_W")
+                .hasRole("SUPER_ADMIN")
                 // * Restringir los métodos PUT, POST y DELETE a ROLE_ROLES_W
                 .antMatchers(HttpMethod.PUT, "/roles/{id}")
-                .hasRole("ROLES_W")
+                .hasRole("SUPER_ADMIN")
                 .antMatchers(HttpMethod.POST, "/roles")
-                .hasRole("ROLES_W")
+                .hasRole("SUPER_ADMIN")
                 .antMatchers(HttpMethod.POST, "/roles/**")
-                .hasRole("ROLES_W")
+                .hasRole("SUPER_ADMIN")
                 .antMatchers(HttpMethod.DELETE, "/roles/{id}")
-                .hasRole("ROLES_W")*/
+                .hasRole("SUPER_ADMIN")
 
                 .antMatchers(HttpMethod.GET, "/usuarios/**")
                 .hasRole("SUPER_ADMIN")
@@ -115,7 +133,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.DELETE, "/usuarios/{id}")
                 .hasRole("SUPER_ADMIN")
 
-                 .antMatchers("/hoteles", "/hoteles/**", "/habitaciones", "/habitaciones/**", "/huespedes", "/huespedes**"/*   /* "/roles", "/roles**",*/ /*"/usuarios", "/usuarios/**"*/).authenticated()
+                 .antMatchers("/hoteles", "/hoteles/**", "/habitaciones", "/habitaciones/**", "/huespedes", "/huespedes**", "/roles", "/roles**", "/usuarios", "/usuarios/**", "/reservas", "/reservas/**").authenticated()
 
                 .anyRequest().authenticated() // Todas las demás rutas requieren autenticación
                 .and()

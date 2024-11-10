@@ -1,11 +1,18 @@
 package gz.hoteles.servicio.impl;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Root;
+import javax.persistence.criteria.Subquery;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -16,7 +23,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import gz.hoteles.dto.HotelDTO;
+import gz.hoteles.entities.Habitacion;
 import gz.hoteles.entities.Hotel;
+import gz.hoteles.entities.Reservas;
 import gz.hoteles.entities.ServiciosHotelEnum;
 import gz.hoteles.entities.Ubicacion;
 import gz.hoteles.repositories.HabitacionRepository;
@@ -121,6 +130,13 @@ public class ServicioHoteles extends DtoServiceImpl<HotelDTO, Hotel>  {
         int pageIndex = searchRequest.getPage().getPageIndex();
 
         Specification<Hotel> spec = Specification.where(null);
+
+        Date checkInDate = null;
+        Date checkOutDate = null;
+
+        // Formato de fecha esperado
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
         for (SearchCriteria criteria : searchCriteriaList) {
             switch (criteria.getOperation()) {
                 case "equals":
@@ -132,6 +148,18 @@ public class ServicioHoteles extends DtoServiceImpl<HotelDTO, Hotel>  {
                         for (String servicio : serviciosArray) {
                             ServiciosHotelEnum servicioEnum = ServiciosHotelEnum.valueOf(servicio);
                             spec = spec.and((root, query, cb) -> cb.isMember(servicioEnum, root.get("servicios")));
+                        }
+                    } else if (criteria.getKey().equals("checkIn")) {
+                        try {
+                            checkInDate = dateFormat.parse((String) criteria.getValue());
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                    } else if (criteria.getKey().equals("checkOut")) {
+                        try {
+                            checkOutDate = dateFormat.parse((String) criteria.getValue());
+                        } catch (ParseException e) {
+                            e.printStackTrace();
                         }
                     } else {
                         spec = spec
@@ -160,11 +188,45 @@ public class ServicioHoteles extends DtoServiceImpl<HotelDTO, Hotel>  {
             }
         }
 
+        /*// Si ambas fechas están presentes, añadir lógica de disponibilidad
+        if (checkInDate != null && checkOutDate != null) {
+            final Date finalCheckInDate = checkInDate;
+            final Date finalCheckOutDate = checkOutDate;
+
+            spec = spec.and((root, query, cb) -> {
+                // Subconsulta para verificar disponibilidad de habitaciones
+                Subquery<Long> subquery = query.subquery(Long.class);
+                Root<Habitacion> habitacionRoot = subquery.from(Habitacion.class);
+                Join<Habitacion, Reservas> reservasJoin = habitacionRoot.join("reservas", JoinType.LEFT);
+
+                subquery.select(cb.count(habitacionRoot.get("id")))
+                        .where(
+                            cb.equal(habitacionRoot.get("hotel"), root), // Mismo hotel
+                            cb.or(
+                                cb.isNull(reservasJoin), // No hay reservas en esta habitación
+                                cb.and(
+                                    cb.lessThanOrEqualTo(reservasJoin.get("checkOut").as(Date.class), finalCheckInDate), // La reserva termina antes de la fecha de check-in
+                                    cb.greaterThanOrEqualTo(reservasJoin.get("checkIn").as(Date.class), finalCheckOutDate) // La reserva empieza después de la fecha de check-out
+                                )
+                            )
+                        );
+
+                // El hotel debe tener al menos una habitación disponible
+                return cb.greaterThan(subquery, 0L);
+            });
+        }*/
+
         String sortByField = orderCriteriaList.getSortBy();
         String sortDirection = orderCriteriaList.getValueSortOrder().equalsIgnoreCase("asc") ? "ASC" : "DESC";
         Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortByField);
+        Page<Hotel> page = null;
+        try {
+            page = hotelRepository.findAll(spec, PageRequest.of(pageIndex, pageSize, sort));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-        Page<Hotel> page = hotelRepository.findAll(spec, PageRequest.of(pageIndex, pageSize, sort));
+        //Page<Hotel> page = hotelRepository.findAll(spec, PageRequest.of(pageIndex, pageSize, sort));
 
         List<HotelDTO> hotelDTOList = page.getContent().stream()
                 .map(this::parseDto)

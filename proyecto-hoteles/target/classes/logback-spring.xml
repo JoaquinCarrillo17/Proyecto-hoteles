@@ -9,6 +9,22 @@
         </encoder>
     </appender>
 
+    <!-- Nivel de registro para el paquete controller -->
+    <logger name="gz.hoteles.controller" level="debug" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <!-- Nivel de registro para el paquete repositories -->
+    <logger name="gz.hoteles.repositories" level="debug" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <!-- Nivel de registro para el paquete servicio -->
+    <logger name="gz.hoteles.servicio" level="debug" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <!-- Configuración general para el resto de la aplicación -->
     <root level="info">
         <appender-ref ref="CONSOLE" />
     </root>

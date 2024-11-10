@@ -10,6 +10,7 @@ import gz.hoteles.dto.HuespedDTO;
 import gz.hoteles.dto.ReservasDto;
 import gz.hoteles.entities.Huesped;
 import gz.hoteles.entities.Reservas;
+import gz.hoteles.repositories.HuespedRepository;
 
 @Service
 public class ReservasServiceImpl extends DtoServiceImpl<ReservasDto, Reservas> {
@@ -22,6 +23,9 @@ public class ReservasServiceImpl extends DtoServiceImpl<ReservasDto, Reservas> {
 
     @Autowired
     ServicioHuespedes servicioHuespedes;
+
+    @Autowired
+    HuespedRepository huespedRepository;
 
     @Override
     protected ReservasDto parseDto(Reservas entity) {
@@ -54,7 +58,8 @@ public class ReservasServiceImpl extends DtoServiceImpl<ReservasDto, Reservas> {
         if (dto.getHuespedes()!= null &&!dto.getHuespedes().isEmpty()) {
             List<Huesped> huespedes = new ArrayList<>();
             for (HuespedDTO huespedDto : dto.getHuespedes()) {
-                huespedes.add(this.servicioHuespedes.parseEntity(huespedDto));
+                Huesped huespedSaved = this.huespedRepository.save(this.servicioHuespedes.parseEntity(huespedDto));
+                huespedes.add(huespedSaved);
             }
             entity.setHuespedes(huespedes);
         }
