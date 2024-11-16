@@ -45,8 +45,11 @@ public class Habitacion implements EntityGeneral {
     @JoinColumn(name = "hotel_fk")
     private Hotel hotel;
 
-    @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Habitacion> habitaciones = new HashSet<>();
+    /*@OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Habitacion> habitaciones = new HashSet<>();*/
+
+    /*@OneToMany(mappedBy = "habitacion", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Reservas> reservas = new HashSet<>();*/
 
     @Override
     public DtoGeneral getDto() {

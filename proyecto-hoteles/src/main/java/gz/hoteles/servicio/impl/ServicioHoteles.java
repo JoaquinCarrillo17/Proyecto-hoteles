@@ -9,11 +9,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.JoinType;
-import javax.persistence.criteria.Root;
-import javax.persistence.criteria.Subquery;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -23,10 +18,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import gz.hoteles.dto.HotelDTO;
-import gz.hoteles.entities.Habitacion;
 import gz.hoteles.entities.Hotel;
-import gz.hoteles.entities.Reservas;
 import gz.hoteles.entities.ServiciosHotelEnum;
+import gz.hoteles.entities.TipoHabitacion;
 import gz.hoteles.entities.Ubicacion;
 import gz.hoteles.repositories.HabitacionRepository;
 import gz.hoteles.repositories.HotelRepository;
@@ -53,6 +47,20 @@ public class ServicioHoteles extends DtoServiceImpl<HotelDTO, Hotel>  {
 
     @Autowired
     UbicacionRepository ubicacionRepository;
+
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+    public Date parseDate(String dateString) {
+        if (dateString == null) {
+            return null; // Si la cadena es nula, devolvemos null directamente
+        }
+        try {
+            return dateFormat.parse(dateString);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return null; // Manejar el caso en el que la fecha no se puede analizar
+        }
+    }
 
     private List<String> hotelPhotos = IntStream.rangeClosed(1, 20)
             .mapToObj(i -> "hotel-" + i + ".jpg")
@@ -131,13 +139,16 @@ public class ServicioHoteles extends DtoServiceImpl<HotelDTO, Hotel>  {
 
         Specification<Hotel> spec = Specification.where(null);
 
-        Date checkInDate = null;
-        Date checkOutDate = null;
-
-        // Formato de fecha esperado
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        TipoHabitacion tipoHabitacionFilter = null;
 
         for (SearchCriteria criteria : searchCriteriaList) {
+            if (criteria.getKey().equals("checkIn") || criteria.getKey().equals("checkOut")) {
+                continue;
+            }
+            if (criteria.getKey().equals("tipoHabitacion")) {
+                tipoHabitacionFilter = TipoHabitacion.valueOf(criteria.getValue());
+                continue;
+            }
             switch (criteria.getOperation()) {
                 case "equals":
                     if (criteria.getKey().startsWith("ubicacion.")) {
@@ -148,18 +159,6 @@ public class ServicioHoteles extends DtoServiceImpl<HotelDTO, Hotel>  {
                         for (String servicio : serviciosArray) {
                             ServiciosHotelEnum servicioEnum = ServiciosHotelEnum.valueOf(servicio);
                             spec = spec.and((root, query, cb) -> cb.isMember(servicioEnum, root.get("servicios")));
-                        }
-                    } else if (criteria.getKey().equals("checkIn")) {
-                        try {
-                            checkInDate = dateFormat.parse((String) criteria.getValue());
-                        } catch (ParseException e) {
-                            e.printStackTrace();
-                        }
-                    } else if (criteria.getKey().equals("checkOut")) {
-                        try {
-                            checkOutDate = dateFormat.parse((String) criteria.getValue());
-                        } catch (ParseException e) {
-                            e.printStackTrace();
                         }
                     } else {
                         spec = spec
@@ -188,54 +187,43 @@ public class ServicioHoteles extends DtoServiceImpl<HotelDTO, Hotel>  {
             }
         }
 
-        /*// Si ambas fechas están presentes, añadir lógica de disponibilidad
-        if (checkInDate != null && checkOutDate != null) {
-            final Date finalCheckInDate = checkInDate;
-            final Date finalCheckOutDate = checkOutDate;
-
-            spec = spec.and((root, query, cb) -> {
-                // Subconsulta para verificar disponibilidad de habitaciones
-                Subquery<Long> subquery = query.subquery(Long.class);
-                Root<Habitacion> habitacionRoot = subquery.from(Habitacion.class);
-                Join<Habitacion, Reservas> reservasJoin = habitacionRoot.join("reservas", JoinType.LEFT);
-
-                subquery.select(cb.count(habitacionRoot.get("id")))
-                        .where(
-                            cb.equal(habitacionRoot.get("hotel"), root), // Mismo hotel
-                            cb.or(
-                                cb.isNull(reservasJoin), // No hay reservas en esta habitación
-                                cb.and(
-                                    cb.lessThanOrEqualTo(reservasJoin.get("checkOut").as(Date.class), finalCheckInDate), // La reserva termina antes de la fecha de check-in
-                                    cb.greaterThanOrEqualTo(reservasJoin.get("checkIn").as(Date.class), finalCheckOutDate) // La reserva empieza después de la fecha de check-out
-                                )
-                            )
-                        );
-
-                // El hotel debe tener al menos una habitación disponible
-                return cb.greaterThan(subquery, 0L);
-            });
-        }*/
-
         String sortByField = orderCriteriaList.getSortBy();
         String sortDirection = orderCriteriaList.getValueSortOrder().equalsIgnoreCase("asc") ? "ASC" : "DESC";
         Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortByField);
-        Page<Hotel> page = null;
-        try {
-            page = hotelRepository.findAll(spec, PageRequest.of(pageIndex, pageSize, sort));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        //Page<Hotel> page = hotelRepository.findAll(spec, PageRequest.of(pageIndex, pageSize, sort));
-
-        List<HotelDTO> hotelDTOList = page.getContent().stream()
+    
+        // Obtener todos los hoteles que cumplen el filtro inicial (sin paginación)
+        List<Hotel> hotelesFiltrados = hotelRepository.findAll(spec);
+    
+        final Date checkInDate = parseDate(searchRequest.getListSearchCriteria().stream()
+                .filter(criteria -> criteria.getKey().equals("checkIn"))
+                .map(SearchCriteria::getValue)
+                .findFirst().orElse(null));
+    
+        final Date checkOutDate = parseDate(searchRequest.getListSearchCriteria().stream()
+                .filter(criteria -> criteria.getKey().equals("checkOut"))
+                .map(SearchCriteria::getValue)
+                .findFirst().orElse(null));
+    
+        // Aplicar filtro de disponibilidad y tipo de habitación
+        final TipoHabitacion finalTipoHabitacionFilter = tipoHabitacionFilter;
+        List<Hotel> hotelesDisponibles = hotelesFiltrados.stream()
+                .filter(hotel -> tieneHabitacionesDisponibles(hotel, checkInDate, checkOutDate, finalTipoHabitacionFilter))
+                .collect(Collectors.toList());
+    
+        // Calcular total después de filtrar
+        long totalElements = hotelesDisponibles.size();
+    
+        // Aplicar paginación manual
+        List<Hotel> hotelesPaginados = hotelesDisponibles.stream()
+                .skip((long) pageIndex * pageSize)
+                .limit(pageSize)
+                .collect(Collectors.toList());
+    
+        List<HotelDTO> hotelDTOList = hotelesPaginados.stream()
                 .map(this::parseDto)
                 .collect(Collectors.toList());
-
-        Page<HotelDTO> hotelDTOPage = new PageImpl<>(hotelDTOList, PageRequest.of(pageIndex, pageSize, sort),
-                page.getTotalElements());
-
-        return hotelDTOPage;
+    
+        return new PageImpl<>(hotelDTOList, PageRequest.of(pageIndex, pageSize, sort), totalElements);
     }
 
     public Page<HotelDTO> getHotelesDynamicSearchOr(SearchRequest searchRequest) {
@@ -304,5 +292,26 @@ public class ServicioHoteles extends DtoServiceImpl<HotelDTO, Hotel>  {
         return hotelDTOPage;
 
     }
+
+    private boolean tieneHabitacionesDisponibles(Hotel hotel, Date checkInDate, Date checkOutDate, TipoHabitacion tipoHabitacion) {
+        if (tipoHabitacion == null && checkInDate == null && checkOutDate == null) {
+            return true; // Si no hay filtros, considerar que el hotel tiene habitaciones disponibles
+        }
+    
+        if (checkInDate == null || checkOutDate == null) {
+            // Solo filtrar por tipo de habitación si no hay rango de fechas
+            return habitacionRepository.existsByHotelAndTipoHabitacion(hotel, tipoHabitacion);
+        }
+    
+        if (tipoHabitacion == null) {
+            // Filtrar por rango de fechas solamente
+            return habitacionRepository.countByHotelAndDisponibilidad(hotel, checkInDate, checkOutDate) > 0;
+        } else {
+            // Filtrar por rango de fechas y tipo de habitación
+            return habitacionRepository.countByHotelAndDisponibilidadAndTipo(hotel, checkInDate, checkOutDate, tipoHabitacion) > 0;
+        }
+    }
+    
+    
 
 }

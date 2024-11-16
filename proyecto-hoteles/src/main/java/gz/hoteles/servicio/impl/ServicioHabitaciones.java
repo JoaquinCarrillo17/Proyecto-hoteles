@@ -1,8 +1,14 @@
 package gz.hoteles.servicio.impl;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
+
+import javax.persistence.criteria.Root;
+import javax.persistence.criteria.Subquery;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -12,14 +18,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import gz.hoteles.controller.HabitacionController;
 import gz.hoteles.dto.HabitacionDTO;
 import gz.hoteles.entities.Habitacion;
-import gz.hoteles.entities.Hotel;
 import gz.hoteles.entities.ServiciosHabitacionEnum;
 import gz.hoteles.entities.TipoHabitacion;
 import gz.hoteles.repositories.HabitacionRepository;
 import gz.hoteles.repositories.HotelRepository;
+import gz.hoteles.repositories.ReservasRepository;
 import gz.hoteles.support.OrderCriteria;
 import gz.hoteles.support.SearchCriteria;
 import gz.hoteles.support.SearchRequest;
@@ -35,6 +40,20 @@ public class ServicioHabitaciones extends DtoServiceImpl<HabitacionDTO, Habitaci
 
     @Autowired
     HabitacionRepository habitacionRepository;
+
+    @Autowired
+    ReservasRepository reservasRepository;
+
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+    // Método para convertir una cadena de fecha en un objeto Date
+    public Date parseDate(String dateString) {
+        try {
+            return dateFormat.parse(dateString);
+        } catch (ParseException e) {
+            return null; // Manejar el caso en el que la fecha no se puede analizar
+        }
+    }
 
     private String asignarFotoAleatoria() {
         Random random = new Random();
@@ -134,6 +153,9 @@ public class ServicioHabitaciones extends DtoServiceImpl<HabitacionDTO, Habitaci
         Specification<Habitacion> spec = Specification.where(null);
 
         for (SearchCriteria criteria : searchCriteriaList) {
+            if (criteria.getKey().equals("checkIn") || criteria.getKey().equals("checkOut")) {
+                continue;
+            }
             switch (criteria.getOperation()) {
                 case "equals":
                     if (criteria.getKey().equals("hotel.idUsuario")) {
@@ -194,21 +216,51 @@ public class ServicioHabitaciones extends DtoServiceImpl<HabitacionDTO, Habitaci
             }
         }
 
+
         String sortByField = orderCriteriaList.getSortBy();
         String sortDirection = orderCriteriaList.getValueSortOrder().equalsIgnoreCase("asc") ? "ASC" : "DESC";
         Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortByField);
 
-        Page<Habitacion> page = habitacionRepository.findAll(spec, PageRequest.of(pageIndex, pageSize, sort));
+        // Obtener todas las habitaciones que cumplen el filtro inicial (sin paginación)
+        List<Habitacion> habitacionesFiltradas = habitacionRepository.findAll(spec);
 
-        List<HabitacionDTO> habitacionDTOList = page.getContent().stream()
+        // Obtener las fechas de búsqueda
+        final Date checkInDate = parseDate(searchRequest.getListSearchCriteria().stream()
+                .filter(criteria -> criteria.getKey().equals("checkIn"))
+                .map(SearchCriteria::getValue)
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Fecha checkIn es obligatoria")));
+
+        final Date checkOutDate = parseDate(searchRequest.getListSearchCriteria().stream()
+                .filter(criteria -> criteria.getKey().equals("checkOut"))
+                .map(SearchCriteria::getValue)
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Fecha checkOut es obligatoria")));
+
+        // Filtrar habitaciones por disponibilidad
+        List<Habitacion> habitacionesDisponibles = habitacionesFiltradas.stream()
+                .filter(habitacion -> verificarDisponibilidad(habitacion, checkInDate, checkOutDate))
+                .collect(Collectors.toList());
+
+        // Calcular total después de filtrar
+        long totalElements = habitacionesDisponibles.size();
+
+        // Aplicar paginación manual
+        List<Habitacion> habitacionesPaginadas = habitacionesDisponibles.stream()
+                .skip((long) pageIndex * pageSize)
+                .limit(pageSize)
+                .collect(Collectors.toList());
+
+        List<HabitacionDTO> habitacionDTOList = habitacionesPaginadas.stream()
                 .map(this::parseDto)
                 .collect(Collectors.toList());
 
-        Page<HabitacionDTO> habitacionDTOPage = new PageImpl<>(habitacionDTOList,
-                PageRequest.of(pageIndex, pageSize, sort),
-                page.getTotalElements());
+        return new PageImpl<>(habitacionDTOList, PageRequest.of(pageIndex, pageSize, sort), totalElements);
+    }
 
-        return habitacionDTOPage;
+    private boolean verificarDisponibilidad(Habitacion habitacion, Date checkInDate, Date checkOutDate) {
+        // Si existe al menos una reserva que se solape, la habitación no está disponible
+        return !reservasRepository.existsByHabitacionAndFechasSolapadas(habitacion, checkInDate, checkOutDate);
     }
 
 }

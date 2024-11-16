@@ -1,5 +1,6 @@
 package gz.hoteles.repositories;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -12,6 +13,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import gz.hoteles.entities.Habitacion;
+import gz.hoteles.entities.Hotel;
 import gz.hoteles.entities.TipoHabitacion;
 
 public interface HabitacionRepository extends JpaRepository<Habitacion, Long> , JpaSpecificationExecutor<Habitacion>{
@@ -73,5 +75,34 @@ public interface HabitacionRepository extends JpaRepository<Habitacion, Long> , 
         List<Habitacion> findByHotelIdUsuario(int idUsuario);
 
         int countByHotelId(Long id);
+
+        @Query("SELECT COUNT(h) FROM Habitacion h " +
+                        "WHERE h.hotel = :hotel AND " +
+                        "NOT EXISTS ( " +
+                        "    SELECT r FROM Reservas r " +
+                        "    WHERE r.habitacion = h AND " +
+                        "          (r.checkIn < :checkOutDate AND r.checkOut > :checkInDate) " +
+                        ")")
+        long countByHotelAndDisponibilidad(@Param("hotel") Hotel hotel,
+                        @Param("checkInDate") Date checkInDate,
+                        @Param("checkOutDate") Date checkOutDate);
+
+        @Query("SELECT COUNT(h) FROM Habitacion h " +
+                        "WHERE h.hotel = :hotel AND h.tipoHabitacion = :tipoHabitacion AND " +
+                        "NOT EXISTS ( " +
+                        "    SELECT r FROM Reservas r " +
+                        "    WHERE r.habitacion = h AND " +
+                        "          (r.checkIn < :checkOutDate AND r.checkOut > :checkInDate) " +
+                        ")")
+        long countByHotelAndDisponibilidadAndTipo(@Param("hotel") Hotel hotel,
+                        @Param("checkInDate") Date checkInDate,
+                        @Param("checkOutDate") Date checkOutDate,
+                        @Param("tipoHabitacion") TipoHabitacion tipoHabitacion);
+
+        @Query("SELECT COUNT(h) > 0 FROM Habitacion h WHERE h.hotel = :hotel AND h.tipoHabitacion = :tipoHabitacion")
+                boolean existsByHotelAndTipoHabitacion(@Param("hotel") Hotel hotel, @Param("tipoHabitacion") TipoHabitacion tipoHabitacion);
+                        
+                                 
+
 
 }
