@@ -3,6 +3,7 @@ package gz.hoteles.entities;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -36,7 +37,7 @@ public class Reservas implements EntityGeneral {
     @ManyToOne
     private Hotel hotel;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL)
     private List<Huesped> huespedes;
 
     @Override
