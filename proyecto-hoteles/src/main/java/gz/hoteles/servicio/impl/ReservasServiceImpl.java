@@ -75,8 +75,14 @@ public class ReservasServiceImpl extends DtoServiceImpl<ReservasDto, Reservas> {
         if (dto.getHuespedes()!= null &&!dto.getHuespedes().isEmpty()) {
             List<Huesped> huespedes = new ArrayList<>();
             for (HuespedDTO huespedDto : dto.getHuespedes()) {
-                Huesped huespedSaved = this.huespedRepository.save(this.servicioHuespedes.parseEntity(huespedDto));
-                huespedes.add(huespedSaved);
+                Huesped huesped = huespedRepository.findByDni(huespedDto.getDni());
+                if (huesped != null) {
+                    huespedes.add(huesped);
+                } else {
+                    Huesped huespedSaved = this.huespedRepository.save(this.servicioHuespedes.parseEntity(huespedDto));
+                    huespedes.add(huespedSaved);
+                }
+                
             }
             entity.setHuespedes(huespedes);
         }

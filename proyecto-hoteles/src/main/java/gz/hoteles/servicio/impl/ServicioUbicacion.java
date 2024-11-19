@@ -1,6 +1,7 @@
 package gz.hoteles.servicio.impl;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -22,6 +23,16 @@ public class ServicioUbicacion extends DtoServiceImpl<UbicacionDto, Ubicacion>{
 
     @Autowired
     private UbicacionRepository ubicacionRepository;
+
+    @Override
+    protected UbicacionDto parseDto(Ubicacion entity) {
+        return (UbicacionDto) entity.getDto();
+    }
+
+    @Override
+    protected Ubicacion parseEntity(UbicacionDto dto) throws Exception {
+        return (Ubicacion) dto.getEntity();
+    }
 
     public Page<Ubicacion> filtrarUbicaciones(SearchRequest searchRequest) {
         List<SearchCriteria> searchCriteriaList = searchRequest.getListSearchCriteria();
@@ -51,15 +62,14 @@ public class ServicioUbicacion extends DtoServiceImpl<UbicacionDto, Ubicacion>{
         return ubicacionRepository.findAll(spec, pageable);
     }
 
-    @Override
-    protected UbicacionDto parseDto(Ubicacion entity) {
-        return (UbicacionDto) entity.getDto();
+    public List<UbicacionDto> getUbicacionesActivas() {
+        List<Ubicacion> list = this.ubicacionRepository.findUbicacionesConHoteles();
+        return list.stream()
+                    .map(this::parseDto)
+                    .collect(Collectors.toList());
     }
 
-    @Override
-    protected Ubicacion parseEntity(UbicacionDto dto) throws Exception {
-        return (Ubicacion) dto.getEntity();
-    }
+    
 
 }
 

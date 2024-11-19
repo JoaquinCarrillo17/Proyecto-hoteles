@@ -1,6 +1,11 @@
 package gz.hoteles.entities;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.*;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import gz.hoteles.dto.DtoGeneral;
 import gz.hoteles.dto.UbicacionDto;
@@ -22,6 +27,10 @@ public class Ubicacion implements EntityGeneral{
     private String ciudad;
     private String pais;
     private String continente;
+
+    @OneToMany(mappedBy = "ubicacion", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private Set<Hotel> hoteles = new HashSet<>();
 
     @Override
     public DtoGeneral getDto() {

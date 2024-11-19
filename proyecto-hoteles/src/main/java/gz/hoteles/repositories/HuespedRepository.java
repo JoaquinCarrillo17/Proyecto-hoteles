@@ -53,4 +53,6 @@ public interface HuespedRepository extends JpaRepository<Huesped, Long>, JpaSpec
         Page<Huesped> findByNombreCompletoContainingIgnoreCaseOrDniContainingIgnoreCaseOrEmailContainingIgnoreCase(
                         String nombre, String dni, String email, Pageable pageable);
 
+        Huesped findByDni(String dni);
+
 }
