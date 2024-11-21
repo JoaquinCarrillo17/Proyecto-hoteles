@@ -34,7 +34,7 @@ public class ServicioUbicacion extends DtoServiceImpl<UbicacionDto, Ubicacion>{
         return (Ubicacion) dto.getEntity();
     }
 
-    public Page<Ubicacion> filtrarUbicaciones(SearchRequest searchRequest) {
+    public Page<Ubicacion> dynamicFilterAnd(SearchRequest searchRequest) {
         List<SearchCriteria> searchCriteriaList = searchRequest.getListSearchCriteria();
         OrderCriteria orderCriteriaList = searchRequest.getListOrderCriteria();
         int pageSize = searchRequest.getPage().getPageSize();
@@ -48,6 +48,34 @@ public class ServicioUbicacion extends DtoServiceImpl<UbicacionDto, Ubicacion>{
                     break;
                 case "contains":
                     spec = spec.and((root, query, cb) -> cb.like(root.get(criteria.getKey()), "%" + criteria.getValue() + "%"));
+                    break;
+                default:
+                    throw new IllegalArgumentException("Operador de búsqueda no válido: " + criteria.getOperation());
+            }
+        }
+
+        String sortByField = orderCriteriaList.getSortBy();
+        String sortDirection = orderCriteriaList.getValueSortOrder().equalsIgnoreCase("asc") ? "ASC" : "DESC";
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortByField);
+
+        Pageable pageable = PageRequest.of(pageIndex, pageSize, sort);
+        return ubicacionRepository.findAll(spec, pageable);
+    }
+
+    public Page<Ubicacion> dynamicFilterOr(SearchRequest searchRequest) {
+        List<SearchCriteria> searchCriteriaList = searchRequest.getListSearchCriteria();
+        OrderCriteria orderCriteriaList = searchRequest.getListOrderCriteria();
+        int pageSize = searchRequest.getPage().getPageSize();
+        int pageIndex = searchRequest.getPage().getPageIndex();
+
+        Specification<Ubicacion> spec = Specification.where(null);
+        for (SearchCriteria criteria : searchCriteriaList) {
+            switch (criteria.getOperation()) {
+                case "equals":
+                    spec = spec.or((root, query, cb) -> cb.equal(root.get(criteria.getKey()), criteria.getValue()));
+                    break;
+                case "contains":
+                    spec = spec.or((root, query, cb) -> cb.like(root.get(criteria.getKey()), "%" + criteria.getValue() + "%"));
                     break;
                 default:
                     throw new IllegalArgumentException("Operador de búsqueda no válido: " + criteria.getOperation());

@@ -104,6 +104,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.DELETE, "/reservas/{id}")
                 .hasAnyRole("RESERVAS_W", "SUPER_ADMIN")
 
+                // * Para ubicaciones
+                // * Restringir los métodos PUT, POST y DELETE a ROLE_UBICACIONES_W
+                .antMatchers(HttpMethod.PUT, "/ubicaciones/{id}")
+                .hasAnyRole("UBICACIONES_W", "SUPER_ADMIN")
+                .antMatchers(HttpMethod.POST, "/ubicaciones")
+                .hasAnyRole("UBICACIONES_W", "SUPER_ADMIN")
+                .antMatchers(HttpMethod.DELETE, "/ubicaciones/{id}")
+                .hasAnyRole("UBICACIONES_W", "SUPER_ADMIN")
+
                 // * Para Roles
                 .antMatchers(HttpMethod.GET, "/roles/**")
                 .hasRole("SUPER_ADMIN")

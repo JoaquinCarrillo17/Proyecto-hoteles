@@ -26,7 +26,19 @@ public class UbicacionController extends ControllerDto<UbicacionDto>{
 
     @PostMapping("/dynamicFilterAnd")
     public ResponseEntity<?> getFilteredByDynamicSearchAnd(@RequestBody SearchRequest searchRequest) {
-        Page<Ubicacion> page = ((ServicioUbicacion) this.dtoService).filtrarUbicaciones(searchRequest);
+        Page<Ubicacion> page = ((ServicioUbicacion) this.dtoService).dynamicFilterAnd(searchRequest);
+
+        Page<Ubicacion> ubicacionDTOPage = new PageImpl<>(page.getContent(), PageRequest.of(
+                searchRequest.getPage().getPageIndex(),
+                searchRequest.getPage().getPageSize()),
+                page.getTotalElements());
+
+        return ResponseEntity.ok(ubicacionDTOPage);
+    }
+
+    @PostMapping("/dynamicFilterOr")
+    public ResponseEntity<?> getFilteredByDynamicSearchOr(@RequestBody SearchRequest searchRequest) {
+        Page<Ubicacion> page = ((ServicioUbicacion) this.dtoService).dynamicFilterOr(searchRequest);
 
         Page<Ubicacion> ubicacionDTOPage = new PageImpl<>(page.getContent(), PageRequest.of(
                 searchRequest.getPage().getPageIndex(),
