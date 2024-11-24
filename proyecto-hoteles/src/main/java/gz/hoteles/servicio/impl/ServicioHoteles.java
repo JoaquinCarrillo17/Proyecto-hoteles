@@ -312,6 +312,12 @@ public class ServicioHoteles extends DtoServiceImpl<HotelDTO, Hotel>  {
         }
     }
     
-    
+    public HotelDTO getHotelByUsuario(Integer id) {
+        Hotel hotel = hotelRepository.findByIdUsuario(id);
+        if (hotel != null) {
+            HotelDTO hotelDTO = parseDto(hotel);
+            return hotelDTO;
+        } else return null;
+    }
 
 }

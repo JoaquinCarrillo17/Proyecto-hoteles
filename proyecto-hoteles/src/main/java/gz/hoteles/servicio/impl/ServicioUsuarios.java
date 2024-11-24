@@ -32,7 +32,9 @@ public class ServicioUsuarios  {
     }
 
     private void añadirRol(Usuario usuario) {
-        servicioRoles.añadirRolAUsuario(usuario, "USUARIO");
+        if (usuario.getUsername().contains("admin")) {
+            servicioRoles.añadirRolAUsuario(usuario, "ADMIN");
+        } else servicioRoles.añadirRolAUsuario(usuario, "USUARIO");
     }
 
     public boolean verificarCredenciales(String username, String password) {

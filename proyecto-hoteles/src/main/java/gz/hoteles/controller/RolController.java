@@ -68,6 +68,12 @@ public class RolController {
         return ResponseEntity.ok().build();
     }
 
+    @DeleteMapping("/{id}") 
+    public ResponseEntity<?> remove(@PathVariable int id) {
+        rolesRepository.delete(rolesRepository.getById(id));
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getRolById(@PathVariable (name="id") int id) {
         Rol r = servicioRoles.getById(id);

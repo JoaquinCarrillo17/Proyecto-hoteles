@@ -4,6 +4,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import gz.hoteles.controller.HuespedController;
 import gz.hoteles.dto.HabitacionDTO;
 import gz.hoteles.dto.HuespedDTO;
 import gz.hoteles.entities.Huesped;
+import gz.hoteles.entities.Reservas;
 import gz.hoteles.repositories.HuespedRepository;
 import gz.hoteles.support.OrderCriteria;
 import gz.hoteles.support.SearchCriteria;
@@ -87,6 +89,34 @@ public class ServicioHuespedes extends DtoServiceImpl<HuespedDTO, Huesped> {
         int pageIndex = searchRequest.getPage().getPageIndex();
 
         Specification<Huesped> spec = Specification.where(null);
+
+        // Verificar si existe el criterio "idUsuario"
+        Optional<SearchCriteria> idUsuarioCriteria = searchCriteriaList.stream()
+                .filter(criteria -> "idUsuario".equals(criteria.getKey()))
+                .findFirst();
+
+        if (idUsuarioCriteria.isPresent()) {
+            String idUsuario = idUsuarioCriteria.get().getValue();
+
+            // Añadir la especificación para el filtro de idUsuario
+            spec = spec.and((root, query, cb) -> {
+                // Crear una subquery para filtrar huéspedes con reservas en el hotel del
+                // idUsuario
+                query.distinct(true);
+                javax.persistence.criteria.Subquery<Long> subquery = query.subquery(Long.class);
+                javax.persistence.criteria.Root<Reservas> reservasRoot = subquery.from(Reservas.class);
+                subquery.select(reservasRoot.join("huespedes").get("id"))
+                        .where(cb.equal(reservasRoot.join("hotel").get("idUsuario"), idUsuario));
+
+                return cb.in(root.get("id")).value(subquery);
+            });
+
+            // Eliminar el criterio "idUsuario" de la lista para evitar procesarlo como un
+            // campo normal
+            searchCriteriaList = searchCriteriaList.stream()
+                    .filter(criteria -> !"idUsuario".equals(criteria.getKey()))
+                    .collect(Collectors.toList());
+        }
 
         for (SearchCriteria criteria : searchCriteriaList) {            
                 switch (criteria.getOperation()) {
