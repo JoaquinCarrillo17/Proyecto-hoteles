@@ -8,6 +8,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 
@@ -37,7 +39,12 @@ public class Reservas implements EntityGeneral {
     @ManyToOne
     private Hotel hotel;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+        @JoinTable(
+            name = "reservas_huespedes",
+            joinColumns = @JoinColumn(name = "reservas_id"),
+            inverseJoinColumns = @JoinColumn(name = "huespedes_id")
+        )
     private List<Huesped> huespedes;
 
     @Override
