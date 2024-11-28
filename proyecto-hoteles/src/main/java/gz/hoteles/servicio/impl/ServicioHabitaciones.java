@@ -4,6 +4,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collectors;
 
@@ -224,23 +225,31 @@ public class ServicioHabitaciones extends DtoServiceImpl<HabitacionDTO, Habitaci
         // Obtener todas las habitaciones que cumplen el filtro inicial (sin paginación)
         List<Habitacion> habitacionesFiltradas = habitacionRepository.findAll(spec);
 
-        // Obtener las fechas de búsqueda
-        final Date checkInDate = parseDate(searchRequest.getListSearchCriteria().stream()
+        // Obtener fechas de búsqueda, si están presentes
+        Optional<Date> checkInDateOptional = searchRequest.getListSearchCriteria().stream()
                 .filter(criteria -> criteria.getKey().equals("checkIn"))
                 .map(SearchCriteria::getValue)
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Fecha checkIn es obligatoria")));
+                .map(this::parseDate)
+                .findFirst();
 
-        final Date checkOutDate = parseDate(searchRequest.getListSearchCriteria().stream()
+        Optional<Date> checkOutDateOptional = searchRequest.getListSearchCriteria().stream()
                 .filter(criteria -> criteria.getKey().equals("checkOut"))
                 .map(SearchCriteria::getValue)
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Fecha checkOut es obligatoria")));
+                .map(this::parseDate)
+                .findFirst();
 
-        // Filtrar habitaciones por disponibilidad
-        List<Habitacion> habitacionesDisponibles = habitacionesFiltradas.stream()
-                .filter(habitacion -> verificarDisponibilidad(habitacion, checkInDate, checkOutDate))
-                .collect(Collectors.toList());
+        List<Habitacion> habitacionesDisponibles;
+        if (checkInDateOptional.isPresent() && checkOutDateOptional.isPresent()) {
+            // Filtrar habitaciones por disponibilidad solo si ambas fechas están presentes
+            Date checkInDate = checkInDateOptional.get();
+            Date checkOutDate = checkOutDateOptional.get();
+            habitacionesDisponibles = habitacionesFiltradas.stream()
+                    .filter(habitacion -> verificarDisponibilidad(habitacion, checkInDate, checkOutDate))
+                    .collect(Collectors.toList());
+        } else {
+            // Si no hay fechas, usar las habitaciones filtradas sin más
+            habitacionesDisponibles = habitacionesFiltradas;
+        }
 
         // Calcular total después de filtrar
         long totalElements = habitacionesDisponibles.size();
