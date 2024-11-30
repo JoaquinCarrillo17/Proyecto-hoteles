@@ -8,9 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import gz.hoteles.dto.EstadisticasDto;
 import gz.hoteles.dto.HotelDTO;
 import gz.hoteles.entities.Habitacion;
 import gz.hoteles.entities.Historico;
@@ -18,6 +20,7 @@ import gz.hoteles.repositories.HabitacionRepository;
 import gz.hoteles.repositories.HistoricoRepository;
 import gz.hoteles.repositories.HotelRepository;
 import gz.hoteles.repositories.HuespedRepository;
+import gz.hoteles.servicio.impl.ReservasServiceImpl;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,6 +47,15 @@ public class HistoricoController {
 
     @Autowired
     HuespedRepository huespedRepository;
+
+    @Autowired
+    ReservasServiceImpl reservasServiceImpl;
+
+    @GetMapping("/getHistorico")
+    public ResponseEntity<?> getHistorico(@RequestParam(required = false) Long hotelId, @RequestParam int year) {
+        EstadisticasDto estadisticas = reservasServiceImpl.getEstadisticasByUsuarioAndYear(hotelId, year);
+        return ResponseEntity.ok(estadisticas);
+    }
 
     /*@GetMapping("/admin/{idUsuario}")
     public ResponseEntity<?> list(@PathVariable(name = "idUsuario") int idUsuario) {

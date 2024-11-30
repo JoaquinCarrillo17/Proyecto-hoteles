@@ -31,12 +31,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
-                .antMatchers("/auth/signUp", "/auth/login", "/auth", "/auth/**", "/permisos", "/roles", "/roles/**",
-                        "/usuarios", "/usuarios/**", "/ubicaciones", "/ubicaciones/**", "historicos", "historicos/**",
+                .antMatchers(
+         "/auth/signUp", 
+                        "/auth/login", 
+                        "/auth", 
+                        "/auth/**", 
+                        "/ubicaciones/getActivas",
                         "/hoteles/dynamicFilterAnd",
                         "/habitaciones/dynamicFilterAnd",
-                        "/reservas",
-                        "/reservas/*",
                         "/swagger-ui.html",
                         "/swagger-ui/**",
                         "/v3/api-docs/**")
@@ -129,7 +131,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .hasRole("SUPER_ADMIN")
 
                 .antMatchers(HttpMethod.GET, "/usuarios/**")
-                .hasRole("SUPER_ADMIN")
+                .hasAnyRole("SUPER_ADMIN", "USUARIOS_R", "USUARIOS_W")
                 .antMatchers(HttpMethod.GET, "/usuarios")
                 .hasRole("SUPER_ADMIN")
                 // * Restringir los métodos PUT, POST y DELETE a ROLE_ROLES_W
@@ -141,8 +143,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .hasRole("SUPER_ADMIN")
                 .antMatchers(HttpMethod.DELETE, "/usuarios/{id}")
                 .hasRole("SUPER_ADMIN")
-
-                 .antMatchers("/hoteles", "/hoteles/**", "/habitaciones", "/habitaciones/**", "/huespedes", "/huespedes**", "/roles", "/roles**", "/usuarios", "/usuarios/**", "/reservas", "/reservas/**").authenticated()
 
                 .anyRequest().authenticated() // Todas las demás rutas requieren autenticación
                 .and()

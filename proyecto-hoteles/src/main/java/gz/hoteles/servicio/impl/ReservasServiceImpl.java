@@ -1,7 +1,9 @@
 package gz.hoteles.servicio.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,19 +14,18 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import gz.hoteles.dto.HabitacionDTO;
+import gz.hoteles.dto.EstadisticasDto;
 import gz.hoteles.dto.HuespedDTO;
 import gz.hoteles.dto.ReservasDto;
-import gz.hoteles.entities.Habitacion;
 import gz.hoteles.entities.Huesped;
 import gz.hoteles.entities.Reservas;
-import gz.hoteles.entities.ServiciosHabitacionEnum;
 import gz.hoteles.entities.TipoHabitacion;
 import gz.hoteles.repositories.HuespedRepository;
 import gz.hoteles.repositories.ReservasRepository;
 import gz.hoteles.support.OrderCriteria;
 import gz.hoteles.support.SearchCriteria;
 import gz.hoteles.support.SearchRequest;
+import lombok.var;
 
 @Service
 public class ReservasServiceImpl extends DtoServiceImpl<ReservasDto, Reservas> {
@@ -150,5 +151,46 @@ public class ReservasServiceImpl extends DtoServiceImpl<ReservasDto, Reservas> {
                 page.getTotalElements());
 
     }
+
+    public EstadisticasDto getEstadisticasByUsuarioAndYear(Long hotelId, int year) {
+    
+        Map<String, Integer> reservasPorMes = new HashMap<>();
+        Map<String, Double> gananciasPorMes = new HashMap<>();
+        int totalHabitaciones, habitacionesReservadas, habitacionesLibres;
+    
+        if (hotelId != null) {
+            // Filtrar por hotel
+            var estadisticasReservas = reservasRepository.findReservasEstadisticasByUsuarioAndYear(hotelId, year);
+            for (Object[] row : estadisticasReservas) {
+                String mes = String.valueOf(row[0]); // Mes como número (1-12)
+                reservasPorMes.put(mes, ((Number) row[1]).intValue());
+                gananciasPorMes.put(mes, ((Number) row[2]).doubleValue());
+            }
+            totalHabitaciones = reservasRepository.countTotalHabitacionesByHotel(hotelId);
+            habitacionesReservadas = reservasRepository.countHabitacionesReservadasByHotel(hotelId);
+        } else {
+            // No filtrar por hotel (Todos los hoteles)
+            var estadisticasReservas = reservasRepository.findReservasEstadisticasByYear(year);
+            for (Object[] row : estadisticasReservas) {
+                String mes = String.valueOf(row[0]); // Mes como número (1-12)
+                reservasPorMes.put(mes, ((Number) row[1]).intValue());
+                gananciasPorMes.put(mes, ((Number) row[2]).doubleValue());
+            }
+            totalHabitaciones = reservasRepository.countTotalHabitaciones();
+            habitacionesReservadas = reservasRepository.countHabitacionesReservadas();
+        }
+    
+        habitacionesLibres = totalHabitaciones - habitacionesReservadas;
+    
+        // Crear DTO
+        return new EstadisticasDto(
+                reservasPorMes,
+                gananciasPorMes,
+                totalHabitaciones,
+                habitacionesReservadas,
+                habitacionesLibres
+        );
+    }
+    
     
 }
