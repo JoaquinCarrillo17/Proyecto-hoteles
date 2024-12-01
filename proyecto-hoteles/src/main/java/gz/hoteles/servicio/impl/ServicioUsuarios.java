@@ -26,15 +26,25 @@ public class ServicioUsuarios  {
         String destinatario = usuario.getEmail();
         String asunto = "Registro exitoso";
         String contenido = "¡Hola " + usuario.getNombre() + ", tu registro en JC Hotel Group ha sido exitoso!";
-        //servicioEmails.enviarCorreo(destinatario, asunto, contenido);
+        servicioEmails.enviarCorreo(destinatario, asunto, contenido);
+
+        if (usuario.getUsername().contains("admin")) {
+            destinatario = "jcarrillo@aunnait.es";
+            asunto = "Nuevo admin registrado [" + usuario.getUsername() + "]";
+            contenido = "Se ha registrado un nuevo admin en la plataforma, establece sus permisos para que pueda actuar como tal.";
+            servicioEmails.enviarCorreo(destinatario, asunto, contenido);
+        }
 
         return usuarioRepository.save(usuario);
     }
 
     private void añadirRol(Usuario usuario) {
-        if (usuario.getUsername().contains("admin")) {
+        /*if (usuario.getUsername().contains("admin")) {
+            if (usuario.getUsername().equals("admin")) {
+
+            }
             servicioRoles.añadirRolAUsuario(usuario, "ADMIN");
-        } else servicioRoles.añadirRolAUsuario(usuario, "USUARIO");
+        } else*/ servicioRoles.añadirRolAUsuario(usuario, "USUARIO");
     }
 
     public boolean verificarCredenciales(String username, String password) {
