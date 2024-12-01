@@ -25,7 +25,7 @@ public class ServicioUsuarios  {
 
         String destinatario = usuario.getEmail();
         String asunto = "Registro exitoso";
-        String contenido = "¡Hola " + usuario.getNombre() + ", tu registro en JC Hotel Group ha sido exitoso!";
+        String contenido = "¡Hola " + usuario.getUsername() + ", tu registro en JC Hotel Group ha sido exitoso!";
         servicioEmails.enviarCorreo(destinatario, asunto, contenido);
 
         if (usuario.getUsername().contains("admin")) {
