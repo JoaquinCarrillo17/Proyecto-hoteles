@@ -1,5 +1,7 @@
 package gz.hoteles.controller;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -8,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import gz.hoteles.dto.HabitacionDTO;
+import gz.hoteles.entities.Habitacion;
 import gz.hoteles.servicio.impl.ServicioHabitaciones;
 import gz.hoteles.support.SearchRequest;
 
@@ -31,5 +34,19 @@ public class HabitacionController extends ControllerDto<HabitacionDTO> {
         return ResponseEntity.ok(page);
     } 
 
+    
+    @PostMapping("/crearHabitaciones")
+    public ResponseEntity<?> crearHabitaciones(@RequestBody List<HabitacionDTO> habitacionesDto) {
+
+        List<Habitacion> habitaciones;
+        try {
+            habitaciones = ((ServicioHabitaciones) this.dtoService).crearHabitaciones(habitacionesDto);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(IMPOSSIBLE_TO_PERFORM_THE_OPERATION);
+        }
+
+        return ResponseEntity.ok(habitaciones);
+    }
 
 }

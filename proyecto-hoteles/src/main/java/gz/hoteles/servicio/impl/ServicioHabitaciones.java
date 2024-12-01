@@ -2,6 +2,7 @@ package gz.hoteles.servicio.impl;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -270,6 +271,18 @@ public class ServicioHabitaciones extends DtoServiceImpl<HabitacionDTO, Habitaci
     private boolean verificarDisponibilidad(Habitacion habitacion, Date checkInDate, Date checkOutDate) {
         // Si existe al menos una reserva que se solape, la habitación no está disponible
         return !reservasRepository.existsByHabitacionAndFechasSolapadas(habitacion, checkInDate, checkOutDate);
+    }
+
+    public List<Habitacion> crearHabitaciones(List<HabitacionDTO> habitacionesDto) throws Exception {
+
+        List<Habitacion> habitaciones = new ArrayList<>();
+
+        for (HabitacionDTO dto : habitacionesDto) {
+            Habitacion habitacion = parseEntity(dto);
+            habitaciones.add(habitacionRepository.save(habitacion));
+        }
+
+        return habitaciones;
     }
 
 }
