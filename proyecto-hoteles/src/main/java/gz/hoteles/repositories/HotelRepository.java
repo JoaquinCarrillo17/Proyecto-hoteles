@@ -53,8 +53,6 @@ public interface HotelRepository extends JpaRepository<Hotel, Long>, JpaSpecific
 
         Page<Hotel> findByDireccionContainingIgnoreCase(String value, PageRequest of);
 
-        /* Funciones filtrado GET tocho */
-
         Page<Hotel> findByNombreAndDireccionAndTelefonoAndEmailAndSitioWeb(String nombre, String direccion,
                         String telefono,
                         String email, String sitioWeb, PageRequest of);
@@ -118,13 +116,11 @@ public interface HotelRepository extends JpaRepository<Hotel, Long>, JpaSpecific
 
         Page<Hotel> findBySitioWeb(String sitioWeb, PageRequest of);
 
-        /* Fin */
-
-        Page<Hotel> findAll(Specification<Hotel> spec, Pageable pageable); // Para el dynamic search tocho
+        Page<Hotel> findAll(Specification<Hotel> spec, Pageable pageable); 
 
         Page<Hotel> findByNombreContainingIgnoreCaseOrDireccionContainingIgnoreCaseOrTelefonoContainingIgnoreCaseOrEmailContainingIgnoreCaseOrSitioWebContainingIgnoreCase(
                         String nombre, String direccion, String telefono, String email, String sitioWeb,
-                        Pageable pageable); // Para el magic filter
+                        Pageable pageable); 
 
         Hotel findByIdUsuario(int id);
 

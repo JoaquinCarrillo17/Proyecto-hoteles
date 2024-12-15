@@ -1,11 +1,7 @@
 package gz.hoteles.controller;
-
-
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,8 +10,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-
-import gz.hoteles.dto.DynamicSearchPaginatorDto;
 import gz.hoteles.servicio.DtoService;
 import gz.hoteles.support.FrontendMessageException;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +21,6 @@ public abstract class ControllerDto<T> {
 	protected DtoService<T> dtoService;
 
 	public static final String IMPOSSIBLE_TO_PERFORM_THE_OPERATION = "Imposible realizar la operación.";
-
 
 	@GetMapping("/{id}")
 	public ResponseEntity<?> get(@PathVariable(value = "id") Long id){
@@ -47,11 +40,8 @@ public abstract class ControllerDto<T> {
 					HttpStatus.BAD_REQUEST);
 		}
 	}
-
-
 	@GetMapping
 	public ResponseEntity<?> getAll(){	
-
 		try {
 			return new ResponseEntity<List<T>>(dtoService.findAll(), HttpStatus.OK);
 		}  catch (FrontendMessageException e) {
@@ -63,7 +53,6 @@ public abstract class ControllerDto<T> {
 					HttpStatus.BAD_REQUEST);
 		}
 	}
-
 	@PostMapping
 	public ResponseEntity<?> post(@RequestBody T entity){    
 
@@ -78,7 +67,6 @@ public abstract class ControllerDto<T> {
 					HttpStatus.BAD_REQUEST);
 		}
 	}
-
 	@PutMapping("/{id}")
 	public ResponseEntity<?> put(@PathVariable Long id, @RequestBody T entity) { 
 
@@ -107,24 +95,6 @@ public abstract class ControllerDto<T> {
 			return new ResponseEntity<>(e.getMessage(),
 					e.getStatus());
 		}  catch (Exception e) {
-			return new ResponseEntity<>(IMPOSSIBLE_TO_PERFORM_THE_OPERATION,
-					HttpStatus.BAD_REQUEST);
-		}
-	}
-
-	/**
-	 * End point usado para la paginacion dinamica
-	 * Este sera el unico que usaremos
-	 * @param dynamicSearchPaginator
-	 * @return
-	 */
-	@PostMapping("/dynamicSearch")
-	public ResponseEntity<?> withDynamicSearchPageAndOrder(@RequestBody DynamicSearchPaginatorDto dynamicSearchPaginator) {
-
-		try {
-			return new ResponseEntity<Page<T>>(dtoService.findPageBySearchCriteriaAndOrderCriteria(dynamicSearchPaginator), HttpStatus.OK);
-		} catch (Exception e) {
-			e.printStackTrace();
 			return new ResponseEntity<>(IMPOSSIBLE_TO_PERFORM_THE_OPERATION,
 					HttpStatus.BAD_REQUEST);
 		}

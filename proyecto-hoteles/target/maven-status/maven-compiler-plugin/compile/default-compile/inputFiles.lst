@@ -1,4 +1,3 @@
-C:\Users\Usuario\Desktop\TFG\Backend\Proyecto-hoteles\proyecto-hoteles\src\main\java\gz\hoteles\repositories\HistoricoRepository.java
 C:\Users\Usuario\Desktop\TFG\Backend\Proyecto-hoteles\proyecto-hoteles\src\main\java\gz\hoteles\controller\HabitacionController.java
 C:\Users\Usuario\Desktop\TFG\Backend\Proyecto-hoteles\proyecto-hoteles\src\main\java\gz\hoteles\controller\HistoricoController.java
 C:\Users\Usuario\Desktop\TFG\Backend\Proyecto-hoteles\proyecto-hoteles\src\main\java\gz\hoteles\repositories\UbicacionRepository.java
@@ -19,10 +18,10 @@ C:\Users\Usuario\Desktop\TFG\Backend\Proyecto-hoteles\proyecto-hoteles\src\main\
 C:\Users\Usuario\Desktop\TFG\Backend\Proyecto-hoteles\proyecto-hoteles\src\main\java\gz\hoteles\support\OrderCriteria.java
 C:\Users\Usuario\Desktop\TFG\Backend\Proyecto-hoteles\proyecto-hoteles\src\main\java\gz\hoteles\servicio\impl\ServicioHabitaciones.java
 C:\Users\Usuario\Desktop\TFG\Backend\Proyecto-hoteles\proyecto-hoteles\src\main\java\gz\hoteles\dto\EstadisticasDto.java
-C:\Users\Usuario\Desktop\TFG\Backend\Proyecto-hoteles\proyecto-hoteles\src\main\java\gz\hoteles\entities\Historico.java
 C:\Users\Usuario\Desktop\TFG\Backend\Proyecto-hoteles\proyecto-hoteles\src\main\java\gz\hoteles\servicio\DtoService.java
 C:\Users\Usuario\Desktop\TFG\Backend\Proyecto-hoteles\proyecto-hoteles\src\main\java\gz\hoteles\support\GenericSpecification.java
 C:\Users\Usuario\Desktop\TFG\Backend\Proyecto-hoteles\proyecto-hoteles\src\main\java\gz\hoteles\controller\HuespedController.java
+C:\Users\Usuario\Desktop\TFG\Backend\Proyecto-hoteles\proyecto-hoteles\src\main\java\gz\hoteles\dto\HotelRequestDto.java
 C:\Users\Usuario\Desktop\TFG\Backend\Proyecto-hoteles\proyecto-hoteles\src\main\java\gz\hoteles\repositories\HabitacionRepository.java
 C:\Users\Usuario\Desktop\TFG\Backend\Proyecto-hoteles\proyecto-hoteles\src\main\java\gz\hoteles\entities\Habitacion.java
 C:\Users\Usuario\Desktop\TFG\Backend\Proyecto-hoteles\proyecto-hoteles\src\main\java\gz\hoteles\entities\EntityGeneral.java

@@ -67,6 +67,4 @@ public class Hotel implements EntityGeneral {
         dto.setServicios(servicios);
         return dto;
     }
-
-        
 }

@@ -59,15 +59,6 @@ public class RolController {
         return ResponseEntity.ok(roles); 
     }
 
-    @DeleteMapping() 
-    public ResponseEntity<?> removeAll() {
-        List<Rol> roles = servicioRoles.getAll();
-        for (Rol r : roles) {
-            rolesRepository.delete(r);
-        }
-        return ResponseEntity.ok().build();
-    }
-
     @DeleteMapping("/{id}") 
     public ResponseEntity<?> remove(@PathVariable int id) {
         rolesRepository.delete(rolesRepository.getById(id));

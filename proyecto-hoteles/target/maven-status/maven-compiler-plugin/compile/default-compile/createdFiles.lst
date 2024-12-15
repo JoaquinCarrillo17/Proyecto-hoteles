@@ -1,4 +1,3 @@
-gz\hoteles\servicio\impl\DtoServiceImpl$2.class
 gz\hoteles\security\SecurityConfig.class
 gz\hoteles\dto\DtoGeneral.class
 gz\hoteles\controller\CustomExceptionHandler$ErrorResponse.class
@@ -26,6 +25,7 @@ gz\hoteles\security\JwtTokenProvider.class
 gz\hoteles\servicio\impl\ServicioHoteles.class
 gz\hoteles\controller\RolController.class
 gz\hoteles\controller\UbicacionController.class
+gz\hoteles\dto\HotelRequestDto.class
 gz\hoteles\support\OrderCriteria.class
 gz\hoteles\support\SearchRequest.class
 gz\hoteles\support\CorsFilter.class
@@ -39,7 +39,6 @@ gz\hoteles\support\GenericSpecification.class
 gz\hoteles\security\JwtTokenFilter.class
 gz\hoteles\repositories\HuespedRepository.class
 gz\hoteles\entities\Habitacion.class
-gz\hoteles\entities\Historico.class
 gz\hoteles\support\SearchOperation.class
 gz\hoteles\controller\ReservasController.class
 gz\hoteles\ProyectoHotelesApplication.class
@@ -66,5 +65,4 @@ gz\hoteles\servicio\impl\ReservasServiceImpl.class
 gz\hoteles\swagger\OpenApiConfig.class
 gz\hoteles\entities\Reservas.class
 gz\hoteles\servicio\impl\ServicioEmails.class
-gz\hoteles\repositories\HistoricoRepository.class
 gz\hoteles\support\FrontendMessageException.class

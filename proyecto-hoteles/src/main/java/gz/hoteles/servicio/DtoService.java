@@ -9,8 +9,6 @@ import javax.transaction.Transactional;
 
 import org.springframework.data.domain.Page;
 
-import gz.hoteles.dto.DynamicSearchPaginatorDto;
-
 
 @Transactional
 public interface DtoService<T> {
@@ -36,10 +34,5 @@ List<T> findAll() throws Exception;
 //	List<T> findBySearchCriteria(List<SearchCriteria> scl) throws Exception;
 	
 //	Page<T> findPageBySearchCriteria(List<SearchCriteria> scl, PageDto pageDto) throws Exception;
-
-	boolean isMine(Long id) throws Exception;
-
-	Page<T> findPageBySearchCriteriaAndOrderCriteria(DynamicSearchPaginatorDto dynamicSearchPaginator) throws Exception;
-
 
 }

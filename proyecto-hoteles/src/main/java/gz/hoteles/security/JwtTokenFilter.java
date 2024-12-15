@@ -39,7 +39,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             } catch (Exception e) {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "El token está caducado"); 
                 logger.error("El token está caducado", e);
-                return; // ! No para aqui, sigue por OncePerRequestFilter y da forbidden
+                return; 
             }
             @SuppressWarnings("unchecked")
             ArrayList<String> roles = (ArrayList<String>) claims.get("roles");

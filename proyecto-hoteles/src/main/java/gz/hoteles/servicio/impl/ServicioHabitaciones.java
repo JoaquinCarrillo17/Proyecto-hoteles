@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Subquery;
+import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -21,7 +22,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import gz.hoteles.dto.HabitacionDTO;
+import gz.hoteles.dto.HotelRequestDto;
 import gz.hoteles.entities.Habitacion;
+import gz.hoteles.entities.Hotel;
 import gz.hoteles.entities.ServiciosHabitacionEnum;
 import gz.hoteles.entities.TipoHabitacion;
 import gz.hoteles.repositories.HabitacionRepository;
@@ -273,16 +276,25 @@ public class ServicioHabitaciones extends DtoServiceImpl<HabitacionDTO, Habitaci
         return !reservasRepository.existsByHabitacionAndFechasSolapadas(habitacion, checkInDate, checkOutDate);
     }
 
-    public List<Habitacion> crearHabitaciones(List<HabitacionDTO> habitacionesDto) throws Exception {
+    @Transactional
+    public List<Habitacion> crearHabitaciones(HotelRequestDto dto) throws Exception {
 
-        List<Habitacion> habitaciones = new ArrayList<>();
+        Hotel hotelSaved = hotelRepository.save(hotelService.parseEntity(dto.getHotel()));
 
-        for (HabitacionDTO dto : habitacionesDto) {
-            Habitacion habitacion = parseEntity(dto);
-            habitaciones.add(habitacionRepository.save(habitacion));
-        }
+        List<Habitacion> habitaciones = dto.getHabitaciones().stream()
+        .map(habitacionDto -> {
+            Habitacion habitacion = null;
+            try {
+                habitacion = parseEntity(habitacionDto);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            habitacion.setHotel(hotelSaved);
+            return habitacion;
+        })
+        .collect(Collectors.toList());
 
-        return habitaciones;
+        return habitacionRepository.saveAll(habitaciones);
     }
 
 }
