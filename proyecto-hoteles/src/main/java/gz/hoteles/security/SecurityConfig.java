@@ -120,7 +120,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET, "/usuarios")
                 .hasRole("SUPER_ADMIN")
                 .antMatchers(HttpMethod.PUT, "/usuarios/{id}")
-                .hasRole("SUPER_ADMIN")
+                .hasAnyRole("SUPER_ADMIN", "USUARIOS_W")
                 .antMatchers(HttpMethod.POST, "/usuarios")
                 .hasRole("SUPER_ADMIN")
                 .antMatchers(HttpMethod.POST, "/usuarios/**")
